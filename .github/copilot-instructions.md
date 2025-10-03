@@ -22,4 +22,5 @@ TypeScript 5.x (web), Swift 5.9+ (iOS), Kotlin 1.9+ (Android): Follow standard c
 - 002-visual-ai-collaboration: Added TypeScript 5.x (web), Swift 5.9+ (iOS), Kotlin 1.9+ (Android) + React/Vue + Tailwind (web), Fabric.js (canvas), SwiftUI + UIKit (iOS), Jetpack Compose (Android), Gemini AI API
 
 <!-- MANUAL ADDITIONS START -->
+When validating web changes you must use Playwright and take screen shots of the outcomes. YOU MUST BE HONEST IN YOUR EVALUATION OF THE RESULTS.
 <!-- MANUAL ADDITIONS END -->

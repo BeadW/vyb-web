@@ -1,0 +1,384 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vyb.com/schemas/ai-request.json",
+  "title": "AI Request",
+  "description": "Request payload for AI collaboration services",
+  "type": "object",
+  "required": ["requestId", "type", "timestamp"],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique request identifier for tracking"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "generate-image",
+        "generate-text",
+        "suggest-improvement",
+        "analyze-composition",
+        "color-palette",
+        "style-transfer",
+        "background-removal",
+        "object-detection",
+        "content-aware-fill"
+      ],
+      "description": "Type of AI assistance requested"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Request timestamp"
+    },
+    "context": {
+      "$ref": "#/$defs/RequestContext",
+      "description": "Canvas and element context"
+    },
+    "parameters": {
+      "oneOf": [
+        { "$ref": "#/$defs/ImageGenerationParams" },
+        { "$ref": "#/$defs/TextGenerationParams" },
+        { "$ref": "#/$defs/SuggestionParams" },
+        { "$ref": "#/$defs/AnalysisParams" },
+        { "$ref": "#/$defs/ColorPaletteParams" },
+        { "$ref": "#/$defs/StyleTransferParams" },
+        { "$ref": "#/$defs/BackgroundRemovalParams" },
+        { "$ref": "#/$defs/ObjectDetectionParams" },
+        { "$ref": "#/$defs/ContentFillParams" }
+      ],
+      "description": "Request-specific parameters"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["low", "normal", "high", "urgent"],
+      "default": "normal"
+    },
+    "timeout": {
+      "type": "integer",
+      "minimum": 1000,
+      "maximum": 300000,
+      "description": "Request timeout in milliseconds"
+    }
+  },
+  "$defs": {
+    "RequestContext": {
+      "type": "object",
+      "properties": {
+        "canvasId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "elementIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "selectionBounds": {
+          "$ref": "#/$defs/Rectangle"
+        },
+        "canvasDimensions": {
+          "$ref": "#/$defs/Dimensions"
+        },
+        "visibleElements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "format": "uuid" },
+              "type": { "type": "string" },
+              "bounds": { "$ref": "#/$defs/Rectangle" }
+            }
+          }
+        }
+      }
+    },
+    "ImageGenerationParams": {
+      "type": "object",
+      "required": ["prompt"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 2000
+        },
+        "negativePrompt": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "style": {
+          "type": "string",
+          "enum": [
+            "photorealistic", "illustration", "cartoon", "abstract",
+            "minimalist", "vintage", "modern", "artistic", "technical"
+          ]
+        },
+        "aspectRatio": {
+          "type": "string",
+          "enum": ["1:1", "16:9", "9:16", "4:3", "3:4", "21:9", "custom"]
+        },
+        "dimensions": {
+          "$ref": "#/$defs/Dimensions"
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 150,
+          "default": 30
+        },
+        "guidance": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 30,
+          "default": 7.5
+        },
+        "model": {
+          "type": "string",
+          "enum": ["gemini-visual", "dalle-3", "midjourney", "stable-diffusion"]
+        }
+      }
+    },
+    "TextGenerationParams": {
+      "type": "object",
+      "required": ["prompt"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 2000
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 10,
+          "maximum": 5000,
+          "default": 500
+        },
+        "tone": {
+          "type": "string",
+          "enum": [
+            "professional", "casual", "creative", "technical", 
+            "marketing", "educational", "humorous", "formal"
+          ]
+        },
+        "format": {
+          "type": "string",
+          "enum": ["paragraph", "bullet-points", "headline", "tagline", "description"]
+        },
+        "audience": {
+          "type": "string",
+          "enum": ["general", "technical", "business", "creative", "academic", "social"]
+        },
+        "language": {
+          "type": "string",
+          "pattern": "^[a-z]{2}(-[A-Z]{2})?$",
+          "default": "en"
+        }
+      }
+    },
+    "SuggestionParams": {
+      "type": "object",
+      "properties": {
+        "focus": {
+          "type": "string",
+          "enum": ["layout", "color", "typography", "spacing", "hierarchy", "overall"]
+        },
+        "goals": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "engagement", "clarity", "aesthetics", "branding", 
+              "accessibility", "conversion", "emotion", "simplicity"
+            ]
+          }
+        },
+        "constraints": {
+          "type": "object",
+          "properties": {
+            "brandColors": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "fonts": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "dimensions": {
+              "$ref": "#/$defs/Dimensions"
+            }
+          }
+        }
+      }
+    },
+    "AnalysisParams": {
+      "type": "object",
+      "properties": {
+        "analysisType": {
+          "type": "string",
+          "enum": [
+            "composition", "color-harmony", "readability", 
+            "brand-consistency", "accessibility", "emotional-impact"
+          ]
+        },
+        "includeRecommendations": {
+          "type": "boolean",
+          "default": true
+        },
+        "detailLevel": {
+          "type": "string",
+          "enum": ["basic", "detailed", "comprehensive"],
+          "default": "detailed"
+        }
+      }
+    },
+    "ColorPaletteParams": {
+      "type": "object",
+      "properties": {
+        "baseColor": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "paletteType": {
+          "type": "string",
+          "enum": ["monochromatic", "analogous", "complementary", "triadic", "tetradic", "custom"]
+        },
+        "colorCount": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10,
+          "default": 5
+        },
+        "mood": {
+          "type": "string",
+          "enum": ["warm", "cool", "vibrant", "muted", "energetic", "calming", "professional"]
+        },
+        "accessibility": {
+          "type": "boolean",
+          "default": true,
+          "description": "Ensure WCAG color contrast compliance"
+        }
+      }
+    },
+    "StyleTransferParams": {
+      "type": "object",
+      "required": ["targetStyle"],
+      "properties": {
+        "targetStyle": {
+          "type": "string",
+          "enum": [
+            "watercolor", "oil-painting", "sketch", "digital-art",
+            "vintage", "modern", "minimalist", "abstract", "realistic"
+          ]
+        },
+        "strength": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1.0,
+          "default": 0.7
+        },
+        "preserveColors": {
+          "type": "boolean",
+          "default": false
+        },
+        "preserveStructure": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "BackgroundRemovalParams": {
+      "type": "object",
+      "properties": {
+        "precision": {
+          "type": "string",
+          "enum": ["fast", "balanced", "precise"],
+          "default": "balanced"
+        },
+        "edgeSmoothing": {
+          "type": "boolean",
+          "default": true
+        },
+        "returnMask": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "ObjectDetectionParams": {
+      "type": "object",
+      "properties": {
+        "objectTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "person", "face", "text", "logo", "product", 
+              "vehicle", "building", "nature", "animal", "all"
+            ]
+          },
+          "default": ["all"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0.1,
+          "maximum": 1.0,
+          "default": 0.5
+        },
+        "returnBounds": {
+          "type": "boolean",
+          "default": true
+        },
+        "returnLabels": {
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
+    "ContentFillParams": {
+      "type": "object",
+      "required": ["maskRegion"],
+      "properties": {
+        "maskRegion": {
+          "$ref": "#/$defs/Rectangle"
+        },
+        "fillType": {
+          "type": "string",
+          "enum": ["smart-fill", "pattern-match", "blend", "generate"],
+          "default": "smart-fill"
+        },
+        "contextRadius": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 100,
+          "default": 20,
+          "description": "Pixels around mask to consider for context"
+        }
+      }
+    },
+    "Rectangle": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      }
+    },
+    "Dimensions": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

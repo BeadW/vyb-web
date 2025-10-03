@@ -1,0 +1,527 @@
+openapi: 3.0.3
+info:
+  title: VYB Canvas State API
+  description: Internal API contracts for canvas state management and persistence
+  version: 1.0.0
+
+paths:
+  /canvas/{canvasId}:
+    get:
+      summary: Retrieve canvas state
+      operationId: getCanvas
+      parameters:
+        - name: canvasId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Canvas retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanvasResponse'
+        '404':
+          description: Canvas not found
+
+    put:
+      summary: Update canvas state
+      operationId: updateCanvas
+      parameters:
+        - name: canvasId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanvasUpdateRequest'
+      responses:
+        '200':
+          description: Canvas updated successfully
+        '409':
+          description: Conflict - canvas modified by another session
+
+  /canvas/{canvasId}/variations:
+    get:
+      summary: Get design variation history
+      operationId: getVariations
+      parameters:
+        - name: canvasId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: depth
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10
+            default: 5
+          description: Maximum depth of variation tree to retrieve
+      responses:
+        '200':
+          description: Variations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariationHistoryResponse'
+
+    post:
+      summary: Create new design variation
+      operationId: createVariation
+      parameters:
+        - name: canvasId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVariationRequest'
+      responses:
+        '201':
+          description: Variation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariationCreatedResponse'
+
+  /canvas/{canvasId}/layers/{layerId}:
+    put:
+      summary: Update specific layer
+      operationId: updateLayer
+      parameters:
+        - name: canvasId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: layerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LayerUpdateRequest'
+      responses:
+        '200':
+          description: Layer updated successfully
+        '404':
+          description: Canvas or layer not found
+
+    delete:
+      summary: Remove layer from canvas
+      operationId: deleteLayer
+      parameters:
+        - name: canvasId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: layerId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Layer deleted successfully
+        '404':
+          description: Canvas or layer not found
+
+  /gesture/navigate:
+    post:
+      summary: Process gesture navigation
+      description: Handle scroll gestures for variation browsing
+      operationId: processGesture
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GestureNavigationRequest'
+      responses:
+        '200':
+          description: Gesture processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GestureNavigationResponse'
+
+components:
+  schemas:
+    CanvasResponse:
+      type: object
+      required:
+        - canvas
+        - version
+      properties:
+        canvas:
+          $ref: '#/components/schemas/DesignCanvas'
+        version:
+          type: integer
+          description: Version number for optimistic concurrency control
+        lastModified:
+          type: string
+          format: date-time
+
+    CanvasUpdateRequest:
+      type: object
+      required:
+        - canvas
+        - version
+      properties:
+        canvas:
+          $ref: '#/components/schemas/DesignCanvas'
+        version:
+          type: integer
+          description: Expected version for optimistic concurrency control
+        changeDescription:
+          type: string
+          description: Human-readable description of changes made
+
+    LayerUpdateRequest:
+      type: object
+      required:
+        - layer
+      properties:
+        layer:
+          $ref: '#/components/schemas/Layer'
+        operation:
+          type: string
+          enum: [update, reorder]
+        newIndex:
+          type: integer
+          description: New z-index for reorder operations
+
+    CreateVariationRequest:
+      type: object
+      required:
+        - parentVariationId
+        - source
+        - canvasState
+      properties:
+        parentVariationId:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent variation ID, null for root variations
+        source:
+          type: string
+          enum: [user_edit, ai_suggestion, ai_trend, ai_creative]
+        canvasState:
+          $ref: '#/components/schemas/DesignCanvas'
+        prompt:
+          type: string
+          description: AI prompt or user action description
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+          description: AI confidence score for AI-generated variations
+
+    VariationCreatedResponse:
+      type: object
+      required:
+        - variationId
+        - timestamp
+      properties:
+        variationId:
+          type: string
+          format: uuid
+        timestamp:
+          type: string
+          format: date-time
+        parentPath:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Path from root to this variation
+
+    VariationHistoryResponse:
+      type: object
+      required:
+        - variations
+        - currentVariationId
+      properties:
+        variations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DesignVariation'
+        currentVariationId:
+          type: string
+          format: uuid
+        treeStructure:
+          $ref: '#/components/schemas/VariationTree'
+
+    VariationTree:
+      type: object
+      required:
+        - nodeId
+        - children
+      properties:
+        nodeId:
+          type: string
+          format: uuid
+        children:
+          type: array
+          items:
+            $ref: '#/components/schemas/VariationTree'
+        metadata:
+          $ref: '#/components/schemas/VariationMetadata'
+
+    GestureNavigationRequest:
+      type: object
+      required:
+        - currentVariationId
+        - gestureType
+        - velocity
+      properties:
+        currentVariationId:
+          type: string
+          format: uuid
+        gestureType:
+          type: string
+          enum: [scroll_up, scroll_down, swipe_left, swipe_right]
+        velocity:
+          type: number
+          description: Gesture velocity for momentum calculations
+        deviceType:
+          $ref: '#/components/schemas/DeviceType'
+
+    GestureNavigationResponse:
+      type: object
+      required:
+        - targetVariationId
+        - transitionType
+      properties:
+        targetVariationId:
+          type: string
+          format: uuid
+        transitionType:
+          type: string
+          enum: [immediate, animated, momentum]
+        animationDuration:
+          type: number
+          description: Animation duration in milliseconds
+        preloadVariations:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Variations to preload for smooth navigation
+
+    DesignCanvas:
+      type: object
+      required:
+        - id
+        - deviceType
+        - dimensions
+        - layers
+        - state
+      properties:
+        id:
+          type: string
+          format: uuid
+        deviceType:
+          $ref: '#/components/schemas/DeviceType'
+        dimensions:
+          $ref: '#/components/schemas/CanvasDimensions'
+        layers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Layer'
+        state:
+          type: string
+          enum: [editing, ai-processing, viewing, locked]
+        metadata:
+          $ref: '#/components/schemas/CanvasMetadata'
+
+    DesignVariation:
+      type: object
+      required:
+        - id
+        - canvasState
+        - source
+        - timestamp
+      properties:
+        id:
+          type: string
+          format: uuid
+        parentId:
+          type: string
+          format: uuid
+          nullable: true
+        canvasState:
+          $ref: '#/components/schemas/DesignCanvas'
+        source:
+          type: string
+          enum: [user_edit, ai_suggestion, ai_trend, ai_creative]
+        prompt:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        timestamp:
+          type: string
+          format: date-time
+        metadata:
+          $ref: '#/components/schemas/VariationMetadata'
+
+    # Referenced schemas from ai-api.yaml
+    DeviceType:
+      type: string
+      enum:
+        - iphone-15-pro
+        - iphone-15
+        - ipad-pro-12.9
+        - pixel-8-pro
+        - galaxy-s24-ultra
+        - generic-mobile
+        - generic-tablet
+
+    CanvasDimensions:
+      type: object
+      required:
+        - width
+        - height
+        - pixelDensity
+      properties:
+        width:
+          type: integer
+          minimum: 100
+        height:
+          type: integer
+          minimum: 100
+        pixelDensity:
+          type: number
+          minimum: 1
+          maximum: 4
+
+    Layer:
+      type: object
+      required:
+        - id
+        - type
+        - content
+        - transform
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [text, image, background, shape, group]
+        content:
+          type: object
+          description: Content varies by layer type
+        transform:
+          $ref: '#/components/schemas/Transform'
+        style:
+          type: object
+          description: Style properties vary by layer type
+        constraints:
+          $ref: '#/components/schemas/LayerConstraints'
+
+    Transform:
+      type: object
+      required:
+        - x
+        - y
+        - scaleX
+        - scaleY
+        - rotation
+        - opacity
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        scaleX:
+          type: number
+          minimum: 0.1
+          maximum: 10
+        scaleY:
+          type: number
+          minimum: 0.1
+          maximum: 10
+        rotation:
+          type: number
+          minimum: -360
+          maximum: 360
+        opacity:
+          type: number
+          minimum: 0
+          maximum: 1
+
+    LayerConstraints:
+      type: object
+      properties:
+        locked:
+          type: boolean
+          default: false
+        visible:
+          type: boolean
+          default: true
+        interactive:
+          type: boolean
+          default: true
+        preserveAspectRatio:
+          type: boolean
+          default: false
+
+    CanvasMetadata:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: date-time
+        modifiedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+
+    VariationMetadata:
+      type: object
+      properties:
+        approvalStatus:
+          type: string
+          enum: [pending, approved, rejected]
+        userFeedback:
+          type: string
+        aiProcessingTime:
+          type: number
+          description: Time in milliseconds for AI processing
+        trendInfluence:
+          type: array
+          items:
+            type: string
+          description: Trend categories that influenced this variation

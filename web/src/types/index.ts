@@ -35,7 +35,8 @@ export enum LayerType {
   IMAGE = 'image',
   BACKGROUND = 'background',
   SHAPE = 'shape',
-  GROUP = 'group'
+  GROUP = 'group',
+  POST_TEXT = 'post_text'
 }
 
 // Canvas Dimensions
