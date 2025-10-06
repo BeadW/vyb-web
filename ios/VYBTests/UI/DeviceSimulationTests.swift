@@ -116,7 +116,7 @@ class DeviceSimulationTests: XCTestCase {
         try addTestContent()
         
         // Get initial orientation
-        let initialOrientation = app.orientation
+        let initialOrientation = XCUIDevice.shared.orientation
         
         // Rotate device to landscape
         XCUIDevice.shared.orientation = .landscapeLeft
@@ -365,7 +365,8 @@ class DeviceSimulationTests: XCTestCase {
                     dx: position.x / canvasView.frame.width,
                     dy: position.y / canvasView.frame.height
                 ))
-                textLayer.press(forDuration: 0.5, thenDragTo: targetCoordinate)
+                let startCoordinate = textLayer.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                startCoordinate.press(forDuration: 0.5, thenDragTo: targetCoordinate)
             }
         }
         

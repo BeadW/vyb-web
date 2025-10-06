@@ -23,4 +23,9 @@ TypeScript 5.x (web), Swift 5.9+ (iOS), Kotlin 1.9+ (Android): Follow standard c
 
 <!-- MANUAL ADDITIONS START -->
 When validating web changes you must use Playwright and take screen shots of the outcomes. YOU MUST BE HONEST IN YOUR EVALUATION OF THE RESULTS.
+
+when validating iOS changes you must use XCUITest and take screen shots of the outcomes. YOU MUST BE HONEST IN YOUR EVALUATION OF THE RESULTS.
+
+when validating Android changes you must use Espresso and take screen shots of the outcomes. YOU MUST BE HONEST IN YOUR EVALUATION OF THE RESULTS.
+
 <!-- MANUAL ADDITIONS END -->

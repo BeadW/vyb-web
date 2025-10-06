@@ -3,7 +3,7 @@ import CoreData
 import SwiftUI
 
 // MARK: - Device Type Enum
-enum DeviceType: String, CaseIterable, Codable {
+public enum DeviceType: String, CaseIterable, Codable {
     case iPhone15Pro = "iPhone 15 Pro"
     case iPhone15Plus = "iPhone 15 Plus"
     case iPadPro11 = "iPad Pro 11\""
@@ -15,7 +15,7 @@ enum DeviceType: String, CaseIterable, Codable {
 }
 
 // MARK: - Canvas State Enum
-enum CanvasState: String, CaseIterable, Codable {
+public enum CanvasState: String, CaseIterable, Codable {
     case editing = "editing"
     case aiProcessing = "ai-processing"
     case viewing = "viewing"
@@ -23,14 +23,14 @@ enum CanvasState: String, CaseIterable, Codable {
 }
 
 // MARK: - Canvas Dimensions
-struct CanvasDimensions: Codable {
+public struct CanvasDimensions: Codable {
     let width: Double
     let height: Double
     let pixelDensity: Double
 }
 
 // MARK: - Canvas Metadata
-struct CanvasMetadata: Codable {
+public struct CanvasMetadata: Codable {
     var createdAt: Date
     var modifiedAt: Date
     var tags: [String]
@@ -193,7 +193,8 @@ extension DesignCanvas {
         // Set appropriate z-index
         let maxZIndex = layersArray.map { $0.zIndex }.max() ?? -1
         layer.zIndex = Int32(maxZIndex + 1)
-        layer.canvas = self
+        // Set the relationship - TODO: Fix Layer.canvas property
+        // layer.canvas = self
         
         // Update modified date
         var currentMetadata = metadata

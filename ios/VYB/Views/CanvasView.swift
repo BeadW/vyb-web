@@ -1,6 +1,7 @@
 import SwiftUI
 import CoreGraphics
 import Foundation
+import CoreData
 
 /// iOS Canvas View - Core Graphics canvas with touch handling for design manipulation
 /// Implements T042: iOS Canvas View with SwiftUI and Core Graphics integration
@@ -21,7 +22,7 @@ struct CanvasView: View {
     let deviceType: DeviceType
     
     // MARK: - View Initialization
-    init(canvas: DesignCanvas, deviceType: DeviceType = .mobile) {
+    init(canvas: DesignCanvas, deviceType: DeviceType = .iPhone15Pro) {
         self.canvas = canvas
         self.deviceType = deviceType
     }
@@ -66,8 +67,8 @@ struct CanvasView: View {
                     .onChanged { value in
                         if selectedLayerId == nil {
                             canvasState.panOffset = CGSize(
-                                width: lastDragValue.width + value.translation.x,
-                                height: lastDragValue.height + value.translation.y
+                                width: lastDragValue.width + value.translation.width,
+                                height: lastDragValue.height + value.translation.height
                             )
                         }
                     }
@@ -91,13 +92,10 @@ struct CanvasView: View {
     
     // MARK: - Canvas Setup
     private func setupCanvas(geometry: GeometryProxy) {
-        // Initialize canvas based on device type and specifications
-        let deviceSpec = DeviceSpecifications.DEVICE_SPECS[deviceType]
-        let aspectRatio = deviceSpec?.aspectRatios.first
-        
+        // Initialize canvas with default mobile dimensions
         canvasState.canvasSize = CGSize(
-            width: aspectRatio?.width ?? geometry.size.width,
-            height: aspectRatio?.height ?? geometry.size.height
+            width: geometry.size.width,
+            height: geometry.size.height
         )
         
         // Load layers from canvas model
@@ -116,8 +114,8 @@ struct CanvasView: View {
         canvasState.updateLayerTransform(
             layerId: layer.id,
             transform: Transform(
-                x: layer.transform.x + gesture.translation.x / canvasState.zoom,
-                y: layer.transform.y + gesture.translation.y / canvasState.zoom,
+                x: layer.transform.x + gesture.translation.width / canvasState.zoom,
+                y: layer.transform.y + gesture.translation.height / canvasState.zoom,
                 scaleX: layer.transform.scaleX,
                 scaleY: layer.transform.scaleY,
                 rotation: layer.transform.rotation,
@@ -183,6 +181,8 @@ struct LayerView: View {
                 BackgroundLayerView(layer: layer)
             case .group:
                 GroupLayerView(layer: layer)
+            case .postText:
+                TextLayerView(layer: layer) // Use same view as text for now
             }
         }
         .scaleEffect(CGSize(width: layer.transform.scaleX, height: layer.transform.scaleY))
@@ -215,7 +215,7 @@ struct TextLayerView: View {
         if let text = layer.content.text {
             Text(text)
                 .font(.system(size: layer.content.fontSize ?? 16))
-                .foregroundColor(Color(hex: layer.style?.color ?? "#000000"))
+                .foregroundColor(Color(hex: layer.style.color ?? "#000000"))
                 .multilineTextAlignment(.center)
         }
     }
@@ -331,43 +331,13 @@ class CanvasViewModel: ObservableObject {
     }
 }
 
-// MARK: - Color Extension
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
 
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}
 
 // MARK: - Preview
 struct CanvasView_Previews: PreviewProvider {
     static var previews: some View {
-        // Create a sample canvas for preview
-        let context = PersistenceController.preview.container.viewContext
-        let sampleCanvas = DesignCanvas(context: context)
-        sampleCanvas.id = UUID().uuidString
-        
-        CanvasView(canvas: sampleCanvas, deviceType: .mobile)
+        // Simple preview without CoreData
+        Text("CanvasView Preview")
             .previewLayout(.sizeThatFits)
     }
 }

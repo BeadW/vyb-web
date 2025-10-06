@@ -1,0 +1,22 @@
+import io
+import os
+
+# Create a simple SVG icon
+svg_content = '''<?xml version="1.0" encoding="UTF-8"?>
+<svg width="1024" height="1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4A90E2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8E44AD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="180" ry="180" fill="url(#grad1)"/>
+  <text x="512" y="580" font-family="Arial, sans-serif" font-size="240" font-weight="bold" text-anchor="middle" fill="white">
+    <tspan fill="white">V</tspan><tspan fill="#F1C40F">Y</tspan><tspan fill="white">B</tspan>
+  </text>
+</svg>'''
+
+with open('vyb-icon.svg', 'w') as f:
+    f.write(svg_content)
+
+print("SVG icon created!")

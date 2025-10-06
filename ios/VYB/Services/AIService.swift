@@ -155,15 +155,6 @@ struct LayerData: Codable {
     let metadata: SimpleLayerMetadata
 }
 
-struct LayerTransform: Codable {
-    let x: Double
-    let y: Double
-    let scaleX: Double
-    let scaleY: Double
-    let rotation: Double
-    let opacity: Double
-}
-
 struct SimpleLayerMetadata: Codable {
     let source: String
     let createdAt: Date

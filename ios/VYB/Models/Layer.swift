@@ -9,10 +9,11 @@ public enum LayerType: String, CaseIterable, Codable {
     case background = "background"
     case shape = "shape"
     case group = "group"
+    case postText = "post_text"
 }
 
 // MARK: - Transform Properties
-public struct Transform: Codable {
+public struct Transform: Codable, Equatable {
     var x: Double
     var y: Double
     var scaleX: Double
@@ -113,7 +114,7 @@ public struct LayerMetadata: Codable {
 
 // MARK: - Core Data Entity
 @objc(Layer)
-public class Layer: NSManagedObject {
+public class Layer: NSManagedObject, Identifiable {
     
     // MARK: - Core Data Properties
     @NSManaged public var id: String
@@ -258,6 +259,8 @@ extension Layer {
             try validateShapeContent()
         case .group:
             try validateGroupContent()
+        case .postText:
+            try validateTextContent() // Post text uses same validation as regular text
         }
     }
     
@@ -343,7 +346,6 @@ extension Layer {
     }
     
     public func validateTransformBounds(canvasWidth: Double, canvasHeight: Double) throws {
-        let transform = self.transform
         let bounds = getBoundingBox()
         
         // Check if layer is completely outside canvas bounds (with some tolerance)
@@ -480,6 +482,10 @@ extension Layer {
             defaultStyle.color = "#000000"
         case .group:
             defaultContent.childLayerIds = []
+        case .postText:
+            defaultContent.text = "What's on your mind?"
+            defaultStyle.fontSize = 16
+            defaultStyle.color = "#1c1e21"
         }
         
         layer.content = defaultContent

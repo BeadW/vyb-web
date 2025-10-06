@@ -179,10 +179,7 @@ struct SimpleTransform: Codable {
     let opacity: Double
 }
 
-struct SimpleLayerMetadata: Codable {
-    let source: String
-    let createdAt: Date
-}
+// SimpleLayerMetadata is defined in AIService.swift
 
 // MARK: - Mock Response Types (for compatibility)
 

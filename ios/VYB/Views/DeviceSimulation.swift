@@ -5,7 +5,7 @@ import SwiftUI
 /// Contains all necessary types for device simulation functionality
 
 /// Enumeration of supported device types for device simulation
-public enum DeviceType: String, CaseIterable, Identifiable {
+public enum SimulationDeviceType: String, CaseIterable, Identifiable {
     case mobile = "mobile"
     case tablet = "tablet"
     case desktop = "desktop"
@@ -60,7 +60,7 @@ public struct DeviceSpecifications {
     }
     
     /// Comprehensive device specifications database
-    public static let DEVICE_SPECS: [DeviceType: DeviceSpec] = [
+    public static let DEVICE_SPECS: [SimulationDeviceType: DeviceSpec] = [
         .mobile: DeviceSpec(
             minWidth: 375,
             minHeight: 812,
@@ -110,12 +110,12 @@ public struct DeviceSpecifications {
 /// Device Simulation SwiftUI View for iOS
 struct DeviceSimulationView: View {
     
-    let deviceType: DeviceType
+    let deviceType: SimulationDeviceType
     @State private var currentScale: Double = 1.0
     @State private var isLandscape: Bool = false
     
     private var deviceSpec: DeviceSpecifications.DeviceSpec {
-        return DeviceSpecifications.DEVICE_SPECS[deviceType] ?? DeviceSpecifications.DEVICE_SPECS[.mobile]!
+        return DeviceSpecifications.DEVICE_SPECS[deviceType] ?? DeviceSpecifications.DEVICE_SPECS[SimulationDeviceType.mobile]!
     }
     
     private var displayDimensions: CGSize {
@@ -223,7 +223,7 @@ struct DeviceSimulationView: View {
 struct DeviceSimulationView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            DeviceSimulationView(deviceType: .mobile)
+            DeviceSimulationView(deviceType: SimulationDeviceType.mobile)
         }
     }
 }

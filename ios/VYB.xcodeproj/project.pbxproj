@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -14,6 +14,23 @@
 		A1022 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1023 /* Metal.framework */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		A240F3352E91299D0065AAB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1016 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1012;
+			remoteInfo = VYB;
+		};
+		A240F3422E9129B10065AAB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1016 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1012;
+			remoteInfo = VYB;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		A1002 /* VYBApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBApp.swift; sourceTree = "<group>"; };
 		A1004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -21,7 +38,21 @@
 		A1007 /* VYB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VYB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1021 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		A1023 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		A240F30D2E9128F00065AAB8 /* VYBUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBUITests.swift; sourceTree = "<group>"; };
+		A240F30F2E9129050065AAB8 /* CanvasInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasInteractionTests.swift; sourceTree = "<group>"; };
+		A240F3102E9129050065AAB8 /* DeviceSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSimulationTests.swift; sourceTree = "<group>"; };
+		A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VYBUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A240F33E2E9129B10065AAB8 /* VYBTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VYBTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A240F34E2E912AA80065AAB8 /* VYBTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = VYBTests; sourceTree = "<group>"; };
+		A240F34F2E912AB40065AAB8 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; sourceTree = "<group>"; };
+		A240F3502E912AC20065AAB8 /* VYBUITests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = VYBUITests; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A240F3182E91297C0065AAB8 /* VYBTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBTests; sourceTree = "<group>"; };
+		A240F3302E91299D0065AAB8 /* VYBUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBUITests; sourceTree = "<group>"; };
+		A240F33F2E9129B10065AAB8 /* VYBTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBTests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		A1008 /* Frameworks */ = {
@@ -33,13 +64,35 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A240F32C2E91299D0065AAB8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F33B2E9129B10065AAB8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		A1009 = {
 			isa = PBXGroup;
 			children = (
+				A240F3502E912AC20065AAB8 /* VYBUITests */,
+				A240F34F2E912AB40065AAB8 /* ios */,
+				A240F34E2E912AA80065AAB8 /* VYBTests */,
+				A240F3122E9129050065AAB8 /* VYBTests */,
+				A240F30E2E9128F00065AAB8 /* VYBUITests */,
 				A1010 /* VYB */,
+				A240F3182E91297C0065AAB8 /* VYBTests */,
+				A240F3302E91299D0065AAB8 /* VYBUITests */,
+				A240F33F2E9129B10065AAB8 /* VYBTests */,
 				A1011 /* Products */,
 				A1024 /* Frameworks */,
 			);
@@ -59,6 +112,8 @@
 			isa = PBXGroup;
 			children = (
 				A1007 /* VYB.app */,
+				A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */,
+				A240F33E2E9129B10065AAB8 /* VYBTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,6 +125,31 @@
 				A1023 /* Metal.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A240F30E2E9128F00065AAB8 /* VYBUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A240F30D2E9128F00065AAB8 /* VYBUITests.swift */,
+			);
+			path = VYBUITests;
+			sourceTree = "<group>";
+		};
+		A240F3112E9129050065AAB8 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				A240F30F2E9129050065AAB8 /* CanvasInteractionTests.swift */,
+				A240F3102E9129050065AAB8 /* DeviceSimulationTests.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		A240F3122E9129050065AAB8 /* VYBTests */ = {
+			isa = PBXGroup;
+			children = (
+				A240F3112E9129050065AAB8 /* UI */,
+			);
+			path = VYBTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -92,6 +172,52 @@
 			productReference = A1007 /* VYB.app */;
 			productType = "com.apple.product-type.application";
 		};
+		A240F32E2E91299D0065AAB8 /* VYBUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A240F3372E91299D0065AAB8 /* Build configuration list for PBXNativeTarget "VYBUITests" */;
+			buildPhases = (
+				A240F32B2E91299D0065AAB8 /* Sources */,
+				A240F32C2E91299D0065AAB8 /* Frameworks */,
+				A240F32D2E91299D0065AAB8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A240F3362E91299D0065AAB8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A240F3302E91299D0065AAB8 /* VYBUITests */,
+			);
+			name = VYBUITests;
+			packageProductDependencies = (
+			);
+			productName = VYBUITests;
+			productReference = A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A240F33D2E9129B10065AAB8 /* VYBTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A240F3442E9129B10065AAB8 /* Build configuration list for PBXNativeTarget "VYBTests" */;
+			buildPhases = (
+				A240F33A2E9129B10065AAB8 /* Sources */,
+				A240F33B2E9129B10065AAB8 /* Frameworks */,
+				A240F33C2E9129B10065AAB8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A240F3432E9129B10065AAB8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A240F33F2E9129B10065AAB8 /* VYBTests */,
+			);
+			name = VYBTests;
+			packageProductDependencies = (
+			);
+			productName = VYBTests;
+			productReference = A240F33E2E9129B10065AAB8 /* VYBTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -99,11 +225,19 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1600;
 				TargetAttributes = {
 					A1012 = {
 						CreatedOnToolsVersion = 16.0;
+					};
+					A240F32E2E91299D0065AAB8 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = A1012;
+					};
+					A240F33D2E9129B10065AAB8 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = A1012;
 					};
 				};
 			};
@@ -121,6 +255,8 @@
 			projectRoot = "";
 			targets = (
 				A1012 /* VYB */,
+				A240F32E2E91299D0065AAB8 /* VYBUITests */,
+				A240F33D2E9129B10065AAB8 /* VYBTests */,
 			);
 		};
 /* End PBXProject section */
@@ -131,6 +267,20 @@
 			buildActionMask = 2147483647;
 			files = (
 				A1005 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F32D2E91299D0065AAB8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F33C2E9129B10065AAB8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,7 +296,34 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A240F32B2E91299D0065AAB8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F33A2E9129B10065AAB8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A240F3362E91299D0065AAB8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1012 /* VYB */;
+			targetProxy = A240F3352E91299D0065AAB8 /* PBXContainerItemProxy */;
+		};
+		A240F3432E9129B10065AAB8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1012 /* VYB */;
+			targetProxy = A240F3422E9129B10065AAB8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		A1018 /* Debug */ = {
@@ -326,6 +503,92 @@
 			};
 			name = Release;
 		};
+		A240F3382E91299D0065AAB8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VYB;
+			};
+			name = Debug;
+		};
+		A240F3392E91299D0065AAB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VYB;
+			};
+			name = Release;
+		};
+		A240F3452E9129B10065AAB8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VYB";
+			};
+			name = Debug;
+		};
+		A240F3462E9129B10065AAB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VYB";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -343,6 +606,24 @@
 			buildConfigurations = (
 				A1018 /* Debug */,
 				A1019 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A240F3372E91299D0065AAB8 /* Build configuration list for PBXNativeTarget "VYBUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A240F3382E91299D0065AAB8 /* Debug */,
+				A240F3392E91299D0065AAB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A240F3442E9129B10065AAB8 /* Build configuration list for PBXNativeTarget "VYBTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A240F3452E9129B10065AAB8 /* Debug */,
+				A240F3462E9129B10065AAB8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

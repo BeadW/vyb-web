@@ -65,7 +65,10 @@ class CanvasInteractionTests: XCTestCase {
         
         // Test text layer manipulation - tap and drag
         let initialFrame = textLayer.frame
-        textLayer.press(forDuration: 0.5, thenDragTo: app.otherElements["Canvas View"].coordinate(withNormalizedOffset: CGVector(dx: 0.7, dy: 0.3)))
+        let canvasView = app.otherElements["Canvas View"]
+        let targetCoordinate = canvasView.coordinate(withNormalizedOffset: CGVector(dx: 0.7, dy: 0.3))
+        let startCoordinate = textLayer.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        startCoordinate.press(forDuration: 0.5, thenDragTo: targetCoordinate)
         
         // Verify text moved
         let newFrame = textLayer.frame
@@ -219,9 +222,10 @@ class CanvasInteractionTests: XCTestCase {
         
         // Try to drag text outside canvas bounds
         let canvasFrame = canvasView.frame
-        let outsidePoint = CGPoint(x: canvasFrame.maxX + 50, y: canvasFrame.maxY + 50)
+        let outsideCoordinate = canvasView.coordinate(withNormalizedOffset: CGVector(dx: 2.0, dy: 2.0))
         
-        textLayer.press(forDuration: 0.5, thenDragTo: canvasView.coordinate(withNormalizedOffset: CGVector(dx: 2.0, dy: 2.0)))
+        let startCoordinate = textLayer.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+        startCoordinate.press(forDuration: 0.5, thenDragTo: outsideCoordinate)
         
         // Verify text stays within canvas bounds
         let finalFrame = textLayer.frame
