@@ -1,345 +1,730 @@
-# =============================================================================
-# Multi-Platform Project .gitignore
-# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources
-# =============================================================================
+# =============================================================================# =============================================================================
 
-# =============================================================================
-# GENERAL
-# =============================================================================
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-*.log
-*.tmp
-*.temp
-*~
-.vscode/
-.idea/
-*.swp
-*.swo
+# Multi-Platform Project .gitignore# Multi-Platform Project .gitignore
 
-# =============================================================================
-# NODE.JS / WEB DEVELOPMENT
-# =============================================================================
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources
+
+# =============================================================================# =============================================================================
+
+
+
+# =============================================================================# =============================================================================
+
+# GENERAL# GENERAL
+
+# =============================================================================# =============================================================================
+
+.DS_Store.DS_Store
+
+.DS_Store?.DS_Store?
+
+._*._*
+
+.Spotlight-V100.Spotlight-V100
+
+.Trashes.Trashes
+
+ehthumbs.dbehthumbs.db
+
+Thumbs.dbThumbs.db
+
+*.log*.log
+
+*.tmp*.tmp
+
+*.temp*.temp
+
+*~*~
+
+.vscode/.vscode/
+
+.idea/.idea/
+
+*.swp*.swp
+
+*.swo*.swo
+
+
+
+# OS generated files# =============================================================================
+
+Icon?# NODE.JS / WEB DEVELOPMENT
+
+.DocumentRevisions-V100# =============================================================================
+
+.fseventsdnode_modules/
+
+.TemporaryItemsnpm-debug.log*
+
+.VolumeIcon.icnsyarn-debug.log*
+
+.com.apple.timemachine.donotpresentyarn-error.log*
+
 lerna-debug.log*
-.pnpm-debug.log*
 
-# Runtime data
+# IDE files.pnpm-debug.log*
+
+*.sublime-project
+
+*.sublime-workspace# Runtime data
+
 pids
-*.pid
-*.seed
-*.pid.lock
 
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
+# =============================================================================*.pid
 
-# nyc test coverage
+# NODE.JS / WEB DEVELOPMENT*.seed
+
+# =============================================================================*.pid.lock
+
+node_modules/
+
+npm-debug.log*# Coverage directory used by tools like istanbul
+
+yarn-debug.log*coverage/
+
+yarn-error.log**.lcov
+
+lerna-debug.log*
+
+.pnpm-debug.log*# nyc test coverage
+
 .nyc_output
 
-# Dependency directories
-jspm_packages/
+# Runtime data
 
-# Optional npm cache directory
+pids# Dependency directories
+
+*.pidjspm_packages/
+
+*.seed
+
+*.pid.lock# Optional npm cache directory
+
 .npm
 
-# Optional eslint cache
-.eslintcache
+# Coverage directory used by tools like istanbul
 
-# Microbundle cache
-.rpt2_cache/
+coverage/# Optional eslint cache
+
+*.lcov.eslintcache
+
+
+
+# nyc test coverage# Microbundle cache
+
+.nyc_output.rpt2_cache/
+
 .rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
 
-# Optional REPL history
-.node_repl_history
+# Dependency directories.rts2_cache_es/
 
-# Output of 'npm pack'
-*.tgz
+jspm_packages/.rts2_cache_umd/
 
-# Yarn Integrity file
-.yarn-integrity
 
-# dotenv environment variables file
-.env
+
+# Optional npm cache directory# Optional REPL history
+
+.npm.node_repl_history
+
+
+
+# Optional eslint cache# Output of 'npm pack'
+
+.eslintcache*.tgz
+
+
+
+# Optional REPL history# Yarn Integrity file
+
+.node_repl_history.yarn-integrity
+
+
+
+# Output of 'npm pack'# dotenv environment variables file
+
+*.tgz.env
+
 .env.local
-.env.development.local
-.env.test.local
+
+# Yarn Integrity file.env.development.local
+
+.yarn-integrity.env.test.local
+
 .env.production.local
 
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
+# dotenv environment variables file
 
-# Next.js build output
+.env# parcel-bundler cache (https://parceljs.org/)
+
+.env.local.cache
+
+.env.development.local.parcel-cache
+
+.env.test.local
+
+.env.production.local# Next.js build output
+
 .next
-out
 
-# Nuxt.js build / generate output
+# parcel-bundler cache (https://parceljs.org/)out
+
+.cache
+
+.parcel-cache# Nuxt.js build / generate output
+
 .nuxt
-dist
+
+# next.js build outputdist
+
+.next
 
 # Storybook build outputs
-.out
-.storybook-out
+
+# nuxt.js build output.out
+
+.nuxt.storybook-out
+
 storybook-static
 
-# Vite
+# vuepress build output
+
+.vuepress/dist# Vite
+
 .vite/
-vite.config.js.timestamp-*
-vite.config.ts.timestamp-*
 
-# =============================================================================
-# XCODE / IOS
-# =============================================================================
-# Build generated
-build/
-DerivedData/
+# Serverless directoriesvite.config.js.timestamp-*
 
-# Various settings
-*.pbxuser
-!default.pbxuser
-*.mode1v3
-!default.mode1v3
-*.mode2v3
-!default.mode2v3
-*.perspectivev3
-!default.perspectivev3
-xcuserdata/
+.serverlessvite.config.ts.timestamp-*
 
-# Other Xcode files
-*.moved-aside
-*.xccheckout
-*.xcscmblueprint
 
-# Obj-C/Swift specific
-*.hmap
-*.ipa
-*.dSYM.zip
-*.dSYM
 
-# CocoaPods
-Pods/
+# =============================================================================# =============================================================================
 
-# Carthage
-Carthage/Build/
+# XCODE / IOS# XCODE / IOS
 
-# Add this line if you want to avoid checking in source code from Carthage dependencies.
-# Carthage/Checkouts
+# =============================================================================# =============================================================================
 
-# fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
+# Build generated# Build generated
 
-# Code Injection
-iOSInjectionProject/
+build/build/
 
-# Swift Package Manager
-.swiftpm/
-Package.resolved
-*.xcworkspace
+DerivedData/DerivedData/
 
-# Playgrounds
-timeline.xctimeline
-playground.xcworkspace
 
-# Swift Package Manager
-Packages
-Package.pins
-Package.resolved
-.build/
 
-# =============================================================================
-# ANDROID
-# =============================================================================
-# Built application files
-*.apk
-*.ap_
-*.aab
+# Various settings# Various settings
 
-# Files for the ART/Dalvik VM
-*.dex
+*.pbxuser*.pbxuser
 
-# Java class files
-*.class
+!default.pbxuser!default.pbxuser
 
-# Generated files
-bin/
-gen/
-out/
-release/
+*.mode1v3*.mode1v3
 
-# Gradle files
-.gradle/
-build/
+!default.mode1v3!default.mode1v3
 
-# Local configuration file (sdk path, etc)
-local.properties
+*.mode2v3*.mode2v3
 
-# Proguard folder generated by Eclipse
-proguard/
+!default.mode2v3!default.mode2v3
 
-# Log Files
-*.log
+*.perspectivev3*.perspectivev3
 
-# Android Studio Navigation editor temp files
-.navigation/
+!default.perspectivev3!default.perspectivev3
 
-# Android Studio captures folder
-captures/
+xcuserdata/xcuserdata/
 
-# IntelliJ
-*.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/assetWizardSettings.xml
-.idea/dictionaries
-.idea/libraries
-# Android Studio 3 in .gitignore file.
-.idea/caches
-.idea/modules.xml
-# Comment next line if keeping position of elements in Navigation Editor is desired
-.idea/navEditor.xml
 
-# Keystore files
-# Uncomment the following lines if you do not want to check your keystore files in.
-*.jks
-*.keystore
 
-# External native build folder generated in Android Studio 2.2 and later
-.externalNativeBuild
+# Other Xcode files# Other Xcode files
 
-# Google Services (e.g. APIs or Firebase)
-google-services.json
+*.moved-aside*.moved-aside
 
-# Freeline
-freeline.py
-freeline/
-freeline_project_description.json
+*.xccheckout*.xccheckout
 
-# fastlane
-fastlane/report.xml
-fastlane/Preview.html
-fastlane/screenshots
-fastlane/test_output
-fastlane/readme.md
+*.xcscmblueprint*.xcscmblueprint
 
-# Version control
-vcs.xml
 
-# lint
-lint/intermediates/
-lint/generated/
-lint/outputs/
-lint/tmp/
-# lint/reports/
 
-# =============================================================================
-# TYPESCRIPT / JAVASCRIPT BUILD OUTPUTS
-# =============================================================================
-*.tsbuildinfo
-.tsbuild/
-.eslintcache
-.parcel-cache/
-.cache/
-dist/
-build/
-public/build/
+# Obj-C/Swift specific# Obj-C/Swift specific
 
-# =============================================================================
-# TESTING
-# =============================================================================
-# Jest
-coverage/
-.nyc_output/
+*.hmap*.hmap
 
-# Playwright
-test-results/
-playwright-report/
-playwright/.cache/
+*.ipa*.ipa
 
-# =============================================================================
-# DATABASE & CACHE
-# =============================================================================
-*.sqlite
-*.sqlite3
-*.db
-*.db-journal
-*.db-wal
-*.db-shm
+*.dSYM.zip*.dSYM.zip
 
-# =============================================================================
-# DEPLOYMENT & CI/CD
-# =============================================================================
-.vercel
-.netlify/
+*.dSYM*.dSYM
 
-# =============================================================================
-# DOCUMENTATION
-# =============================================================================
-docs/build/
-.docusaurus/
 
-# =============================================================================
-# SPECIFIC TO THIS PROJECT
-# =============================================================================
-# AI API Keys (should be in environment variables)
-.env.ai
-.env.gemini
 
-# Local development databases
-local.sqlite
-dev.db
+# CocoaPods# CocoaPods
 
-# Canvas cache files
-canvas-cache/
-render-cache/
+Pods/Pods/
 
-# Device simulation assets (if dynamically generated)
-device-assets/generated/
 
-# Performance profiling outputs
-profiling/
-*.prof
 
-# Temporary design files
-temp-designs/
-*.tmp.json
+# Carthage# Carthage
 
-# Local storage simulation files (for testing)
-local-storage-mock/
+Carthage/Build/Carthage/Build/
 
-# =============================================================================
-# SHARED SCHEMAS GENERATED FILES
-# =============================================================================
-shared/schemas/generated/
-shared/types/generated/
 
-# =============================================================================
-# PLATFORM SPECIFIC OUTPUTS
-# =============================================================================
-# Web build outputs
-web/dist/
-web/build/
-web/public/static/js/
-web/public/static/css/
 
-# iOS build outputs
-ios/DerivedData/
-ios/build/
+# Add this line if you want to avoid checking in source code from Carthage dependencies.# Add this line if you want to avoid checking in source code from Carthage dependencies.
 
-# Android build outputs
-android/app/build/
-android/build/
+# Carthage/Checkouts# Carthage/Checkouts
+
+
+
+# fastlane# fastlane
+
+fastlane/report.xmlfastlane/report.xml
+
+fastlane/Preview.htmlfastlane/Preview.html
+
+fastlane/screenshots/**/*.pngfastlane/screenshots/**/*.png
+
+fastlane/test_outputfastlane/test_output
+
+
+
+# Code Injection# Code Injection
+
+iOSInjectionProject/iOSInjectionProject/
+
+
+
+# Swift Package Manager# Swift Package Manager
+
+.swiftpm/.swiftpm/
+
+Package.resolvedPackage.resolved
+
+*.xcworkspace*.xcworkspace
+
+
+
+# Playgrounds# Playgrounds
+
+timeline.xctimelinetimeline.xctimeline
+
+playground.xcworkspaceplayground.xcworkspace
+
+
+
+# Swift Package Manager# Swift Package Manager
+
+PackagesPackages
+
+Package.pinsPackage.pins
+
+Package.resolvedPackage.resolved
+
+.build/.build/
+
+
+
+# =============================================================================# =============================================================================
+
+# ANDROID# ANDROID
+
+# =============================================================================# =============================================================================
+
+# Built application files# Built application files
+
+*.apk*.apk
+
+*.ap_*.ap_
+
+*.aab*.aab
+
+
+
+# Files for the ART/Dalvik VM# Files for the ART/Dalvik VM
+
+*.dex*.dex
+
+
+
+# Java class files# Java class files
+
+*.class*.class
+
+
+
+# Generated files# Generated files
+
+bin/bin/
+
+gen/gen/
+
+out/out/
+
+release/release/
+
+
+
+# Gradle files# Gradle files
+
+.gradle/.gradle/
+
+build/build/
+
+
+
+# Local configuration file (sdk path, etc)# Local configuration file (sdk path, etc)
+
+local.propertieslocal.properties
+
+
+
+# Proguard folder generated by Eclipse# Proguard folder generated by Eclipse
+
+proguard/proguard/
+
+
+
+# Log Files# Log Files
+
+*.log*.log
+
+
+
+# Android Studio Navigation editor temp files# Android Studio Navigation editor temp files
+
+.navigation/.navigation/
+
+
+
+# Android Studio captures folder# Android Studio captures folder
+
+captures/captures/
+
+
+
+# IntelliJ# IntelliJ
+
+*.iml*.iml
+
+.idea/workspace.xml.idea/workspace.xml
+
+.idea/tasks.xml.idea/tasks.xml
+
+.idea/gradle.xml.idea/gradle.xml
+
+.idea/assetWizardSettings.xml.idea/assetWizardSettings.xml
+
+.idea/dictionaries.idea/dictionaries
+
+.idea/libraries.idea/libraries
+
+# Android Studio 3 in .gitignore file.# Android Studio 3 in .gitignore file.
+
+.idea/caches.idea/caches
+
+.idea/modules.xml.idea/modules.xml
+
+# Comment next line if keeping position of elements in Navigation Editor is desired# Comment next line if keeping position of elements in Navigation Editor is desired
+
+.idea/navEditor.xml.idea/navEditor.xml
+
+
+
+# Keystore files# Keystore files
+
+# Uncomment the following lines if you do not want to check your keystore files in.# Uncomment the following lines if you do not want to check your keystore files in.
+
+*.jks*.jks
+
+*.keystore*.keystore
+
+
+
+# External native build folder generated in Android Studio 2.2 and later# External native build folder generated in Android Studio 2.2 and later
+
+.externalNativeBuild.externalNativeBuild
+
+
+
+# Google Services (e.g. APIs or Firebase)# Google Services (e.g. APIs or Firebase)
+
+google-services.jsongoogle-services.json
+
+
+
+# Freeline# Freeline
+
+freeline.pyfreeline.py
+
+freeline/freeline/
+
+freeline_project_description.jsonfreeline_project_description.json
+
+
+
+# fastlane# fastlane
+
+fastlane/report.xmlfastlane/report.xml
+
+fastlane/Preview.htmlfastlane/Preview.html
+
+fastlane/screenshotsfastlane/screenshots
+
+fastlane/test_outputfastlane/test_output
+
+fastlane/readme.mdfastlane/readme.md
+
+
+
+# Version control# Version control
+
+vcs.xmlvcs.xml
+
+
+
+# lint# lint
+
+lint/intermediates/lint/intermediates/
+
+lint/generated/lint/generated/
+
+lint/outputs/lint/outputs/
+
+lint/tmp/lint/tmp/
+
+# lint/reports/# lint/reports/
+
+
+
+# =============================================================================# =============================================================================
+
+# TYPESCRIPT / JAVASCRIPT BUILD OUTPUTS# TYPESCRIPT / JAVASCRIPT BUILD OUTPUTS
+
+# =============================================================================# =============================================================================
+
+*.tsbuildinfo*.tsbuildinfo
+
+.tsbuild/.tsbuild/
+
+.eslintcache.eslintcache
+
+.parcel-cache/.parcel-cache/
+
+.cache/.cache/
+
+dist/dist/
+
+build/build/
+
+public/build/public/build/
+
+
+
+# =============================================================================# =============================================================================
+
+# TESTING# TESTING
+
+# =============================================================================# =============================================================================
+
+# Jest# Jest
+
+coverage/coverage/
+
+.nyc_output/.nyc_output/
+
+
+
+# Playwright# Playwright
+
+test-results/test-results/
+
+playwright-report/playwright-report/
+
+playwright/.cache/playwright/.cache/
+
+
+
+# =============================================================================# =============================================================================
+
+# DATABASE & CACHE# DATABASE & CACHE
+
+# =============================================================================# =============================================================================
+
+*.sqlite*.sqlite
+
+*.sqlite3*.sqlite3
+
+*.db*.db
+
+*.db-journal*.db-journal
+
+*.db-wal*.db-wal
+
+*.db-shm*.db-shm
+
+
+
+# =============================================================================# =============================================================================
+
+# DEPLOYMENT & CI/CD# DEPLOYMENT & CI/CD
+
+# =============================================================================# =============================================================================
+
+.vercel.vercel
+
+.netlify/.netlify/
+
+
+
+# =============================================================================# =============================================================================
+
+# DOCUMENTATION# DOCUMENTATION
+
+# =============================================================================# =============================================================================
+
+docs/build/docs/build/
+
+.docusaurus/.docusaurus/
+
+
+
+# =============================================================================# =============================================================================
+
+# SPECIFIC TO THIS PROJECT# SPECIFIC TO THIS PROJECT
+
+# =============================================================================# =============================================================================
+
+# AI API Keys (should be in environment variables)# AI API Keys (should be in environment variables)
+
+.env.ai.env.ai
+
+.env.gemini.env.gemini
+
+
+
+# Local development databases# Local development databases
+
+local.sqlitelocal.sqlite
+
+dev.dbdev.db
+
+
+
+# Canvas cache files# Canvas cache files
+
+canvas-cache/canvas-cache/
+
+render-cache/render-cache/
+
+
+
+# Device simulation assets (if dynamically generated)# Device simulation assets (if dynamically generated)
+
+device-assets/generated/device-assets/generated/
+
+
+
+# Performance profiling outputs# Performance profiling outputs
+
+profiling/profiling/
+
+*.prof*.prof
+
+
+
+# Temporary design files# Temporary design files
+
+temp-designs/temp-designs/
+
+*.tmp.json*.tmp.json
+
+
+
+# Local storage simulation files (for testing)# Local storage simulation files (for testing)
+
+local-storage-mock/local-storage-mock/
+
+
+
+# =============================================================================# =============================================================================
+
+# SHARED SCHEMAS GENERATED FILES# SHARED SCHEMAS GENERATED FILES
+
+# =============================================================================# =============================================================================
+
+shared/schemas/generated/shared/schemas/generated/
+
+shared/types/generated/shared/types/generated/
+
+
+
+# =============================================================================# =============================================================================
+
+# PLATFORM SPECIFIC OUTPUTS# PLATFORM SPECIFIC OUTPUTS
+
+# =============================================================================# =============================================================================
+
+# Web build outputs# Web build outputs
+
+web/dist/web/dist/
+
+web/build/web/build/
+
+web/public/static/js/web/public/static/js/
+
+web/public/static/css/web/public/static/css/
+
+
+
+# iOS build outputs# iOS build outputs
+
+ios/DerivedData/ios/DerivedData/
+
+ios/build/ios/build/
+
+
+
+# Android build outputs# Android build outputs
+
+android/app/build/android/app/build/
+
+android/build/android/build/
+
+# Screenshots and temporary documentation files
+*.png
+*.jpg
+*.jpeg
+!ios/VYB/Assets.xcassets/**/*.png
+!ios/VYB/Assets.xcassets/**/*.jpg
+!web/public/favicon.ico
+!web/public/logo*.png
+
+# Shell scripts (except development helpers)
+*.sh
+!ios_dev_helper.sh
+
+# Temporary verification files
+*-verification.png
+*-screenshot.png
+*-current.png
+*-state.png
+*-interface.png
+current-app-state.png
+vyb-current-state.png
+vyb-screenshot.png
+ui-test-*.png
+test-*.png
+
+# Additional iOS build artifacts (comprehensive exclusions)
+ios/SwiftExplicitPrecompiledModules/
+ios/ModuleCache.noindex/
+ios/SDKStatCaches.noindex/
+ios/Index.noindex/
+ios/CompilationCache.noindex/
+ios/Logs/
+*.pcm
+*.swiftdoc
+*.swiftmodule
+*.swiftsourceinfo
+*.abi.json
+*.strings
+*.stringsdata
+ios/*.xcworkspace/xcuserdata/

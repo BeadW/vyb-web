@@ -9,7 +9,15 @@ struct ContentView: View {
     @State private var showTextStylePanel = false
     @State private var showTextStyleModal = false
     @State private var showLayerManagerModal = false
+    @State private var showLayerEditorModal = false
     @State private var selectedLayerForStyling: SimpleLayer?
+    @State private var selectedLayerForEditing: String?
+    
+    // Computed property to get current selected layer as single source of truth
+    private var currentSelectedLayer: SimpleLayer? {
+        guard let selectedId = selectedLayerForEditing else { return nil }
+        return layers.first(where: { $0.id == selectedId })
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -120,7 +128,19 @@ struct ContentView: View {
                                         set: { layers[index] = $0 }
                                     ),
                                     canvasWidth: canvasWidth,
-                                    canvasHeight: canvasHeight
+                                    canvasHeight: canvasHeight,
+                                    selectedLayerForEditing: selectedLayerForEditing,
+                                    onEditLayer: { layer in
+                                        selectedLayerForEditing = layer.id
+                                        showLayerEditorModal = true
+                                    },
+                                    onToggleSelection: {
+                                        if selectedLayerForEditing == layer.id {
+                                            selectedLayerForEditing = nil
+                                        } else {
+                                            selectedLayerForEditing = layer.id
+                                        }
+                                    }
                                 )
                             }
                         }
@@ -212,15 +232,14 @@ struct ContentView: View {
                         .cornerRadius(20)
                     }
                     
-                    if let selectedLayer = layers.first(where: { $0.isSelected && $0.type == "text" }) {
+                    if selectedLayerForEditing != nil {
                         Button(action: {
-                            selectedLayerForStyling = selectedLayer
-                            showTextStyleModal = true
+                            showLayerEditorModal = true
                         }) {
                             HStack(spacing: 4) {
-                                Image(systemName: "textformat")
+                                Image(systemName: "pencil")
                                     .font(.system(size: 16, weight: .medium))
-                                Text("Style")
+                                Text("Edit")
                                     .font(.system(size: 14, weight: .medium))
                             }
                             .padding(.horizontal, 12)
@@ -259,28 +278,30 @@ struct ContentView: View {
                             HStack(spacing: 8) {
                                 ForEach(layers.sorted(by: { $0.zOrder > $1.zOrder }), id: \.id) { layer in
                                     Button(action: {
-                                        // Toggle selection
-                                        if let index = layers.firstIndex(where: { $0.id == layer.id }) {
-                                            layers[index].isSelected.toggle()
+                                        // Toggle selection using single source of truth
+                                        if selectedLayerForEditing == layer.id {
+                                            selectedLayerForEditing = nil
+                                        } else {
+                                            selectedLayerForEditing = layer.id
                                         }
                                     }) {
                                         VStack(spacing: 4) {
                                             Image(systemName: layer.type == "text" ? "textformat" : layer.type == "image" ? "photo" : layer.type == "shape" ? "circle.fill" : "rectangle.fill")
                                                 .font(.system(size: 14))
-                                                .foregroundColor(layer.isSelected ? .white : .primary)
+                                                .foregroundColor(selectedLayerForEditing == layer.id ? .white : .primary)
                                             
                                             Text(layer.content.isEmpty ? "Layer" : String(layer.content.prefix(6)))
                                                 .font(.caption2)
                                                 .lineLimit(1)
-                                                .foregroundColor(layer.isSelected ? .white : .primary)
+                                                .foregroundColor(selectedLayerForEditing == layer.id ? .white : .primary)
                                             
                                             Text("Z:\(layer.zOrder)")
                                                 .font(.caption2)
-                                                .foregroundColor(layer.isSelected ? .white : .secondary)
+                                                .foregroundColor(selectedLayerForEditing == layer.id ? .white : .secondary)
                                         }
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 6)
-                                        .background(layer.isSelected ? Color.blue : Color.gray.opacity(0.15))
+                                        .background(selectedLayerForEditing == layer.id ? Color.blue : Color.gray.opacity(0.15))
                                         .cornerRadius(8)
                                     }
                                 }
@@ -296,21 +317,65 @@ struct ContentView: View {
             Spacer()
         }
         .background(Color(.systemGroupedBackground))
-        .sheet(isPresented: $showTextStyleModal) {
-            if let layer = selectedLayerForStyling {
-                TextStyleModalView(layer: Binding(
-                    get: { layer },
-                    set: { updatedLayer in
-                        if let index = layers.firstIndex(where: { $0.id == layer.id }) {
-                            layers[index] = updatedLayer
+
+        .sheet(isPresented: $showLayerManagerModal) {
+            LayerManagerModalView(
+                layers: $layers,
+                selectedLayerForEditing: $selectedLayerForEditing,
+                onEditLayer: { layer in
+                    DispatchQueue.main.async {
+                        // Re-fetch the latest layer data to ensure it exists
+                        if let currentLayer = layers.first(where: { $0.id == layer.id }) {
+                            selectedLayerForEditing = currentLayer.id
+                            showLayerEditorModal = true
+                        } else {
+                            print("Layer not found in manager: \(layer.id)")
                         }
-                        selectedLayerForStyling = updatedLayer
+                    }
+                }
+            )
+        }
+        .sheet(isPresented: $showLayerEditorModal) {
+            if let layer = currentSelectedLayer {
+                LayerEditorModalView(layer: Binding<SimpleLayer>(
+                    get: {
+                        // Always get the latest layer data from the array by ID
+                        return layers.first(where: { $0.id == layer.id }) ?? layer
+                    },
+                    set: { newValue in
+                        if let currentIndex = layers.firstIndex(where: { $0.id == newValue.id }) {
+                            layers[currentIndex] = newValue
+                        }
                     }
                 ))
+                .onDisappear {
+                    selectedLayerForEditing = nil
+                    showLayerEditorModal = false
+                }
+            } else {
+                // Fallback error view - this should never happen with proper state management
+                NavigationView {
+                    VStack {
+                        Text("No layer selected for editing")
+                            .foregroundColor(.red)
+                            .font(.headline)
+                        
+                        Text("Available layers: \(layers.count)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .navigationTitle("Error")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Close") {
+                                selectedLayerForEditing = nil
+                                showLayerEditorModal = false
+                            }
+                        }
+                    }
+                }
             }
-        }
-        .sheet(isPresented: $showLayerManagerModal) {
-            LayerManagerModalView(layers: $layers)
         }
     }
     
@@ -327,6 +392,8 @@ struct ContentView: View {
             zOrder: layers.count
         )
         layers.append(newLayer)
+        
+        // Don't auto-select or show modal - let user manually tap to edit
     }
     
     private func moveLayerToFront(_ layerId: String) {
@@ -416,7 +483,6 @@ struct SimpleLayer: Identifiable {
     var content: String
     var x: Double
     var y: Double
-    var isSelected: Bool = false
     var zOrder: Int = 0
     
     // Text styling properties
@@ -435,11 +501,14 @@ struct SimpleLayer: Identifiable {
 
 struct LayerManagementRow: View {
     @Binding var layer: SimpleLayer
+    let selectedLayerForEditing: String?
     let onDelete: () -> Void
+    let onEdit: () -> Void
     let onMoveToFront: () -> Void
     let onMoveToBack: () -> Void
     let onMoveUp: () -> Void
     let onMoveDown: () -> Void
+    let onToggleSelection: () -> Void
     
     var body: some View {
         VStack(spacing: 6) {
@@ -486,10 +555,20 @@ struct LayerManagementRow: View {
                 Spacer()
                 
                 // Selection indicator
-                if layer.isSelected {
+                if selectedLayerForEditing == layer.id {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.blue)
                         .font(.system(size: 16))
+                }
+                
+                // Edit button - only show when single layer is selected
+                if selectedLayerForEditing == layer.id {
+                    Button(action: onEdit) {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.blue)
+                            .font(.system(size: 14))
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 
                 // Delete button
@@ -502,7 +581,7 @@ struct LayerManagementRow: View {
             }
             
             // Z-order controls
-            if layer.isSelected {
+            if selectedLayerForEditing == layer.id {
                 HStack(spacing: 8) {
                     Button("To Back") { onMoveToBack() }
                         .font(.system(size: 11))
@@ -539,22 +618,24 @@ struct LayerManagementRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(layer.isSelected ? Color.blue.opacity(0.1) : Color.white)
+        .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.1) : Color.white)
         .cornerRadius(6)
         .onTapGesture {
-            layer.isSelected.toggle()
+            onToggleSelection()
         }
     }
 }
 
+// Helper view to extract sheet content and avoid compiler complexity
 struct LayerView: View {
     @Binding var layer: SimpleLayer
     let canvasWidth: Double
     let canvasHeight: Double
+    let selectedLayerForEditing: String?
+    let onEditLayer: (SimpleLayer) -> Void
+    let onToggleSelection: () -> Void
     @State private var dragOffset = CGSize.zero
     @State private var isDragging = false
-    @State private var isEditingText = false
-    @State private var editingContent = ""
     
     var body: some View {
         Group {
@@ -572,16 +653,16 @@ struct LayerView: View {
                         y: layer.hasShadow ? 1 : 0
                     )
                     .padding(8)
-                    .background(layer.isSelected ? Color.blue.opacity(0.2) : Color.clear)
-                    .border(layer.isSelected ? Color.blue : Color.clear, width: 2)
+                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
                     .cornerRadius(4)
             } else if layer.type == "image" {
                 Image(systemName: "photo")
                     .font(.system(size: 40))
                     .foregroundColor(.blue)
                     .padding(8)
-                    .background(layer.isSelected ? Color.blue.opacity(0.2) : Color.clear)
-                    .border(layer.isSelected ? Color.blue : Color.clear, width: 2)
+                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
                     .cornerRadius(4)
             } else if layer.type == "shape" {
                 Circle()
@@ -589,7 +670,7 @@ struct LayerView: View {
                     .frame(width: 50, height: 50)
                     .overlay(
                         Circle()
-                            .stroke(layer.isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
                     )
             } else if layer.type == "background" {
                 Rectangle()
@@ -598,7 +679,7 @@ struct LayerView: View {
                     .cornerRadius(4)
                     .overlay(
                         Rectangle()
-                            .stroke(layer.isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
                             .cornerRadius(4)
                     )
             }
@@ -625,58 +706,16 @@ struct LayerView: View {
                 }
         )
         .onTapGesture {
-            layer.isSelected.toggle()
+            onToggleSelection()
         }
         .onTapGesture(count: 2) {
-            if layer.type == "text" {
-                editingContent = layer.content
-                isEditingText = true
-            }
+            // Double tap to open layer editor
+            onEditLayer(layer)
         }
-        .overlay(
-            // Text editing overlay
-            Group {
-                if isEditingText && layer.type == "text" {
-                    VStack(spacing: 8) {
-                        TextEditor(text: $editingContent)
-                            .font(.system(size: layer.fontSize, weight: layer.fontWeight))
-                            .multilineTextAlignment(layer.textAlignment)
-                            .frame(minWidth: 120, minHeight: 60)
-                            .padding(8)
-                            .background(Color.white)
-                            .cornerRadius(8)
-                            .shadow(radius: 4)
-                        
-                        HStack(spacing: 12) {
-                            Button("Cancel") {
-                                isEditingText = false
-                                editingContent = ""
-                            }
-                            .font(.system(size: 12))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(6)
-                            
-                            Button("Save") {
-                                layer.content = editingContent
-                                isEditingText = false
-                                editingContent = ""
-                            }
-                            .font(.system(size: 12))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(6)
-                        }
-                    }
-                    .offset(y: -80)
-                }
-            }
-        )
     }
 }
+
+
 
 // MARK: - Modal Views
 
@@ -865,6 +904,8 @@ struct TextStyleModalView: View {
 
 struct LayerManagerModalView: View {
     @Binding var layers: [SimpleLayer]
+    @Binding var selectedLayerForEditing: String?
+    let onEditLayer: (SimpleLayer) -> Void
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -894,9 +935,7 @@ struct LayerManagerModalView: View {
                                 .font(.system(size: 18, weight: .semibold))
                             Spacer()
                             Button("Deselect All") {
-                                for i in layers.indices {
-                                    layers[i].isSelected = false
-                                }
+                                selectedLayerForEditing = nil
                             }
                             .font(.system(size: 14))
                             .foregroundColor(.blue)
@@ -911,8 +950,15 @@ struct LayerManagerModalView: View {
                                                 get: { layers[index] },
                                                 set: { layers[index] = $0 }
                                             ),
+                                            selectedLayerForEditing: selectedLayerForEditing,
                                             onDelete: {
                                                 layers.remove(at: index)
+                                                if selectedLayerForEditing == layer.id {
+                                                    selectedLayerForEditing = nil
+                                                }
+                                            },
+                                            onEdit: {
+                                                onEditLayer(layer)
                                             },
                                             onMoveToFront: {
                                                 moveLayerToFront(layer.id)
@@ -925,6 +971,13 @@ struct LayerManagerModalView: View {
                                             },
                                             onMoveDown: {
                                                 moveLayerDown(layer.id)
+                                            },
+                                            onToggleSelection: {
+                                                if selectedLayerForEditing == layer.id {
+                                                    selectedLayerForEditing = nil
+                                                } else {
+                                                    selectedLayerForEditing = layer.id
+                                                }
                                             }
                                         )
                                     }
@@ -981,6 +1034,382 @@ struct LayerManagerModalView: View {
         } else {
             layers[index].zOrder = currentZ - 1
         }
+    }
+}
+
+struct LayerEditorModalView: View {
+    @Binding var layer: SimpleLayer
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 20) {
+                    // Layer Info Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Layer Information")
+                            .font(.system(size: 18, weight: .semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityIdentifier("Layer Information")
+                            
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Layer Type")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            HStack {
+                                Group {
+                                    if layer.type == "text" {
+                                        Image(systemName: "textformat")
+                                            .foregroundColor(.black)
+                                    } else if layer.type == "image" {
+                                        Image(systemName: "photo")
+                                            .foregroundColor(.blue)
+                                    } else if layer.type == "shape" {
+                                        Image(systemName: "circle.fill")
+                                            .foregroundColor(.red)
+                                    } else if layer.type == "background" {
+                                        Image(systemName: "rectangle.fill")
+                                            .foregroundColor(.yellow)
+                                    }
+                                }
+                                .font(.system(size: 18))
+                                
+                                Text(layer.type.capitalized)
+                                    .font(.system(size: 16, weight: .medium))
+                                
+                                Spacer()
+                                
+                                Text("Z: \(layer.zOrder)")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(6)
+                            }
+                        }
+                        
+                        // Content Editor
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Content")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            TextField("Layer content", text: $layer.content)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    
+                    // Type-specific settings
+                    if layer.type == "text" {
+                        TextLayerSettings(layer: $layer)
+                    } else if layer.type == "image" {
+                        ImageLayerSettings(layer: $layer)
+                    } else if layer.type == "shape" {
+                        ShapeLayerSettings(layer: $layer)
+                    } else if layer.type == "background" {
+                        BackgroundLayerSettings(layer: $layer)
+                    }
+                }
+                .padding(20)
+            }
+            .navigationTitle("Edit Layer")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+}
+
+struct TextLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    private let fontWeights: [Font.Weight] = [.ultraLight, .thin, .light, .regular, .medium, .semibold, .bold, .heavy, .black]
+    private let textColors: [Color] = [.black, .white, .red, .blue, .green, .orange, .purple, .pink, .yellow]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Text Styling")
+                .font(.system(size: 18, weight: .semibold))
+            
+            // Font Size
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Font Size: \(Int(layer.fontSize))pt")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                Slider(value: $layer.fontSize, in: 8...72)
+            }
+            
+            // Font Weight
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Font Weight")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(fontWeights, id: \.self) { weight in
+                            Button(action: { layer.fontWeight = weight }) {
+                                Text(weightName(weight))
+                                    .font(.system(size: 12, weight: weight))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(layer.fontWeight == weight ? Color.blue : Color.gray.opacity(0.2))
+                                    .foregroundColor(layer.fontWeight == weight ? .white : .primary)
+                                    .cornerRadius(6)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+            }
+            
+            // Text Color
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Color")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(textColors, id: \.self) { color in
+                            Button(action: { layer.textColor = color }) {
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 32, height: 32)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(layer.textColor == color ? Color.blue : Color.gray, lineWidth: 2)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+            }
+            
+            // Text Style Options
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Style")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                
+                HStack(spacing: 12) {
+                    Button(action: { layer.isItalic.toggle() }) {
+                        Text("Italic")
+                            .font(.system(size: 14, weight: .medium))
+                            .italic()
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(layer.isItalic ? Color.blue : Color.gray.opacity(0.2))
+                            .foregroundColor(layer.isItalic ? .white : .primary)
+                            .cornerRadius(8)
+                    }
+                    
+                    Button(action: { layer.isUnderlined.toggle() }) {
+                        Text("Underline")
+                            .font(.system(size: 14, weight: .medium))
+                            .underline()
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(layer.isUnderlined ? Color.blue : Color.gray.opacity(0.2))
+                            .foregroundColor(layer.isUnderlined ? .white : .primary)
+                            .cornerRadius(8)
+                    }
+                }
+            }
+            
+            // Text Alignment
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Alignment")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                HStack(spacing: 12) {
+                    ForEach([TextAlignment.leading, .center, .trailing], id: \.self) { alignment in
+                        Button(action: { layer.textAlignment = alignment }) {
+                            Image(systemName: alignmentIcon(alignment))
+                                .font(.system(size: 18))
+                                .padding(12)
+                                .background(layer.textAlignment == alignment ? Color.blue : Color.gray.opacity(0.2))
+                                .foregroundColor(layer.textAlignment == alignment ? .white : .primary)
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+            }
+            
+            // Text Effects
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Effects")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                
+                VStack(spacing: 12) {
+                    // Shadow
+                    HStack {
+                        Button(action: { layer.hasShadow.toggle() }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: layer.hasShadow ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(layer.hasShadow ? .blue : .gray)
+                                Text("Drop Shadow")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Spacer()
+                        
+                        if layer.hasShadow {
+                            HStack(spacing: 8) {
+                                ForEach([Color.gray, .black, .red, .blue], id: \.self) { color in
+                                    Button(action: { layer.shadowColor = color }) {
+                                        Circle()
+                                            .fill(color)
+                                            .frame(width: 20, height: 20)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(layer.shadowColor == color ? Color.blue : Color.clear, lineWidth: 2)
+                                            )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Stroke
+                    HStack {
+                        Button(action: { layer.hasStroke.toggle() }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: layer.hasStroke ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(layer.hasStroke ? .blue : .gray)
+                                Text("Text Stroke")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Spacer()
+                        
+                        if layer.hasStroke {
+                            HStack(spacing: 8) {
+                                                                ForEach([Color.white, .black, .red, .blue], id: \.self) { color in
+                                    Button(action: { layer.strokeColor = color }) {
+                                        Circle()
+                                            .fill(color)
+                                            .frame(width: 20, height: 20)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(layer.strokeColor == color ? Color.blue : Color.clear, lineWidth: 2)
+                                            )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+    
+    private func weightName(_ weight: Font.Weight) -> String {
+        switch weight {
+        case .ultraLight: return "UL"
+        case .thin: return "Thin"
+        case .light: return "Light"
+        case .regular: return "Reg"
+        case .medium: return "Med"
+        case .semibold: return "Semi"
+        case .bold: return "Bold"
+        case .heavy: return "Heavy"
+        case .black: return "Black"
+        default: return "Reg"
+        }
+    }
+    
+    private func alignmentIcon(_ alignment: TextAlignment) -> String {
+        switch alignment {
+        case .leading: return "text.alignleft"
+        case .center: return "text.aligncenter"
+        case .trailing: return "text.alignright"
+        }
+    }
+}
+
+struct ImageLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Image Settings")
+                .font(.system(size: 18, weight: .semibold))
+            
+            Text("Image upload and editing features coming soon!")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct ShapeLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Shape Settings")
+                .font(.system(size: 18, weight: .semibold))
+            
+            Text("Shape customization features coming soon!")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct BackgroundLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Background Settings")
+                .font(.system(size: 18, weight: .semibold))
+            
+            Text("Background customization features coming soon!")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
     }
 }
 

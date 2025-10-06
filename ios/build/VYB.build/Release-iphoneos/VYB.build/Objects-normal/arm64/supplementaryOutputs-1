@@ -1,0 +1,12 @@
+{
+  "/Users/brad/Code/vyb-web/ios/VYB/ContentView.swift" : {
+    "abi-baseline-json" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB.abi.json",
+    "const-values" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.swiftconstvalues",
+    "dependencies" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.d",
+    "diagnostics" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.dia",
+    "objc-header" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-Swift.h",
+    "swiftdoc" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB.swiftdoc",
+    "swiftmodule" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB.swiftmodule",
+    "swiftsourceinfo" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB.swiftsourceinfo"
+  }
+}

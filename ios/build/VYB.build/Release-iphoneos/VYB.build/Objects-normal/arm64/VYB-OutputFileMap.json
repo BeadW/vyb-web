@@ -1,0 +1,26 @@
+{
+  "" : {
+    "const-values" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.swiftconstvalues",
+    "dependencies" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.d",
+    "diagnostics" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.dia",
+    "emit-module-dependencies" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary-emit-module.dia",
+    "pch" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYB-primary.swiftdeps"
+  },
+  "/Users/brad/Code/vyb-web/ios/VYB/ContentView.swift" : {
+    "index-unit-output-path" : "/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/ContentView.o",
+    "llvm-bc" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/ContentView.bc",
+    "object" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/ContentView.o"
+  },
+  "/Users/brad/Code/vyb-web/ios/VYB/VYBApp.swift" : {
+    "index-unit-output-path" : "/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYBApp.o",
+    "llvm-bc" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYBApp.bc",
+    "object" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/VYBApp.o"
+  },
+  "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/brad/Code/vyb-web/ios/build/VYB.build/Release-iphoneos/VYB.build/Objects-normal/arm64/GeneratedAssetSymbols.o"
+  }
+}
