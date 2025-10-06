@@ -313,21 +313,26 @@ struct ContentView: View {
             )
         }
         .sheet(isPresented: $showLayerEditorModal) {
-            if let selectedLayer = selectedLayerForEditing {
-                LayerEditorModalView(layer: Binding(
-                    get: { 
-                        // Find the current layer by ID to ensure we always have the latest version
-                        layers.first(where: { $0.id == selectedLayer.id }) ?? selectedLayer
-                    },
-                    set: { updatedLayer in
-                        // Update the layer in the layers array
-                        if let index = layers.firstIndex(where: { $0.id == updatedLayer.id }) {
-                            layers[index] = updatedLayer
-                        }
+            if let selectedLayer = selectedLayerForEditing,
+               let layerIndex = layers.firstIndex(where: { $0.id == selectedLayer.id }) {
+                LayerEditorModalView(layer: $layers[layerIndex])
+                    .onDisappear {
+                        selectedLayerForEditing = nil
                     }
-                ))
-                .onDisappear {
-                    selectedLayerForEditing = nil
+            } else {
+                // Fallback view if layer not found
+                NavigationView {
+                    Text("Layer not found")
+                        .navigationTitle("Error")
+                        .navigationBarTitleDisplayMode(.inline)
+                        .toolbar {
+                            ToolbarItem(placement: .navigationBarTrailing) {
+                                Button("Close") {
+                                    showLayerEditorModal = false
+                                    selectedLayerForEditing = nil
+                                }
+                            }
+                        }
                 }
             }
         }

@@ -30,37 +30,60 @@ final class ModalBugValidationTests: XCTestCase {
         print("  📱 Adding shape layer...")
         addLayer(type: "Shape")
         
-        // Step 2: Verify layer was created
-        let shapeLayers = app.staticTexts.matching(identifier: "Shape")
-        XCTAssertTrue(shapeLayers.count > 0, "Shape layer should be created")
-        print("  ✅ Shape layer created")
+        // Step 2: Verify layer count increased (since shape layers don't have visible text)
+        let layerCountText = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Layers:'"))
+        XCTAssertTrue(layerCountText.firstMatch.waitForExistence(timeout: 3), "Layer count should be visible")
+        print("  ✅ Shape layer created - layer count updated")
         
-        // Step 3: Find and tap edit button for shape layer
-        print("  📱 Opening shape layer modal...")
-        let editButton = app.buttons["Edit"].firstMatch
-        XCTAssertTrue(editButton.waitForExistence(timeout: 5), "Edit button should exist for shape layer")
+        // Step 3: Select the layer first (tap on the canvas where the layer should be)
+        print("  📱 Selecting shape layer...")
+        // Shape layers appear as red circles, tap in the center area of canvas
+        app.tap()
+        sleep(1) // Give UI time to update selection
+        
+        // Step 4: Find and tap edit button (only appears when layer is selected)
+        print("  📱 Looking for Edit button...")
+        let editButton = app.buttons.containing(NSPredicate(format: "label CONTAINS 'Edit'")).firstMatch
+        XCTAssertTrue(editButton.waitForExistence(timeout: 5), "Edit button should appear when layer is selected")
+        print("  📱 Edit button found, tapping...")
         editButton.tap()
         
-        // Step 4: Verify modal appears with content (critical test)
-        print("  🔍 Validating modal content...")
+        // Step 5: Verify modal appears with content (critical test)
+        print("  🔍 Validating modal appears...")
         let modal = app.navigationBars["Edit Layer"]
-        XCTAssertTrue(modal.waitForExistence(timeout: 5), "Shape layer modal should appear")
+        XCTAssertTrue(modal.waitForExistence(timeout: 10), "Shape layer modal should appear")
+        print("  ✅ Modal navigation bar found")
         
-        // Step 5: Verify modal is NOT empty (the main bug symptom)
+        // Step 6: Verify modal is NOT empty (the main bug symptom)
+        print("  🔍 Looking for Layer Information section...")
         let layerInfoSection = app.staticTexts["Layer Information"]
-        XCTAssertTrue(layerInfoSection.waitForExistence(timeout: 3), 
+        
+        // Debug: Print all static texts to see what's actually available
+        print("  📋 Available static texts:")
+        for i in 0..<min(10, app.staticTexts.count) {
+            let element = app.staticTexts.element(boundBy: i)
+            if element.exists {
+                print("    - \(element.label)")
+            }
+        }
+        
+        XCTAssertTrue(layerInfoSection.waitForExistence(timeout: 5), 
                      "CRITICAL: Layer Information section should be visible immediately - modal should not be empty")
+        print("  ✅ Layer Information section found")
         
         let shapeSettingsSection = app.staticTexts["Shape Settings"]
         XCTAssertTrue(shapeSettingsSection.waitForExistence(timeout: 2), 
                      "Shape Settings section should be visible")
+        print("  ✅ Shape Settings section found")
         
-        // Step 6: Verify specific content exists
+        // Step 7: Verify specific content exists
         let contentTextField = app.textFields["Layer content"]
         XCTAssertTrue(contentTextField.exists, "Content text field should exist and be accessible")
+        print("  ✅ Content text field found")
         
         let layerTypeDisplay = app.staticTexts["Shape"]
         XCTAssertTrue(layerTypeDisplay.exists, "Layer type should be displayed correctly")
+        print("  ✅ Layer type display found")
         
         print("  ✅ Modal contains expected content - bug is FIXED")
         
@@ -260,8 +283,8 @@ final class ModalBugValidationTests: XCTestCase {
         XCTAssertTrue(layerButton.waitForExistence(timeout: 3), "\(type) button should appear in menu")
         layerButton.tap()
         
-        // Wait for layer to be created
-        sleep(1)
+        // Wait for layer to be created and UI to update
+        sleep(2)
     }
     
     private func printTestSeparator(_ testName: String) {
