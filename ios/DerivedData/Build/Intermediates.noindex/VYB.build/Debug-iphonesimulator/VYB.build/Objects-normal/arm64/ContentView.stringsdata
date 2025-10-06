@@ -1,0 +1,16 @@
+{
+  "source": "/Users/brad/Code/vyb-web/ios/VYB/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "VYB App",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 6
+        }
+      }
+    ]
+  },
+  "version": 1
+}

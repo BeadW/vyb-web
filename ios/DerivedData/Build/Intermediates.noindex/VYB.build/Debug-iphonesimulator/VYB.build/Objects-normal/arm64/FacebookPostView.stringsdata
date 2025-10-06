@@ -1,0 +1,48 @@
+{
+  "source": "/Users/brad/Code/vyb-web/ios/VYB/FacebookPostView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Canvas Area",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your Name",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 22
+        }
+      },
+      {
+        "comment": "",
+        "key": "Just now",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 27
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 68
+        }
+      }
+    ]
+  },
+  "version": 1
+}

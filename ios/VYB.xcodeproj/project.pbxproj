@@ -1,0 +1,634 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A1001 /* VYBApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1002 /* VYBApp.swift */; };
+		A1003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1004 /* ContentView.swift */; };
+		A1005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1006 /* Assets.xcassets */; };
+		A1020 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1021 /* CoreGraphics.framework */; };
+		A1022 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1023 /* Metal.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A240F3352E91299D0065AAB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1016 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1012;
+			remoteInfo = VYB;
+		};
+		A240F3422E9129B10065AAB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A1016 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1012;
+			remoteInfo = VYB;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		A1002 /* VYBApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBApp.swift; sourceTree = "<group>"; };
+		A1004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		A1006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A1007 /* VYB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VYB.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1021 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		A1023 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		A240F30D2E9128F00065AAB8 /* VYBUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBUITests.swift; sourceTree = "<group>"; };
+		A240F30F2E9129050065AAB8 /* CanvasInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasInteractionTests.swift; sourceTree = "<group>"; };
+		A240F3102E9129050065AAB8 /* DeviceSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSimulationTests.swift; sourceTree = "<group>"; };
+		A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VYBUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A240F33E2E9129B10065AAB8 /* VYBTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VYBTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		A240F34E2E912AA80065AAB8 /* VYBTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = VYBTests; sourceTree = "<group>"; };
+		A240F34F2E912AB40065AAB8 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; sourceTree = "<group>"; };
+		A240F3502E912AC20065AAB8 /* VYBUITests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = VYBUITests; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		A240F3182E91297C0065AAB8 /* VYBTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBTests; sourceTree = "<group>"; };
+		A240F3302E91299D0065AAB8 /* VYBUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBUITests; sourceTree = "<group>"; };
+		A240F33F2E9129B10065AAB8 /* VYBTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBTests; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A1008 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1020 /* CoreGraphics.framework in Frameworks */,
+				A1022 /* Metal.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F32C2E91299D0065AAB8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F33B2E9129B10065AAB8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A1009 = {
+			isa = PBXGroup;
+			children = (
+				A240F3502E912AC20065AAB8 /* VYBUITests */,
+				A240F34F2E912AB40065AAB8 /* ios */,
+				A240F34E2E912AA80065AAB8 /* VYBTests */,
+				A240F3122E9129050065AAB8 /* VYBTests */,
+				A240F30E2E9128F00065AAB8 /* VYBUITests */,
+				A1010 /* VYB */,
+				A240F3182E91297C0065AAB8 /* VYBTests */,
+				A240F3302E91299D0065AAB8 /* VYBUITests */,
+				A240F33F2E9129B10065AAB8 /* VYBTests */,
+				A1011 /* Products */,
+				A1024 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		A1010 /* VYB */ = {
+			isa = PBXGroup;
+			children = (
+				A1002 /* VYBApp.swift */,
+				A1004 /* ContentView.swift */,
+				A1006 /* Assets.xcassets */,
+			);
+			path = VYB;
+			sourceTree = "<group>";
+		};
+		A1011 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A1007 /* VYB.app */,
+				A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */,
+				A240F33E2E9129B10065AAB8 /* VYBTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A1024 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A1021 /* CoreGraphics.framework */,
+				A1023 /* Metal.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A240F30E2E9128F00065AAB8 /* VYBUITests */ = {
+			isa = PBXGroup;
+			children = (
+				A240F30D2E9128F00065AAB8 /* VYBUITests.swift */,
+			);
+			path = VYBUITests;
+			sourceTree = "<group>";
+		};
+		A240F3112E9129050065AAB8 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				A240F30F2E9129050065AAB8 /* CanvasInteractionTests.swift */,
+				A240F3102E9129050065AAB8 /* DeviceSimulationTests.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		A240F3122E9129050065AAB8 /* VYBTests */ = {
+			isa = PBXGroup;
+			children = (
+				A240F3112E9129050065AAB8 /* UI */,
+			);
+			path = VYBTests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A1012 /* VYB */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1013 /* Build configuration list for PBXNativeTarget "VYB" */;
+			buildPhases = (
+				A1014 /* Sources */,
+				A1008 /* Frameworks */,
+				A1015 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = VYB;
+			productName = VYB;
+			productReference = A1007 /* VYB.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A240F32E2E91299D0065AAB8 /* VYBUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A240F3372E91299D0065AAB8 /* Build configuration list for PBXNativeTarget "VYBUITests" */;
+			buildPhases = (
+				A240F32B2E91299D0065AAB8 /* Sources */,
+				A240F32C2E91299D0065AAB8 /* Frameworks */,
+				A240F32D2E91299D0065AAB8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A240F3362E91299D0065AAB8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A240F3302E91299D0065AAB8 /* VYBUITests */,
+			);
+			name = VYBUITests;
+			packageProductDependencies = (
+			);
+			productName = VYBUITests;
+			productReference = A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		A240F33D2E9129B10065AAB8 /* VYBTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A240F3442E9129B10065AAB8 /* Build configuration list for PBXNativeTarget "VYBTests" */;
+			buildPhases = (
+				A240F33A2E9129B10065AAB8 /* Sources */,
+				A240F33B2E9129B10065AAB8 /* Frameworks */,
+				A240F33C2E9129B10065AAB8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A240F3432E9129B10065AAB8 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				A240F33F2E9129B10065AAB8 /* VYBTests */,
+			);
+			name = VYBTests;
+			packageProductDependencies = (
+			);
+			productName = VYBTests;
+			productReference = A240F33E2E9129B10065AAB8 /* VYBTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A1016 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					A1012 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A240F32E2E91299D0065AAB8 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = A1012;
+					};
+					A240F33D2E9129B10065AAB8 = {
+						CreatedOnToolsVersion = 26.0;
+						TestTargetID = A1012;
+					};
+				};
+			};
+			buildConfigurationList = A1017 /* Build configuration list for PBXProject "VYB" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A1009;
+			productRefGroup = A1011 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1012 /* VYB */,
+				A240F32E2E91299D0065AAB8 /* VYBUITests */,
+				A240F33D2E9129B10065AAB8 /* VYBTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A1015 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1005 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F32D2E91299D0065AAB8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F33C2E9129B10065AAB8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A1014 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A1003 /* ContentView.swift in Sources */,
+				A1001 /* VYBApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F32B2E91299D0065AAB8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A240F33A2E9129B10065AAB8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A240F3362E91299D0065AAB8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1012 /* VYB */;
+			targetProxy = A240F3352E91299D0065AAB8 /* PBXContainerItemProxy */;
+		};
+		A240F3432E9129B10065AAB8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1012 /* VYB */;
+			targetProxy = A240F3422E9129B10065AAB8 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		A1018 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		A1019 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		A1025 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vyb.VYB;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1026 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "";
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vyb.VYB;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A240F3382E91299D0065AAB8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VYB;
+			};
+			name = Debug;
+		};
+		A240F3392E91299D0065AAB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VYB;
+			};
+			name = Release;
+		};
+		A240F3452E9129B10065AAB8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VYB";
+			};
+			name = Debug;
+		};
+		A240F3462E9129B10065AAB8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VYB";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1013 /* Build configuration list for PBXNativeTarget "VYB" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1025 /* Debug */,
+				A1026 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1017 /* Build configuration list for PBXProject "VYB" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1018 /* Debug */,
+				A1019 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A240F3372E91299D0065AAB8 /* Build configuration list for PBXNativeTarget "VYBUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A240F3382E91299D0065AAB8 /* Debug */,
+				A240F3392E91299D0065AAB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A240F3442E9129B10065AAB8 /* Build configuration list for PBXNativeTarget "VYBTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A240F3452E9129B10065AAB8 /* Debug */,
+				A240F3462E9129B10065AAB8 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1016 /* Project object */;
+}
