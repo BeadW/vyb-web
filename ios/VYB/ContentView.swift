@@ -11,7 +11,13 @@ struct ContentView: View {
     @State private var showLayerManagerModal = false
     @State private var showLayerEditorModal = false
     @State private var selectedLayerForStyling: SimpleLayer?
-    @State private var selectedLayerForEditing: SimpleLayer?
+    @State private var selectedLayerForEditing: String?
+    
+    // Computed property to get current selected layer as single source of truth
+    private var currentSelectedLayer: SimpleLayer? {
+        guard let selectedId = selectedLayerForEditing else { return nil }
+        return layers.first(where: { $0.id == selectedId })
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -123,9 +129,17 @@ struct ContentView: View {
                                     ),
                                     canvasWidth: canvasWidth,
                                     canvasHeight: canvasHeight,
+                                    selectedLayerForEditing: selectedLayerForEditing,
                                     onEditLayer: { layer in
-                                        selectedLayerForEditing = layer
+                                        selectedLayerForEditing = layer.id
                                         showLayerEditorModal = true
+                                    },
+                                    onToggleSelection: {
+                                        if selectedLayerForEditing == layer.id {
+                                            selectedLayerForEditing = nil
+                                        } else {
+                                            selectedLayerForEditing = layer.id
+                                        }
                                     }
                                 )
                             }
@@ -218,9 +232,8 @@ struct ContentView: View {
                         .cornerRadius(20)
                     }
                     
-                    if let selectedLayer = layers.first(where: { $0.isSelected }) {
+                    if selectedLayerForEditing != nil {
                         Button(action: {
-                            selectedLayerForEditing = selectedLayer
                             showLayerEditorModal = true
                         }) {
                             HStack(spacing: 4) {
@@ -265,28 +278,30 @@ struct ContentView: View {
                             HStack(spacing: 8) {
                                 ForEach(layers.sorted(by: { $0.zOrder > $1.zOrder }), id: \.id) { layer in
                                     Button(action: {
-                                        // Toggle selection
-                                        if let index = layers.firstIndex(where: { $0.id == layer.id }) {
-                                            layers[index].isSelected.toggle()
+                                        // Toggle selection using single source of truth
+                                        if selectedLayerForEditing == layer.id {
+                                            selectedLayerForEditing = nil
+                                        } else {
+                                            selectedLayerForEditing = layer.id
                                         }
                                     }) {
                                         VStack(spacing: 4) {
                                             Image(systemName: layer.type == "text" ? "textformat" : layer.type == "image" ? "photo" : layer.type == "shape" ? "circle.fill" : "rectangle.fill")
                                                 .font(.system(size: 14))
-                                                .foregroundColor(layer.isSelected ? .white : .primary)
+                                                .foregroundColor(selectedLayerForEditing == layer.id ? .white : .primary)
                                             
                                             Text(layer.content.isEmpty ? "Layer" : String(layer.content.prefix(6)))
                                                 .font(.caption2)
                                                 .lineLimit(1)
-                                                .foregroundColor(layer.isSelected ? .white : .primary)
+                                                .foregroundColor(selectedLayerForEditing == layer.id ? .white : .primary)
                                             
                                             Text("Z:\(layer.zOrder)")
                                                 .font(.caption2)
-                                                .foregroundColor(layer.isSelected ? .white : .secondary)
+                                                .foregroundColor(selectedLayerForEditing == layer.id ? .white : .secondary)
                                         }
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 6)
-                                        .background(layer.isSelected ? Color.blue : Color.gray.opacity(0.15))
+                                        .background(selectedLayerForEditing == layer.id ? Color.blue : Color.gray.opacity(0.15))
                                         .cornerRadius(8)
                                     }
                                 }
@@ -306,33 +321,59 @@ struct ContentView: View {
         .sheet(isPresented: $showLayerManagerModal) {
             LayerManagerModalView(
                 layers: $layers,
+                selectedLayerForEditing: $selectedLayerForEditing,
                 onEditLayer: { layer in
-                    selectedLayerForEditing = layer
-                    showLayerEditorModal = true
+                    DispatchQueue.main.async {
+                        // Re-fetch the latest layer data to ensure it exists
+                        if let currentLayer = layers.first(where: { $0.id == layer.id }) {
+                            selectedLayerForEditing = currentLayer.id
+                            showLayerEditorModal = true
+                        } else {
+                            print("Layer not found in manager: \(layer.id)")
+                        }
+                    }
                 }
             )
         }
         .sheet(isPresented: $showLayerEditorModal) {
-            if let selectedLayer = selectedLayerForEditing,
-               let layerIndex = layers.firstIndex(where: { $0.id == selectedLayer.id }) {
-                LayerEditorModalView(layer: $layers[layerIndex])
-                    .onDisappear {
-                        selectedLayerForEditing = nil
+            if let layer = currentSelectedLayer {
+                LayerEditorModalView(layer: Binding<SimpleLayer>(
+                    get: {
+                        // Always get the latest layer data from the array by ID
+                        return layers.first(where: { $0.id == layer.id }) ?? layer
+                    },
+                    set: { newValue in
+                        if let currentIndex = layers.firstIndex(where: { $0.id == newValue.id }) {
+                            layers[currentIndex] = newValue
+                        }
                     }
+                ))
+                .onDisappear {
+                    selectedLayerForEditing = nil
+                    showLayerEditorModal = false
+                }
             } else {
-                // Fallback view if layer not found
+                // Fallback error view - this should never happen with proper state management
                 NavigationView {
-                    Text("Layer not found")
-                        .navigationTitle("Error")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Close") {
-                                    showLayerEditorModal = false
-                                    selectedLayerForEditing = nil
-                                }
+                    VStack {
+                        Text("No layer selected for editing")
+                            .foregroundColor(.red)
+                            .font(.headline)
+                        
+                        Text("Available layers: \(layers.count)")
+                            .font(.caption)
+                            .foregroundColor(.gray)
+                    }
+                    .navigationTitle("Error")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Close") {
+                                selectedLayerForEditing = nil
+                                showLayerEditorModal = false
                             }
                         }
+                    }
                 }
             }
         }
@@ -351,6 +392,8 @@ struct ContentView: View {
             zOrder: layers.count
         )
         layers.append(newLayer)
+        
+        // Don't auto-select or show modal - let user manually tap to edit
     }
     
     private func moveLayerToFront(_ layerId: String) {
@@ -440,7 +483,6 @@ struct SimpleLayer: Identifiable {
     var content: String
     var x: Double
     var y: Double
-    var isSelected: Bool = false
     var zOrder: Int = 0
     
     // Text styling properties
@@ -459,12 +501,14 @@ struct SimpleLayer: Identifiable {
 
 struct LayerManagementRow: View {
     @Binding var layer: SimpleLayer
+    let selectedLayerForEditing: String?
     let onDelete: () -> Void
     let onEdit: () -> Void
     let onMoveToFront: () -> Void
     let onMoveToBack: () -> Void
     let onMoveUp: () -> Void
     let onMoveDown: () -> Void
+    let onToggleSelection: () -> Void
     
     var body: some View {
         VStack(spacing: 6) {
@@ -511,14 +555,14 @@ struct LayerManagementRow: View {
                 Spacer()
                 
                 // Selection indicator
-                if layer.isSelected {
+                if selectedLayerForEditing == layer.id {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.blue)
                         .font(.system(size: 16))
                 }
                 
                 // Edit button - only show when single layer is selected
-                if layer.isSelected {
+                if selectedLayerForEditing == layer.id {
                     Button(action: onEdit) {
                         Image(systemName: "pencil")
                             .foregroundColor(.blue)
@@ -537,7 +581,7 @@ struct LayerManagementRow: View {
             }
             
             // Z-order controls
-            if layer.isSelected {
+            if selectedLayerForEditing == layer.id {
                 HStack(spacing: 8) {
                     Button("To Back") { onMoveToBack() }
                         .font(.system(size: 11))
@@ -574,19 +618,22 @@ struct LayerManagementRow: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(layer.isSelected ? Color.blue.opacity(0.1) : Color.white)
+        .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.1) : Color.white)
         .cornerRadius(6)
         .onTapGesture {
-            layer.isSelected.toggle()
+            onToggleSelection()
         }
     }
 }
 
+// Helper view to extract sheet content and avoid compiler complexity
 struct LayerView: View {
     @Binding var layer: SimpleLayer
     let canvasWidth: Double
     let canvasHeight: Double
+    let selectedLayerForEditing: String?
     let onEditLayer: (SimpleLayer) -> Void
+    let onToggleSelection: () -> Void
     @State private var dragOffset = CGSize.zero
     @State private var isDragging = false
     
@@ -606,16 +653,16 @@ struct LayerView: View {
                         y: layer.hasShadow ? 1 : 0
                     )
                     .padding(8)
-                    .background(layer.isSelected ? Color.blue.opacity(0.2) : Color.clear)
-                    .border(layer.isSelected ? Color.blue : Color.clear, width: 2)
+                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
                     .cornerRadius(4)
             } else if layer.type == "image" {
                 Image(systemName: "photo")
                     .font(.system(size: 40))
                     .foregroundColor(.blue)
                     .padding(8)
-                    .background(layer.isSelected ? Color.blue.opacity(0.2) : Color.clear)
-                    .border(layer.isSelected ? Color.blue : Color.clear, width: 2)
+                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
                     .cornerRadius(4)
             } else if layer.type == "shape" {
                 Circle()
@@ -623,7 +670,7 @@ struct LayerView: View {
                     .frame(width: 50, height: 50)
                     .overlay(
                         Circle()
-                            .stroke(layer.isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
                     )
             } else if layer.type == "background" {
                 Rectangle()
@@ -632,7 +679,7 @@ struct LayerView: View {
                     .cornerRadius(4)
                     .overlay(
                         Rectangle()
-                            .stroke(layer.isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
                             .cornerRadius(4)
                     )
             }
@@ -659,7 +706,7 @@ struct LayerView: View {
                 }
         )
         .onTapGesture {
-            layer.isSelected.toggle()
+            onToggleSelection()
         }
         .onTapGesture(count: 2) {
             // Double tap to open layer editor
@@ -857,6 +904,7 @@ struct TextStyleModalView: View {
 
 struct LayerManagerModalView: View {
     @Binding var layers: [SimpleLayer]
+    @Binding var selectedLayerForEditing: String?
     let onEditLayer: (SimpleLayer) -> Void
     @Environment(\.dismiss) private var dismiss
     
@@ -887,9 +935,7 @@ struct LayerManagerModalView: View {
                                 .font(.system(size: 18, weight: .semibold))
                             Spacer()
                             Button("Deselect All") {
-                                for i in layers.indices {
-                                    layers[i].isSelected = false
-                                }
+                                selectedLayerForEditing = nil
                             }
                             .font(.system(size: 14))
                             .foregroundColor(.blue)
@@ -904,8 +950,12 @@ struct LayerManagerModalView: View {
                                                 get: { layers[index] },
                                                 set: { layers[index] = $0 }
                                             ),
+                                            selectedLayerForEditing: selectedLayerForEditing,
                                             onDelete: {
                                                 layers.remove(at: index)
+                                                if selectedLayerForEditing == layer.id {
+                                                    selectedLayerForEditing = nil
+                                                }
                                             },
                                             onEdit: {
                                                 onEditLayer(layer)
@@ -921,6 +971,13 @@ struct LayerManagerModalView: View {
                                             },
                                             onMoveDown: {
                                                 moveLayerDown(layer.id)
+                                            },
+                                            onToggleSelection: {
+                                                if selectedLayerForEditing == layer.id {
+                                                    selectedLayerForEditing = nil
+                                                } else {
+                                                    selectedLayerForEditing = layer.id
+                                                }
                                             }
                                         )
                                     }

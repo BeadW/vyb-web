@@ -712,3 +712,19 @@ vyb-current-state.png
 vyb-screenshot.png
 ui-test-*.png
 test-*.png
+
+# Additional iOS build artifacts (comprehensive exclusions)
+ios/SwiftExplicitPrecompiledModules/
+ios/ModuleCache.noindex/
+ios/SDKStatCaches.noindex/
+ios/Index.noindex/
+ios/CompilationCache.noindex/
+ios/Logs/
+*.pcm
+*.swiftdoc
+*.swiftmodule
+*.swiftsourceinfo
+*.abi.json
+*.strings
+*.stringsdata
+ios/*.xcworkspace/xcuserdata/
