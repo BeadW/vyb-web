@@ -9,7 +9,9 @@ struct ContentView: View {
     @State private var showTextStylePanel = false
     @State private var showTextStyleModal = false
     @State private var showLayerManagerModal = false
+    @State private var showLayerEditorModal = false
     @State private var selectedLayerForStyling: SimpleLayer?
+    @State private var selectedLayerForEditing: SimpleLayer?
     
     var body: some View {
         VStack(spacing: 0) {
@@ -310,7 +312,26 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $showLayerManagerModal) {
-            LayerManagerModalView(layers: $layers)
+            LayerManagerModalView(
+                layers: $layers,
+                onEditLayer: { layer in
+                    selectedLayerForEditing = layer
+                    showLayerEditorModal = true
+                }
+            )
+        }
+        .sheet(isPresented: $showLayerEditorModal) {
+            if let layer = selectedLayerForEditing {
+                LayerEditorModalView(layer: Binding(
+                    get: { layer },
+                    set: { updatedLayer in
+                        if let index = layers.firstIndex(where: { $0.id == layer.id }) {
+                            layers[index] = updatedLayer
+                        }
+                        selectedLayerForEditing = updatedLayer
+                    }
+                ))
+            }
         }
     }
     
@@ -436,6 +457,7 @@ struct SimpleLayer: Identifiable {
 struct LayerManagementRow: View {
     @Binding var layer: SimpleLayer
     let onDelete: () -> Void
+    let onEdit: () -> Void
     let onMoveToFront: () -> Void
     let onMoveToBack: () -> Void
     let onMoveUp: () -> Void
@@ -490,6 +512,16 @@ struct LayerManagementRow: View {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.blue)
                         .font(.system(size: 16))
+                }
+                
+                // Edit button - only show when single layer is selected
+                if layer.isSelected {
+                    Button(action: onEdit) {
+                        Image(systemName: "pencil")
+                            .foregroundColor(.blue)
+                            .font(.system(size: 14))
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
                 
                 // Delete button
@@ -865,6 +897,7 @@ struct TextStyleModalView: View {
 
 struct LayerManagerModalView: View {
     @Binding var layers: [SimpleLayer]
+    let onEditLayer: (SimpleLayer) -> Void
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -913,6 +946,9 @@ struct LayerManagerModalView: View {
                                             ),
                                             onDelete: {
                                                 layers.remove(at: index)
+                                            },
+                                            onEdit: {
+                                                onEditLayer(layer)
                                             },
                                             onMoveToFront: {
                                                 moveLayerToFront(layer.id)
@@ -981,6 +1017,419 @@ struct LayerManagerModalView: View {
         } else {
             layers[index].zOrder = currentZ - 1
         }
+    }
+}
+
+struct LayerEditorModalView: View {
+    @Binding var layer: SimpleLayer
+    @Environment(\.dismiss) private var dismiss
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 24) {
+                    // Layer Info Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Layer Information")
+                            .font(.system(size: 18, weight: .semibold))
+                        
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Layer Type")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            HStack {
+                                Group {
+                                    if layer.type == "text" {
+                                        Image(systemName: "textformat")
+                                            .foregroundColor(.black)
+                                    } else if layer.type == "image" {
+                                        Image(systemName: "photo")
+                                            .foregroundColor(.blue)
+                                    } else if layer.type == "shape" {
+                                        Image(systemName: "circle.fill")
+                                            .foregroundColor(.red)
+                                    } else if layer.type == "background" {
+                                        Image(systemName: "rectangle.fill")
+                                            .foregroundColor(.yellow)
+                                    }
+                                }
+                                .font(.system(size: 18))
+                                
+                                Text(layer.type.capitalized)
+                                    .font(.system(size: 16, weight: .medium))
+                                
+                                Spacer()
+                                
+                                Text("Z: \\(layer.zOrder)")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(6)
+                            }
+                        }
+                        
+                        // Content Editor
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Content")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.secondary)
+                            
+                            TextField("Layer content", text: $layer.content)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    
+                    // Position Section
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Position & Layout")
+                            .font(.system(size: 18, weight: .semibold))
+                        
+                        HStack(spacing: 16) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("X Position")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                
+                                HStack {
+                                    Slider(value: $layer.x, in: 0...400)
+                                    Text("\\(Int(layer.x))")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .frame(width: 30)
+                                }
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Y Position")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.secondary)
+                                
+                                HStack {
+                                    Slider(value: $layer.y, in: 0...250)
+                                    Text("\\(Int(layer.y))")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .frame(width: 30)
+                                }
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(12)
+                    
+                    // Type-specific settings
+                    if layer.type == "text" {
+                        TextLayerSettings(layer: $layer)
+                    } else if layer.type == "image" {
+                        ImageLayerSettings(layer: $layer)
+                    } else if layer.type == "shape" {
+                        ShapeLayerSettings(layer: $layer)
+                    } else if layer.type == "background" {
+                        BackgroundLayerSettings(layer: $layer)
+                    }
+                    
+                    Spacer()
+                }
+                .padding(20)
+            }
+            .navigationTitle("Edit Layer")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                }
+            }
+        }
+    }
+}
+
+struct TextLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    private let fontWeights: [Font.Weight] = [.ultraLight, .thin, .light, .regular, .medium, .semibold, .bold, .heavy, .black]
+    private let textColors: [Color] = [.black, .white, .red, .blue, .green, .orange, .purple, .pink, .yellow]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Text Styling")
+                .font(.system(size: 18, weight: .semibold))
+            
+            // Font Size
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Font Size: \\(Int(layer.fontSize))pt")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                Slider(value: $layer.fontSize, in: 8...72)
+            }
+            
+            // Font Weight
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Font Weight")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(fontWeights, id: \.self) { weight in
+                            Button(action: { layer.fontWeight = weight }) {
+                                Text(weightName(weight))
+                                    .font(.system(size: 12, weight: weight))
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(layer.fontWeight == weight ? Color.blue : Color.gray.opacity(0.2))
+                                    .foregroundColor(layer.fontWeight == weight ? .white : .primary)
+                                    .cornerRadius(6)
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+            }
+            
+            // Text Color
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Color")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(textColors, id: \.self) { color in
+                            Button(action: { layer.textColor = color }) {
+                                Circle()
+                                    .fill(color)
+                                    .frame(width: 32, height: 32)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(layer.textColor == color ? Color.blue : Color.gray, lineWidth: 2)
+                                    )
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 4)
+                }
+            }
+            
+            // Text Style Options
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Style")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                
+                HStack(spacing: 12) {
+                    Button(action: { layer.isItalic.toggle() }) {
+                        Text("Italic")
+                            .font(.system(size: 14, weight: .medium))
+                            .italic()
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(layer.isItalic ? Color.blue : Color.gray.opacity(0.2))
+                            .foregroundColor(layer.isItalic ? .white : .primary)
+                            .cornerRadius(8)
+                    }
+                    
+                    Button(action: { layer.isUnderlined.toggle() }) {
+                        Text("Underline")
+                            .font(.system(size: 14, weight: .medium))
+                            .underline()
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(layer.isUnderlined ? Color.blue : Color.gray.opacity(0.2))
+                            .foregroundColor(layer.isUnderlined ? .white : .primary)
+                            .cornerRadius(8)
+                    }
+                }
+            }
+            
+            // Text Alignment
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Alignment")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                HStack(spacing: 12) {
+                    ForEach([TextAlignment.leading, .center, .trailing], id: \.self) { alignment in
+                        Button(action: { layer.textAlignment = alignment }) {
+                            Image(systemName: alignmentIcon(alignment))
+                                .font(.system(size: 18))
+                                .padding(12)
+                                .background(layer.textAlignment == alignment ? Color.blue : Color.gray.opacity(0.2))
+                                .foregroundColor(layer.textAlignment == alignment ? .white : .primary)
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+            }
+            
+            // Text Effects
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Text Effects")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.secondary)
+                
+                VStack(spacing: 12) {
+                    // Shadow
+                    HStack {
+                        Button(action: { layer.hasShadow.toggle() }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: layer.hasShadow ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(layer.hasShadow ? .blue : .gray)
+                                Text("Drop Shadow")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Spacer()
+                        
+                        if layer.hasShadow {
+                            HStack(spacing: 8) {
+                                ForEach([Color.gray, .black, .red, .blue], id: \.self) { color in
+                                    Button(action: { layer.shadowColor = color }) {
+                                        Circle()
+                                            .fill(color)
+                                            .frame(width: 20, height: 20)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(layer.shadowColor == color ? Color.blue : Color.clear, lineWidth: 2)
+                                            )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Stroke
+                    HStack {
+                        Button(action: { layer.hasStroke.toggle() }) {
+                            HStack(spacing: 8) {
+                                Image(systemName: layer.hasStroke ? "checkmark.square.fill" : "square")
+                                    .foregroundColor(layer.hasStroke ? .blue : .gray)
+                                Text("Text Stroke")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                        
+                        Spacer()
+                        
+                        if layer.hasStroke {
+                            HStack(spacing: 8) {
+                                                                ForEach([Color.white, .black, .red, .blue], id: \.self) { color in
+                                    Button(action: { layer.strokeColor = color }) {
+                                        Circle()
+                                            .fill(color)
+                                            .frame(width: 20, height: 20)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(layer.strokeColor == color ? Color.blue : Color.clear, lineWidth: 2)
+                                            )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+    
+    private func weightName(_ weight: Font.Weight) -> String {
+        switch weight {
+        case .ultraLight: return "UL"
+        case .thin: return "Thin"
+        case .light: return "Light"
+        case .regular: return "Reg"
+        case .medium: return "Med"
+        case .semibold: return "Semi"
+        case .bold: return "Bold"
+        case .heavy: return "Heavy"
+        case .black: return "Black"
+        default: return "Reg"
+        }
+    }
+    
+    private func alignmentIcon(_ alignment: TextAlignment) -> String {
+        switch alignment {
+        case .leading: return "text.alignleft"
+        case .center: return "text.aligncenter"
+        case .trailing: return "text.alignright"
+        }
+    }
+}
+
+struct ImageLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Image Settings")
+                .font(.system(size: 18, weight: .semibold))
+            
+            Text("Image upload and editing features coming soon!")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct ShapeLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Shape Settings")
+                .font(.system(size: 18, weight: .semibold))
+            
+            Text("Shape customization features coming soon!")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct BackgroundLayerSettings: View {
+    @Binding var layer: SimpleLayer
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Background Settings")
+                .font(.system(size: 18, weight: .semibold))
+            
+            Text("Background customization features coming soon!")
+                .font(.system(size: 14))
+                .foregroundColor(.secondary)
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+        }
+        .padding()
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(12)
     }
 }
 
