@@ -122,7 +122,11 @@ struct ContentView: View {
                                         set: { layers[index] = $0 }
                                     ),
                                     canvasWidth: canvasWidth,
-                                    canvasHeight: canvasHeight
+                                    canvasHeight: canvasHeight,
+                                    onEditLayer: { layer in
+                                        selectedLayerForEditing = layer
+                                        showLayerEditorModal = true
+                                    }
                                 )
                             }
                         }
@@ -214,15 +218,15 @@ struct ContentView: View {
                         .cornerRadius(20)
                     }
                     
-                    if let selectedLayer = layers.first(where: { $0.isSelected && $0.type == "text" }) {
+                    if let selectedLayer = layers.first(where: { $0.isSelected }) {
                         Button(action: {
-                            selectedLayerForStyling = selectedLayer
-                            showTextStyleModal = true
+                            selectedLayerForEditing = selectedLayer
+                            showLayerEditorModal = true
                         }) {
                             HStack(spacing: 4) {
-                                Image(systemName: "textformat")
+                                Image(systemName: "pencil")
                                     .font(.system(size: 16, weight: .medium))
-                                Text("Style")
+                                Text("Edit")
                                     .font(.system(size: 14, weight: .medium))
                             }
                             .padding(.horizontal, 12)
@@ -298,19 +302,7 @@ struct ContentView: View {
             Spacer()
         }
         .background(Color(.systemGroupedBackground))
-        .sheet(isPresented: $showTextStyleModal) {
-            if let layer = selectedLayerForStyling {
-                TextStyleModalView(layer: Binding(
-                    get: { layer },
-                    set: { updatedLayer in
-                        if let index = layers.firstIndex(where: { $0.id == layer.id }) {
-                            layers[index] = updatedLayer
-                        }
-                        selectedLayerForStyling = updatedLayer
-                    }
-                ))
-            }
-        }
+
         .sheet(isPresented: $showLayerManagerModal) {
             LayerManagerModalView(
                 layers: $layers,
@@ -321,16 +313,22 @@ struct ContentView: View {
             )
         }
         .sheet(isPresented: $showLayerEditorModal) {
-            if let layer = selectedLayerForEditing {
+            if let selectedLayer = selectedLayerForEditing {
                 LayerEditorModalView(layer: Binding(
-                    get: { layer },
+                    get: { 
+                        // Find the current layer by ID to ensure we always have the latest version
+                        layers.first(where: { $0.id == selectedLayer.id }) ?? selectedLayer
+                    },
                     set: { updatedLayer in
-                        if let index = layers.firstIndex(where: { $0.id == layer.id }) {
+                        // Update the layer in the layers array
+                        if let index = layers.firstIndex(where: { $0.id == updatedLayer.id }) {
                             layers[index] = updatedLayer
                         }
-                        selectedLayerForEditing = updatedLayer
                     }
                 ))
+                .onDisappear {
+                    selectedLayerForEditing = nil
+                }
             }
         }
     }
@@ -583,10 +581,9 @@ struct LayerView: View {
     @Binding var layer: SimpleLayer
     let canvasWidth: Double
     let canvasHeight: Double
+    let onEditLayer: (SimpleLayer) -> Void
     @State private var dragOffset = CGSize.zero
     @State private var isDragging = false
-    @State private var isEditingText = false
-    @State private var editingContent = ""
     
     var body: some View {
         Group {
@@ -660,55 +657,13 @@ struct LayerView: View {
             layer.isSelected.toggle()
         }
         .onTapGesture(count: 2) {
-            if layer.type == "text" {
-                editingContent = layer.content
-                isEditingText = true
-            }
+            // Double tap to open layer editor
+            onEditLayer(layer)
         }
-        .overlay(
-            // Text editing overlay
-            Group {
-                if isEditingText && layer.type == "text" {
-                    VStack(spacing: 8) {
-                        TextEditor(text: $editingContent)
-                            .font(.system(size: layer.fontSize, weight: layer.fontWeight))
-                            .multilineTextAlignment(layer.textAlignment)
-                            .frame(minWidth: 120, minHeight: 60)
-                            .padding(8)
-                            .background(Color.white)
-                            .cornerRadius(8)
-                            .shadow(radius: 4)
-                        
-                        HStack(spacing: 12) {
-                            Button("Cancel") {
-                                isEditingText = false
-                                editingContent = ""
-                            }
-                            .font(.system(size: 12))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(6)
-                            
-                            Button("Save") {
-                                layer.content = editingContent
-                                isEditingText = false
-                                editingContent = ""
-                            }
-                            .font(.system(size: 12))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(6)
-                        }
-                    }
-                    .offset(y: -80)
-                }
-            }
-        )
     }
 }
+
+
 
 // MARK: - Modal Views
 
@@ -1025,14 +980,15 @@ struct LayerEditorModalView: View {
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
-                VStack(alignment: .leading, spacing: 24) {
+                VStack(spacing: 20) {
                     // Layer Info Section
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Layer Information")
                             .font(.system(size: 18, weight: .semibold))
-                        
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Layer Type")
                                 .font(.system(size: 14, weight: .medium))
@@ -1061,7 +1017,7 @@ struct LayerEditorModalView: View {
                                 
                                 Spacer()
                                 
-                                Text("Z: \\(layer.zOrder)")
+                                Text("Z: \(layer.zOrder)")
                                     .font(.system(size: 14, weight: .medium))
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
@@ -1084,43 +1040,6 @@ struct LayerEditorModalView: View {
                     .background(Color.gray.opacity(0.1))
                     .cornerRadius(12)
                     
-                    // Position Section
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Position & Layout")
-                            .font(.system(size: 18, weight: .semibold))
-                        
-                        HStack(spacing: 16) {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("X Position")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.secondary)
-                                
-                                HStack {
-                                    Slider(value: $layer.x, in: 0...400)
-                                    Text("\\(Int(layer.x))")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .frame(width: 30)
-                                }
-                            }
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Y Position")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.secondary)
-                                
-                                HStack {
-                                    Slider(value: $layer.y, in: 0...250)
-                                    Text("\\(Int(layer.y))")
-                                        .font(.system(size: 12, weight: .medium))
-                                        .frame(width: 30)
-                                }
-                            }
-                        }
-                    }
-                    .padding()
-                    .background(Color.gray.opacity(0.1))
-                    .cornerRadius(12)
-                    
                     // Type-specific settings
                     if layer.type == "text" {
                         TextLayerSettings(layer: $layer)
@@ -1131,8 +1050,6 @@ struct LayerEditorModalView: View {
                     } else if layer.type == "background" {
                         BackgroundLayerSettings(layer: $layer)
                     }
-                    
-                    Spacer()
                 }
                 .padding(20)
             }
@@ -1168,7 +1085,7 @@ struct TextLayerSettings: View {
             
             // Font Size
             VStack(alignment: .leading, spacing: 8) {
-                Text("Font Size: \\(Int(layer.fontSize))pt")
+                Text("Font Size: \(Int(layer.fontSize))pt")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.secondary)
                 Slider(value: $layer.fontSize, in: 8...72)
