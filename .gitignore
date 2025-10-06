@@ -1,0 +1,714 @@
+# =============================================================================# =============================================================================
+
+# Multi-Platform Project .gitignore# Multi-Platform Project .gitignore
+
+# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources
+
+# =============================================================================# =============================================================================
+
+
+
+# =============================================================================# =============================================================================
+
+# GENERAL# GENERAL
+
+# =============================================================================# =============================================================================
+
+.DS_Store.DS_Store
+
+.DS_Store?.DS_Store?
+
+._*._*
+
+.Spotlight-V100.Spotlight-V100
+
+.Trashes.Trashes
+
+ehthumbs.dbehthumbs.db
+
+Thumbs.dbThumbs.db
+
+*.log*.log
+
+*.tmp*.tmp
+
+*.temp*.temp
+
+*~*~
+
+.vscode/.vscode/
+
+.idea/.idea/
+
+*.swp*.swp
+
+*.swo*.swo
+
+
+
+# OS generated files# =============================================================================
+
+Icon?# NODE.JS / WEB DEVELOPMENT
+
+.DocumentRevisions-V100# =============================================================================
+
+.fseventsdnode_modules/
+
+.TemporaryItemsnpm-debug.log*
+
+.VolumeIcon.icnsyarn-debug.log*
+
+.com.apple.timemachine.donotpresentyarn-error.log*
+
+lerna-debug.log*
+
+# IDE files.pnpm-debug.log*
+
+*.sublime-project
+
+*.sublime-workspace# Runtime data
+
+pids
+
+# =============================================================================*.pid
+
+# NODE.JS / WEB DEVELOPMENT*.seed
+
+# =============================================================================*.pid.lock
+
+node_modules/
+
+npm-debug.log*# Coverage directory used by tools like istanbul
+
+yarn-debug.log*coverage/
+
+yarn-error.log**.lcov
+
+lerna-debug.log*
+
+.pnpm-debug.log*# nyc test coverage
+
+.nyc_output
+
+# Runtime data
+
+pids# Dependency directories
+
+*.pidjspm_packages/
+
+*.seed
+
+*.pid.lock# Optional npm cache directory
+
+.npm
+
+# Coverage directory used by tools like istanbul
+
+coverage/# Optional eslint cache
+
+*.lcov.eslintcache
+
+
+
+# nyc test coverage# Microbundle cache
+
+.nyc_output.rpt2_cache/
+
+.rts2_cache_cjs/
+
+# Dependency directories.rts2_cache_es/
+
+jspm_packages/.rts2_cache_umd/
+
+
+
+# Optional npm cache directory# Optional REPL history
+
+.npm.node_repl_history
+
+
+
+# Optional eslint cache# Output of 'npm pack'
+
+.eslintcache*.tgz
+
+
+
+# Optional REPL history# Yarn Integrity file
+
+.node_repl_history.yarn-integrity
+
+
+
+# Output of 'npm pack'# dotenv environment variables file
+
+*.tgz.env
+
+.env.local
+
+# Yarn Integrity file.env.development.local
+
+.yarn-integrity.env.test.local
+
+.env.production.local
+
+# dotenv environment variables file
+
+.env# parcel-bundler cache (https://parceljs.org/)
+
+.env.local.cache
+
+.env.development.local.parcel-cache
+
+.env.test.local
+
+.env.production.local# Next.js build output
+
+.next
+
+# parcel-bundler cache (https://parceljs.org/)out
+
+.cache
+
+.parcel-cache# Nuxt.js build / generate output
+
+.nuxt
+
+# next.js build outputdist
+
+.next
+
+# Storybook build outputs
+
+# nuxt.js build output.out
+
+.nuxt.storybook-out
+
+storybook-static
+
+# vuepress build output
+
+.vuepress/dist# Vite
+
+.vite/
+
+# Serverless directoriesvite.config.js.timestamp-*
+
+.serverlessvite.config.ts.timestamp-*
+
+
+
+# =============================================================================# =============================================================================
+
+# XCODE / IOS# XCODE / IOS
+
+# =============================================================================# =============================================================================
+
+# Build generated# Build generated
+
+build/build/
+
+DerivedData/DerivedData/
+
+
+
+# Various settings# Various settings
+
+*.pbxuser*.pbxuser
+
+!default.pbxuser!default.pbxuser
+
+*.mode1v3*.mode1v3
+
+!default.mode1v3!default.mode1v3
+
+*.mode2v3*.mode2v3
+
+!default.mode2v3!default.mode2v3
+
+*.perspectivev3*.perspectivev3
+
+!default.perspectivev3!default.perspectivev3
+
+xcuserdata/xcuserdata/
+
+
+
+# Other Xcode files# Other Xcode files
+
+*.moved-aside*.moved-aside
+
+*.xccheckout*.xccheckout
+
+*.xcscmblueprint*.xcscmblueprint
+
+
+
+# Obj-C/Swift specific# Obj-C/Swift specific
+
+*.hmap*.hmap
+
+*.ipa*.ipa
+
+*.dSYM.zip*.dSYM.zip
+
+*.dSYM*.dSYM
+
+
+
+# CocoaPods# CocoaPods
+
+Pods/Pods/
+
+
+
+# Carthage# Carthage
+
+Carthage/Build/Carthage/Build/
+
+
+
+# Add this line if you want to avoid checking in source code from Carthage dependencies.# Add this line if you want to avoid checking in source code from Carthage dependencies.
+
+# Carthage/Checkouts# Carthage/Checkouts
+
+
+
+# fastlane# fastlane
+
+fastlane/report.xmlfastlane/report.xml
+
+fastlane/Preview.htmlfastlane/Preview.html
+
+fastlane/screenshots/**/*.pngfastlane/screenshots/**/*.png
+
+fastlane/test_outputfastlane/test_output
+
+
+
+# Code Injection# Code Injection
+
+iOSInjectionProject/iOSInjectionProject/
+
+
+
+# Swift Package Manager# Swift Package Manager
+
+.swiftpm/.swiftpm/
+
+Package.resolvedPackage.resolved
+
+*.xcworkspace*.xcworkspace
+
+
+
+# Playgrounds# Playgrounds
+
+timeline.xctimelinetimeline.xctimeline
+
+playground.xcworkspaceplayground.xcworkspace
+
+
+
+# Swift Package Manager# Swift Package Manager
+
+PackagesPackages
+
+Package.pinsPackage.pins
+
+Package.resolvedPackage.resolved
+
+.build/.build/
+
+
+
+# =============================================================================# =============================================================================
+
+# ANDROID# ANDROID
+
+# =============================================================================# =============================================================================
+
+# Built application files# Built application files
+
+*.apk*.apk
+
+*.ap_*.ap_
+
+*.aab*.aab
+
+
+
+# Files for the ART/Dalvik VM# Files for the ART/Dalvik VM
+
+*.dex*.dex
+
+
+
+# Java class files# Java class files
+
+*.class*.class
+
+
+
+# Generated files# Generated files
+
+bin/bin/
+
+gen/gen/
+
+out/out/
+
+release/release/
+
+
+
+# Gradle files# Gradle files
+
+.gradle/.gradle/
+
+build/build/
+
+
+
+# Local configuration file (sdk path, etc)# Local configuration file (sdk path, etc)
+
+local.propertieslocal.properties
+
+
+
+# Proguard folder generated by Eclipse# Proguard folder generated by Eclipse
+
+proguard/proguard/
+
+
+
+# Log Files# Log Files
+
+*.log*.log
+
+
+
+# Android Studio Navigation editor temp files# Android Studio Navigation editor temp files
+
+.navigation/.navigation/
+
+
+
+# Android Studio captures folder# Android Studio captures folder
+
+captures/captures/
+
+
+
+# IntelliJ# IntelliJ
+
+*.iml*.iml
+
+.idea/workspace.xml.idea/workspace.xml
+
+.idea/tasks.xml.idea/tasks.xml
+
+.idea/gradle.xml.idea/gradle.xml
+
+.idea/assetWizardSettings.xml.idea/assetWizardSettings.xml
+
+.idea/dictionaries.idea/dictionaries
+
+.idea/libraries.idea/libraries
+
+# Android Studio 3 in .gitignore file.# Android Studio 3 in .gitignore file.
+
+.idea/caches.idea/caches
+
+.idea/modules.xml.idea/modules.xml
+
+# Comment next line if keeping position of elements in Navigation Editor is desired# Comment next line if keeping position of elements in Navigation Editor is desired
+
+.idea/navEditor.xml.idea/navEditor.xml
+
+
+
+# Keystore files# Keystore files
+
+# Uncomment the following lines if you do not want to check your keystore files in.# Uncomment the following lines if you do not want to check your keystore files in.
+
+*.jks*.jks
+
+*.keystore*.keystore
+
+
+
+# External native build folder generated in Android Studio 2.2 and later# External native build folder generated in Android Studio 2.2 and later
+
+.externalNativeBuild.externalNativeBuild
+
+
+
+# Google Services (e.g. APIs or Firebase)# Google Services (e.g. APIs or Firebase)
+
+google-services.jsongoogle-services.json
+
+
+
+# Freeline# Freeline
+
+freeline.pyfreeline.py
+
+freeline/freeline/
+
+freeline_project_description.jsonfreeline_project_description.json
+
+
+
+# fastlane# fastlane
+
+fastlane/report.xmlfastlane/report.xml
+
+fastlane/Preview.htmlfastlane/Preview.html
+
+fastlane/screenshotsfastlane/screenshots
+
+fastlane/test_outputfastlane/test_output
+
+fastlane/readme.mdfastlane/readme.md
+
+
+
+# Version control# Version control
+
+vcs.xmlvcs.xml
+
+
+
+# lint# lint
+
+lint/intermediates/lint/intermediates/
+
+lint/generated/lint/generated/
+
+lint/outputs/lint/outputs/
+
+lint/tmp/lint/tmp/
+
+# lint/reports/# lint/reports/
+
+
+
+# =============================================================================# =============================================================================
+
+# TYPESCRIPT / JAVASCRIPT BUILD OUTPUTS# TYPESCRIPT / JAVASCRIPT BUILD OUTPUTS
+
+# =============================================================================# =============================================================================
+
+*.tsbuildinfo*.tsbuildinfo
+
+.tsbuild/.tsbuild/
+
+.eslintcache.eslintcache
+
+.parcel-cache/.parcel-cache/
+
+.cache/.cache/
+
+dist/dist/
+
+build/build/
+
+public/build/public/build/
+
+
+
+# =============================================================================# =============================================================================
+
+# TESTING# TESTING
+
+# =============================================================================# =============================================================================
+
+# Jest# Jest
+
+coverage/coverage/
+
+.nyc_output/.nyc_output/
+
+
+
+# Playwright# Playwright
+
+test-results/test-results/
+
+playwright-report/playwright-report/
+
+playwright/.cache/playwright/.cache/
+
+
+
+# =============================================================================# =============================================================================
+
+# DATABASE & CACHE# DATABASE & CACHE
+
+# =============================================================================# =============================================================================
+
+*.sqlite*.sqlite
+
+*.sqlite3*.sqlite3
+
+*.db*.db
+
+*.db-journal*.db-journal
+
+*.db-wal*.db-wal
+
+*.db-shm*.db-shm
+
+
+
+# =============================================================================# =============================================================================
+
+# DEPLOYMENT & CI/CD# DEPLOYMENT & CI/CD
+
+# =============================================================================# =============================================================================
+
+.vercel.vercel
+
+.netlify/.netlify/
+
+
+
+# =============================================================================# =============================================================================
+
+# DOCUMENTATION# DOCUMENTATION
+
+# =============================================================================# =============================================================================
+
+docs/build/docs/build/
+
+.docusaurus/.docusaurus/
+
+
+
+# =============================================================================# =============================================================================
+
+# SPECIFIC TO THIS PROJECT# SPECIFIC TO THIS PROJECT
+
+# =============================================================================# =============================================================================
+
+# AI API Keys (should be in environment variables)# AI API Keys (should be in environment variables)
+
+.env.ai.env.ai
+
+.env.gemini.env.gemini
+
+
+
+# Local development databases# Local development databases
+
+local.sqlitelocal.sqlite
+
+dev.dbdev.db
+
+
+
+# Canvas cache files# Canvas cache files
+
+canvas-cache/canvas-cache/
+
+render-cache/render-cache/
+
+
+
+# Device simulation assets (if dynamically generated)# Device simulation assets (if dynamically generated)
+
+device-assets/generated/device-assets/generated/
+
+
+
+# Performance profiling outputs# Performance profiling outputs
+
+profiling/profiling/
+
+*.prof*.prof
+
+
+
+# Temporary design files# Temporary design files
+
+temp-designs/temp-designs/
+
+*.tmp.json*.tmp.json
+
+
+
+# Local storage simulation files (for testing)# Local storage simulation files (for testing)
+
+local-storage-mock/local-storage-mock/
+
+
+
+# =============================================================================# =============================================================================
+
+# SHARED SCHEMAS GENERATED FILES# SHARED SCHEMAS GENERATED FILES
+
+# =============================================================================# =============================================================================
+
+shared/schemas/generated/shared/schemas/generated/
+
+shared/types/generated/shared/types/generated/
+
+
+
+# =============================================================================# =============================================================================
+
+# PLATFORM SPECIFIC OUTPUTS# PLATFORM SPECIFIC OUTPUTS
+
+# =============================================================================# =============================================================================
+
+# Web build outputs# Web build outputs
+
+web/dist/web/dist/
+
+web/build/web/build/
+
+web/public/static/js/web/public/static/js/
+
+web/public/static/css/web/public/static/css/
+
+
+
+# iOS build outputs# iOS build outputs
+
+ios/DerivedData/ios/DerivedData/
+
+ios/build/ios/build/
+
+
+
+# Android build outputs# Android build outputs
+
+android/app/build/android/app/build/
+
+android/build/android/build/
+
+# Screenshots and temporary documentation files
+*.png
+*.jpg
+*.jpeg
+!ios/VYB/Assets.xcassets/**/*.png
+!ios/VYB/Assets.xcassets/**/*.jpg
+!web/public/favicon.ico
+!web/public/logo*.png
+
+# Shell scripts (except development helpers)
+*.sh
+!ios_dev_helper.sh
+
+# Temporary verification files
+*-verification.png
+*-screenshot.png
+*-current.png
+*-state.png
+*-interface.png
+current-app-state.png
+vyb-current-state.png
+vyb-screenshot.png
+ui-test-*.png
+test-*.png
