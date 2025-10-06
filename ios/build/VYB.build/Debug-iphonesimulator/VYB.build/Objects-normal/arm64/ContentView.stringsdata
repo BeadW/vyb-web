@@ -1,0 +1,520 @@
+{
+  "source": "/Users/brad/Code/vyb-web/ios/VYB/ContentView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Your Name",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 31
+        }
+      },
+      {
+        "comment": "",
+        "key": "Just now",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 36
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "Save",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 76
+        }
+      },
+      {
+        "comment": "",
+        "key": "Canvas Controls",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 167
+        }
+      },
+      {
+        "comment": "",
+        "key": "Layers: %lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 242
+        }
+      },
+      {
+        "comment": "",
+        "key": "Clear All",
+        "location": {
+          "startingColumn": 32,
+          "startingLine": 247
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 180
+        }
+      },
+      {
+        "comment": "",
+        "key": "Image",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 183
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shape",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 186
+        }
+      },
+      {
+        "comment": "",
+        "key": "Background",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 189
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add Layer",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 195
+        }
+      },
+      {
+        "comment": "",
+        "key": "Manage",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 211
+        }
+      },
+      {
+        "comment": "",
+        "key": "Edit",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 229
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quick Layer Access",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 259
+        }
+      },
+      {
+        "comment": "",
+        "key": "Z:%lld",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 283
+        }
+      },
+      {
+        "comment": "",
+        "key": "Z:%lld",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 497
+        }
+      },
+      {
+        "comment": "",
+        "key": "To Back",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 540
+        }
+      },
+      {
+        "comment": "",
+        "key": "Down",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 547
+        }
+      },
+      {
+        "comment": "",
+        "key": "Up",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 556
+        }
+      },
+      {
+        "comment": "",
+        "key": "To Front",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 563
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Styling",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 820
+        }
+      },
+      {
+        "comment": "",
+        "key": "Font Size: %lld",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 682
+        }
+      },
+      {
+        "comment": "",
+        "key": "Font Weight",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 690
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Style",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 712
+        }
+      },
+      {
+        "comment": "",
+        "key": "Italic",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 718
+        }
+      },
+      {
+        "comment": "",
+        "key": "Underline",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 731
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Color",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 745
+        }
+      },
+      {
+        "comment": "",
+        "key": "Effects",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 767
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shadow",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 774
+        }
+      },
+      {
+        "comment": "",
+        "key": "Stroke",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 787
+        }
+      },
+      {
+        "comment": "",
+        "key": "Alignment",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 801
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 824
+        }
+      },
+      {
+        "comment": "",
+        "key": "Layer Manager",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 932
+        }
+      },
+      {
+        "comment": "",
+        "key": "No Layers Yet",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 870
+        }
+      },
+      {
+        "comment": "",
+        "key": "Add layers to your canvas to manage them here",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 874
+        }
+      },
+      {
+        "comment": "",
+        "key": "Layer Management",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 884
+        }
+      },
+      {
+        "comment": "",
+        "key": "Deselect All",
+        "location": {
+          "startingColumn": 36,
+          "startingLine": 887
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 936
+        }
+      },
+      {
+        "comment": "",
+        "key": "Edit Layer",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1059
+        }
+      },
+      {
+        "comment": "",
+        "key": "Layer Information",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 991
+        }
+      },
+      {
+        "comment": "",
+        "key": "Layer Type",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 996
+        }
+      },
+      {
+        "comment": "",
+        "key": "Z: %lld",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1023
+        }
+      },
+      {
+        "comment": "",
+        "key": "Content",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 1034
+        }
+      },
+      {
+        "comment": "",
+        "key": "Layer content",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 1038
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1063
+        }
+      },
+      {
+        "comment": "",
+        "key": "Done",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 1068
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Styling",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1086
+        }
+      },
+      {
+        "comment": "",
+        "key": "Font Size: %lldpt",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1091
+        }
+      },
+      {
+        "comment": "",
+        "key": "Font Weight",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1099
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Color",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1122
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Style",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1145
+        }
+      },
+      {
+        "comment": "",
+        "key": "Italic",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1151
+        }
+      },
+      {
+        "comment": "",
+        "key": "Underline",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 1162
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Alignment",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1176
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Effects",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 1195
+        }
+      },
+      {
+        "comment": "",
+        "key": "Drop Shadow",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1206
+        }
+      },
+      {
+        "comment": "",
+        "key": "Text Stroke",
+        "location": {
+          "startingColumn": 38,
+          "startingLine": 1237
+        }
+      },
+      {
+        "comment": "",
+        "key": "Image Settings",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1298
+        }
+      },
+      {
+        "comment": "",
+        "key": "Image upload and editing features coming soon!",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1301
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shape Settings",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1319
+        }
+      },
+      {
+        "comment": "",
+        "key": "Shape customization features coming soon!",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1322
+        }
+      },
+      {
+        "comment": "",
+        "key": "Background Settings",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1340
+        }
+      },
+      {
+        "comment": "",
+        "key": "Background customization features coming soon!",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 1343
+        }
+      }
+    ]
+  },
+  "version": 1
+}

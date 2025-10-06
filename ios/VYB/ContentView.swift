@@ -988,6 +988,7 @@ struct LayerEditorModalView: View {
                         Text("Layer Information")
                             .font(.system(size: 18, weight: .semibold))
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .accessibilityIdentifier("Layer Information")
                             
                         VStack(alignment: .leading, spacing: 8) {
                             Text("Layer Type")
