@@ -727,4 +727,17 @@ ios/Logs/
 *.abi.json
 *.strings
 *.stringsdata
-ios/*.xcworkspace/xcuserdata/
+ios/*.xcworkspace/xcuserdata/# iOS Build Artifacts
+ios/DerivedData/
+ios/build/
+ios/.DS_Store
+ios/VYB/.DS_Store
+
+# Xcode
+*.xcuserdata
+*.xcuserdatad
+xcuserdata/
+
+# System Files
+.DS_Store
+*/.DS_Store

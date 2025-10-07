@@ -13,13 +13,40 @@ struct ContentView: View {
     @State private var selectedLayerForStyling: SimpleLayer?
     @State private var selectedLayerForEditing: String?
     
+    // AI Integration State
+    @State private var isAnalyzingWithAI = false
+    @State private var swipeProgress: CGFloat = 0
+    @State private var designVariations: [DesignVariation] = []
+    @State private var currentVariationIndex = 0
+    @State private var isInVariationMode = false
+    private let aiService = AIService()
+    
+    // AI Gesture Configuration
+    private let swipeThreshold: CGFloat = 50
+    private let aiActivationThreshold: CGFloat = 100
+    
     // Computed property to get current selected layer as single source of truth
     private var currentSelectedLayer: SimpleLayer? {
         guard let selectedId = selectedLayerForEditing else { return nil }
-        return layers.first(where: { $0.id == selectedId })
+        return currentLayers.first(where: { $0.id == selectedId })
+    }
+    
+    // Get current layers - either original or from selected variation
+    private var currentLayers: [SimpleLayer] {
+        if isInVariationMode && !designVariations.isEmpty && currentVariationIndex < designVariations.count {
+            return designVariations[currentVariationIndex].layers
+        }
+        return layers
     }
     
     var body: some View {
+        mainContent
+            .gesture(combinedGesture)
+            .overlay(swipeIndicatorOverlay)
+            .overlay(variationNavigationOverlay)
+    }
+    
+    private var mainContent: some View {
         VStack(spacing: 0) {
             // Facebook Header
             HStack(spacing: 12) {
@@ -120,29 +147,24 @@ struct ContentView: View {
                             .border(Color.gray.opacity(0.3), width: 1)
                         
                         // Render layers within canvas bounds, sorted by z-order
-                        ForEach(layers.sorted(by: { $0.zOrder < $1.zOrder }), id: \.id) { layer in
-                            if let index = layers.firstIndex(where: { $0.id == layer.id }) {
-                                LayerView(
-                                    layer: Binding(
-                                        get: { layers[index] },
-                                        set: { layers[index] = $0 }
-                                    ),
-                                    canvasWidth: canvasWidth,
-                                    canvasHeight: canvasHeight,
-                                    selectedLayerForEditing: selectedLayerForEditing,
-                                    onEditLayer: { layer in
+                        ForEach(currentLayers.sorted(by: { $0.zOrder < $1.zOrder }), id: \.id) { layer in
+                            LayerView(
+                                layer: .constant(layer), // Use the variation layer directly in read-only mode
+                                canvasWidth: canvasWidth,
+                                canvasHeight: canvasHeight,
+                                selectedLayerForEditing: selectedLayerForEditing,
+                                onEditLayer: { layer in
+                                    selectedLayerForEditing = layer.id
+                                    showLayerEditorModal = true
+                                },
+                                onToggleSelection: {
+                                    if selectedLayerForEditing == layer.id {
+                                        selectedLayerForEditing = nil
+                                    } else {
                                         selectedLayerForEditing = layer.id
-                                        showLayerEditorModal = true
-                                    },
-                                    onToggleSelection: {
-                                        if selectedLayerForEditing == layer.id {
-                                            selectedLayerForEditing = nil
-                                        } else {
-                                            selectedLayerForEditing = layer.id
-                                        }
                                     }
-                                )
-                            }
+                                }
+                            )
                         }
                     }
                     .frame(width: canvasWidth, height: canvasHeight)
@@ -454,7 +476,263 @@ struct ContentView: View {
         case .trailing: return "text.alignright"
         }
     }
+    
+    private var combinedGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if !isInVariationMode {
+                    // First time: swipe up to trigger AI analysis
+                    if value.translation.height < 0 {
+                        swipeProgress = min(abs(value.translation.height) / aiActivationThreshold, 1.0)
+                    }
+                }
+            }
+            .onEnded { value in
+                if !isInVariationMode {
+                    // Trigger AI analysis on upward swipe
+                    if abs(value.translation.height) > aiActivationThreshold && value.translation.height < 0 && !isAnalyzingWithAI {
+                        triggerAIAnalysis()
+                    }
+                    swipeProgress = 0
+                } else {
+                    // Navigate through variations with vertical swipes
+                    let swipeThreshold: CGFloat = 50
+                    if abs(value.translation.height) > swipeThreshold {
+                        if value.translation.height > 0 {
+                            // Swipe down - next variation
+                            navigateToNextVariation()
+                        } else {
+                            // Swipe up - previous variation  
+                            navigateToPreviousVariation()
+                        }
+                    } else if abs(value.translation.height) < 10 && abs(value.translation.width) < 10 {
+                        // Small movement = tap gesture - apply current variation and exit
+                        applyCurrentVariation()
+                    }
+                }
+            }
+    }
+    
+    private var swipeIndicatorOverlay: some View {
+        Group {
+            if swipeProgress > 0 && !isInVariationMode {
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        AISwipeIndicator(progress: swipeProgress, isAnalyzing: isAnalyzingWithAI)
+                        Spacer()
+                    }
+                    .padding(.bottom, 50)
+                }
+            }
+        }
+    }
+    
+    private var variationNavigationOverlay: some View {
+        Group {
+            // No overlay - just show the canvas changes directly
+        }
+    }
+    
+    // MARK: - AI Integration Functions
+    
+    private func triggerAIAnalysis() {
+        guard !isAnalyzingWithAI else { return }
+        
+        isAnalyzingWithAI = true
+        
+        Task {
+            do {
+                // Configure AI service with mock API key for now
+                await aiService.configure(apiKey: "mock-api-key")
+                
+                // Create canvas data for analysis
+                let canvasData = DesignCanvasData(
+                    id: UUID().uuidString,
+                    deviceType: "iPhone",
+                    dimensions: CanvasDimensions(width: canvasSize.width, height: canvasSize.height, pixelDensity: 2.0),
+                    layers: layers,
+                    metadata: CanvasMetadata(createdAt: Date(), modifiedAt: Date()),
+                    state: "active"
+                )
+                
+                // Request design variations from AI (this will fail with mock key, triggering fallback)
+                let _ = try await aiService.analyzeCanvas(canvasData)
+                // This line won't be reached due to mock API key failure - fallback will handle it
+                
+            } catch {
+                await MainActor.run {
+                    // Create fallback variations to demonstrate the UI
+                    self.designVariations = createDemoVariations()
+                    self.currentVariationIndex = 0
+                    self.isAnalyzingWithAI = false
+                    self.isInVariationMode = true
+                }
+                print("AI Analysis error: \(error)")
+            }
+        }
+    }
+    
+    // MARK: - AI Design Variations
+    
+    /// Creates demo design variations for the current canvas content.
+    /// In production, this would call the Gemini AI API to generate real variations.
+    private func createDemoVariations() -> [DesignVariation] {
+        var variations: [DesignVariation] = []
+        
+        // If canvas is empty, create some sample content for demo
+        let baseLayers = layers.isEmpty ? createSampleLayers() : layers
+        
+        // Original variation
+        variations.append(DesignVariation(
+            title: "Original",
+            description: "Your original design",
+            layers: baseLayers,
+            type: .original
+        ))
+        
+        // Color scheme variation
+        var colorVariationLayers = baseLayers
+        for i in 0..<colorVariationLayers.count {
+            if colorVariationLayers[i].type == "text" {
+                colorVariationLayers[i].textColor = Color.blue
+            }
+        }
+        variations.append(DesignVariation(
+            title: "Blue Theme",
+            description: "Enhanced with a cohesive blue color scheme",
+            layers: colorVariationLayers,
+            type: .colorScheme
+        ))
+        
+        // Typography variation  
+        var typographyVariationLayers = baseLayers
+        for i in 0..<typographyVariationLayers.count {
+            if typographyVariationLayers[i].type == "text" {
+                typographyVariationLayers[i].fontSize = max(typographyVariationLayers[i].fontSize + 4, 10)
+                typographyVariationLayers[i].fontWeight = .bold
+            }
+        }
+        variations.append(DesignVariation(
+            title: "Bold Typography",
+            description: "Improved text hierarchy with larger, bolder fonts",
+            layers: typographyVariationLayers,
+            type: .typography
+        ))
+        
+        // Layout variation
+        var layoutVariationLayers = baseLayers
+        for i in 0..<layoutVariationLayers.count {
+            // Move layers significantly for better composition
+            layoutVariationLayers[i].x += 50
+            layoutVariationLayers[i].y += 30
+        }
+        variations.append(DesignVariation(
+            title: "Balanced Layout",
+            description: "Optimized positioning following design principles",
+            layers: layoutVariationLayers,
+            type: .layout
+        ))
+        
+        return variations
+    }
+    
+    /// Creates sample layers for demo purposes when canvas is empty
+    private func createSampleLayers() -> [SimpleLayer] {
+        return [
+            SimpleLayer(
+                id: UUID().uuidString,
+                type: "text",
+                content: "Hello World",
+                x: 100,
+                y: 80,
+                zOrder: 0
+            ),
+            SimpleLayer(
+                id: UUID().uuidString,
+                type: "text",
+                content: "AI Generated",
+                x: 120,
+                y: 120,
+                zOrder: 1
+            )
+        ]
+    }
+    
+    /// Navigate to the next design variation (TikTok-style swipe down)
+    private func navigateToNextVariation() {
+        guard !designVariations.isEmpty else { return }
+        currentVariationIndex = (currentVariationIndex + 1) % designVariations.count
+    }
+    
+    /// Navigate to the previous design variation (TikTok-style swipe up)
+    private func navigateToPreviousVariation() {
+        guard !designVariations.isEmpty else { return }
+        currentVariationIndex = currentVariationIndex > 0 ? currentVariationIndex - 1 : designVariations.count - 1
+    }
+    
+    /// Exit variation browsing mode and return to normal editing
+    private func exitVariationMode() {
+        isInVariationMode = false
+        designVariations = []
+        currentVariationIndex = 0
+    }
+    
+    /// Apply the currently selected variation to the main canvas
+    private func applyCurrentVariation() {
+        guard !designVariations.isEmpty && currentVariationIndex < designVariations.count else { return }
+        
+        // Apply the current variation's layers to the main layers
+        layers = designVariations[currentVariationIndex].layers
+        
+        // Exit variation mode
+        exitVariationMode()
+    }
+
 }
+
+// MARK: - AI UI Components
+
+struct AISwipeIndicator: View {
+    let progress: CGFloat
+    let isAnalyzing: Bool
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            if isAnalyzing {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                    Text("Analyzing design...")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                VStack(spacing: 4) {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(.blue)
+                        .opacity(progress > 0.5 ? 1.0 : 0.6)
+                    
+                    Text("Swipe for AI suggestions")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.secondary)
+                        .opacity(progress > 0.3 ? 1.0 : 0.7)
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.9))
+        .cornerRadius(16)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .scaleEffect(0.8 + (progress * 0.2))
+        .opacity(0.8 + (progress * 0.2))
+    }
+}
+
+
 
 struct FacebookActionButton: View {
     let icon: String
@@ -477,8 +755,8 @@ struct FacebookActionButton: View {
     }
 }
 
-struct SimpleLayer: Identifiable {
-    let id: String
+public struct SimpleLayer: Identifiable, Codable {
+    public let id: String
     let type: String
     var content: String
     var x: Double
@@ -497,6 +775,133 @@ struct SimpleLayer: Identifiable {
     var hasStroke: Bool = false
     var strokeColor: Color = .white
     var strokeWidth: CGFloat = 1.0
+    
+    // Regular memberwise initializer for normal usage
+    init(id: String, type: String, content: String, x: Double, y: Double, zOrder: Int = 0) {
+        self.id = id
+        self.type = type
+        self.content = content
+        self.x = x
+        self.y = y
+        self.zOrder = zOrder
+        // Text styling properties use default values from declaration
+    }
+    
+    // Custom coding keys and methods for JSON serialization
+    enum CodingKeys: String, CodingKey {
+        case id, type, content, x, y, zOrder
+        case fontSize, fontWeight, textColor, isItalic, isUnderlined, textAlignment
+        case hasShadow, shadowColor, hasStroke, strokeColor, strokeWidth
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(type, forKey: .type)
+        try container.encode(content, forKey: .content)
+        try container.encode(x, forKey: .x)
+        try container.encode(y, forKey: .y)
+        try container.encode(zOrder, forKey: .zOrder)
+        try container.encode(fontSize, forKey: .fontSize)
+        
+        // Encode font weight as string
+        let fontWeightString: String
+        switch fontWeight {
+        case .light: fontWeightString = "light"
+        case .medium: fontWeightString = "medium"
+        case .bold: fontWeightString = "bold"
+        case .heavy: fontWeightString = "heavy"
+        default: fontWeightString = "medium"
+        }
+        try container.encode(fontWeightString, forKey: .fontWeight)
+        
+        try container.encode(textColor.description, forKey: .textColor)
+        try container.encode(isItalic, forKey: .isItalic)
+        try container.encode(isUnderlined, forKey: .isUnderlined)
+        
+        // Encode text alignment as string
+        let alignmentString: String
+        switch textAlignment {
+        case .leading: alignmentString = "leading"
+        case .center: alignmentString = "center"
+        case .trailing: alignmentString = "trailing"
+        default: alignmentString = "leading"
+        }
+        try container.encode(alignmentString, forKey: .textAlignment)
+        
+        try container.encode(hasShadow, forKey: .hasShadow)
+        try container.encode(shadowColor.description, forKey: .shadowColor)
+        try container.encode(hasStroke, forKey: .hasStroke)
+        try container.encode(strokeColor.description, forKey: .strokeColor)
+        try container.encode(strokeWidth, forKey: .strokeWidth)
+    }
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        type = try container.decode(String.self, forKey: .type)
+        content = try container.decode(String.self, forKey: .content)
+        x = try container.decode(Double.self, forKey: .x)
+        y = try container.decode(Double.self, forKey: .y)
+        zOrder = try container.decodeIfPresent(Int.self, forKey: .zOrder) ?? 0
+        fontSize = try container.decodeIfPresent(CGFloat.self, forKey: .fontSize) ?? 18
+        
+        // Decode font weight from string
+        if let fontWeightString = try container.decodeIfPresent(String.self, forKey: .fontWeight) {
+            switch fontWeightString {
+            case "light": fontWeight = .light
+            case "medium": fontWeight = .medium
+            case "bold": fontWeight = .bold
+            case "heavy": fontWeight = .heavy
+            default: fontWeight = .medium
+            }
+        } else {
+            fontWeight = .medium
+        }
+        
+        // Decode colors - simplified for now, will enhance later
+        if let colorString = try container.decodeIfPresent(String.self, forKey: .textColor) {
+            // For now, map basic color names - will improve color parsing later
+            textColor = colorString.contains("black") ? .black : .primary
+        } else {
+            textColor = .black
+        }
+        
+        isItalic = try container.decodeIfPresent(Bool.self, forKey: .isItalic) ?? false
+        isUnderlined = try container.decodeIfPresent(Bool.self, forKey: .isUnderlined) ?? false
+        
+        // Decode text alignment from string
+        if let alignmentString = try container.decodeIfPresent(String.self, forKey: .textAlignment) {
+            switch alignmentString {
+            case "leading": textAlignment = .leading
+            case "center": textAlignment = .center
+            case "trailing": textAlignment = .trailing
+            default: textAlignment = .leading
+            }
+        } else {
+            textAlignment = .leading
+        }
+        
+        hasShadow = try container.decodeIfPresent(Bool.self, forKey: .hasShadow) ?? false
+        
+        // Decode shadow color
+        if let colorString = try container.decodeIfPresent(String.self, forKey: .shadowColor) {
+            shadowColor = colorString.contains("gray") ? .gray : .gray
+        } else {
+            shadowColor = .gray
+        }
+        
+        hasStroke = try container.decodeIfPresent(Bool.self, forKey: .hasStroke) ?? false
+        
+        // Decode stroke color
+        if let colorString = try container.decodeIfPresent(String.self, forKey: .strokeColor) {
+            strokeColor = colorString.contains("white") ? .white : .white
+        } else {
+            strokeColor = .white
+        }
+        
+        strokeWidth = try container.decodeIfPresent(CGFloat.self, forKey: .strokeWidth) ?? 1.0
+    }
 }
 
 struct LayerManagementRow: View {
@@ -1411,6 +1816,396 @@ struct BackgroundLayerSettings: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
+}
+
+// MARK: - AI Service (TDD Implementation)
+
+public enum AIServiceError: LocalizedError, Equatable {
+    case notConfigured
+    case authError(String)
+    case validationError(String)
+    case networkError(Error)
+    case apiError(String)
+    case parseError(String)
+    case invalidURL
+    case encodingError(Error)
+    case httpError(Int)
+    case invalidResponse(String)
+    
+    public var errorDescription: String? {
+        switch self {
+        case .notConfigured:
+            return "AI Service not configured"
+        case .authError(let message):
+            return "Authentication Error: \(message)"
+        case .validationError(let message):
+            return "Validation Error: \(message)"
+        case .networkError(let error):
+            return "Network Error: \(error.localizedDescription)"
+        case .apiError(let message):
+            return "API Error: \(message)"
+        case .parseError(let message):
+            return "Parse Error: \(message)"
+        case .invalidURL:
+            return "Invalid API URL"
+        case .encodingError(let error):
+            return "Encoding Error: \(error.localizedDescription)"
+        case .httpError(let statusCode):
+            return "HTTP Error: \(statusCode)"
+        case .invalidResponse(let message):
+            return "Invalid Response: \(message)"
+        }
+    }
+    
+    public static func == (lhs: AIServiceError, rhs: AIServiceError) -> Bool {
+        switch (lhs, rhs) {
+        case (.notConfigured, .notConfigured),
+             (.invalidURL, .invalidURL):
+            return true
+        case (.authError(let lhsMessage), .authError(let rhsMessage)),
+             (.validationError(let lhsMessage), .validationError(let rhsMessage)),
+             (.apiError(let lhsMessage), .apiError(let rhsMessage)),
+             (.parseError(let lhsMessage), .parseError(let rhsMessage)),
+             (.invalidResponse(let lhsMessage), .invalidResponse(let rhsMessage)):
+            return lhsMessage == rhsMessage
+        case (.httpError(let lhsCode), .httpError(let rhsCode)):
+            return lhsCode == rhsCode
+        case (.networkError(let lhsError), .networkError(let rhsError)),
+             (.encodingError(let lhsError), .encodingError(let rhsError)):
+            return lhsError.localizedDescription == rhsError.localizedDescription
+        default:
+            return false
+        }
+    }
+}
+
+public struct CanvasDimensions: Codable {
+    public let width: Double
+    public let height: Double
+    public let pixelDensity: Double
+    
+    public init(width: Double, height: Double, pixelDensity: Double) {
+        self.width = width
+        self.height = height
+        self.pixelDensity = pixelDensity
+    }
+}
+
+public struct CanvasMetadata: Codable {
+    public let createdAt: Date
+    public let modifiedAt: Date
+    
+    public init(createdAt: Date, modifiedAt: Date) {
+        self.createdAt = createdAt
+        self.modifiedAt = modifiedAt
+    }
+}
+
+// Use the full SimpleLayer struct for AI service (already defined above with Codable support)
+
+public struct DesignCanvasData: Codable {
+    public let id: String
+    public let deviceType: String
+    public let dimensions: CanvasDimensions
+    public let layers: [SimpleLayer]
+    public let metadata: CanvasMetadata
+    public let state: String
+    
+    public init(id: String, deviceType: String, dimensions: CanvasDimensions, layers: [SimpleLayer], metadata: CanvasMetadata, state: String) {
+        self.id = id
+        self.deviceType = deviceType
+        self.dimensions = dimensions
+        self.layers = layers
+        self.metadata = metadata
+        self.state = state
+    }
+}
+
+public struct CanvasAnalysisResponse: Codable {
+    public let suggestions: [AISuggestion]
+    
+    public init(suggestions: [AISuggestion]) {
+        self.suggestions = suggestions
+    }
+}
+
+public struct AISuggestion: Codable {
+    public let id: String
+    public let type: String
+    public let description: String
+    public let confidence: Double
+    
+    public init(id: String, type: String, description: String, confidence: Double) {
+        self.id = id
+        self.type = type
+        self.description = description
+        self.confidence = confidence
+    }
+}
+
+// MARK: - Gemini AI API Models
+public struct GeminiRequest: Codable {
+    public let contents: [GeminiContent]
+    public let generationConfig: GeminiGenerationConfig
+    
+    public init(contents: [GeminiContent], generationConfig: GeminiGenerationConfig) {
+        self.contents = contents
+        self.generationConfig = generationConfig
+    }
+}
+
+public struct GeminiContent: Codable {
+    public let parts: [GeminiPart]
+    
+    public init(parts: [GeminiPart]) {
+        self.parts = parts
+    }
+}
+
+public struct GeminiPart: Codable {
+    public let text: String
+    
+    public init(text: String) {
+        self.text = text
+    }
+}
+
+public struct GeminiGenerationConfig: Codable {
+    public let temperature: Double
+    public let topK: Int
+    public let topP: Double
+    public let maxOutputTokens: Int
+    
+    public init(temperature: Double = 0.7, topK: Int = 40, topP: Double = 0.95, maxOutputTokens: Int = 1024) {
+        self.temperature = temperature
+        self.topK = topK
+        self.topP = topP
+        self.maxOutputTokens = maxOutputTokens
+    }
+}
+
+public struct GeminiResponse: Codable {
+    public let candidates: [GeminiCandidate]
+    
+    public init(candidates: [GeminiCandidate]) {
+        self.candidates = candidates
+    }
+}
+
+public struct GeminiCandidate: Codable {
+    public let content: GeminiContent
+    public let finishReason: String?
+    
+    public init(content: GeminiContent, finishReason: String?) {
+        self.content = content
+        self.finishReason = finishReason
+    }
+}
+
+public class AIService {
+    private var apiKey: String?
+    private let baseURL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
+    private let session = URLSession.shared
+    
+    public var isConfigured: Bool {
+        return apiKey != nil
+    }
+    
+    public init() {
+        // Initialize with environment variable if available
+        if let envApiKey = ProcessInfo.processInfo.environment["GEMINI_API_KEY"] {
+            self.apiKey = envApiKey
+        }
+    }
+    
+    public func configure(apiKey: String) {
+        self.apiKey = apiKey
+    }
+    
+    public func analyzeCanvas(_ canvasData: DesignCanvasData) async throws -> CanvasAnalysisResponse {
+        guard let apiKey = apiKey else {
+            throw AIServiceError.notConfigured
+        }
+        
+        // Create the prompt for Gemini AI
+        let prompt = createAnalysisPrompt(from: canvasData)
+        
+        // Create the request
+        let geminiRequest = GeminiRequest(
+            contents: [GeminiContent(parts: [GeminiPart(text: prompt)])],
+            generationConfig: GeminiGenerationConfig()
+        )
+        
+        // Build the URL with API key
+        guard let url = URL(string: "\(baseURL)?key=\(apiKey)") else {
+            throw AIServiceError.invalidURL
+        }
+        
+        // Create HTTP request
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        
+        // Encode the request body
+        do {
+            request.httpBody = try JSONEncoder().encode(geminiRequest)
+        } catch {
+            throw AIServiceError.encodingError(error)
+        }
+        
+        // Make the API call
+        do {
+            let (data, response) = try await session.data(for: request)
+            
+            // Check HTTP response
+            if let httpResponse = response as? HTTPURLResponse {
+                guard httpResponse.statusCode == 200 else {
+                    throw AIServiceError.httpError(httpResponse.statusCode)
+                }
+            }
+            
+            // Decode the response
+            let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
+            
+            // Parse suggestions from the response
+            return try parseGeminiResponse(geminiResponse)
+            
+        } catch let error as AIServiceError {
+            throw error
+        } catch {
+            throw AIServiceError.networkError(error)
+        }
+    }
+    
+    private func createAnalysisPrompt(from canvasData: DesignCanvasData) -> String {
+        let layersDescription = canvasData.layers.map { layer in
+            "- \(layer.type.capitalized): '\(layer.content)' at position (\(layer.x), \(layer.y))"
+        }.joined(separator: "\n")
+        
+        return """
+        You are a professional design AI assistant. Analyze this mobile app design canvas and provide creative suggestions for improvement.
+        
+        Canvas Details:
+        - Device: \(canvasData.deviceType)
+        - Dimensions: \(canvasData.dimensions.width)x\(canvasData.dimensions.height)
+        - Current state: \(canvasData.state)
+        
+        Current layers:
+        \(layersDescription.isEmpty ? "No layers present" : layersDescription)
+        
+        Please provide 3-5 specific design suggestions in the following JSON format:
+        {
+          "suggestions": [
+            {
+              "id": "unique-id-1",
+              "type": "layout|typography|color|content|spacing",
+              "description": "Specific actionable suggestion",
+              "confidence": 0.85
+            }
+          ]
+        }
+        
+        Focus on:
+        1. Visual hierarchy and composition
+        2. Typography and readability
+        3. Color harmony and contrast
+        4. Layout and spacing improvements
+        5. Content structure and flow
+        
+        Provide only the JSON response, no additional text.
+        """
+    }
+    
+    private func parseGeminiResponse(_ response: GeminiResponse) throws -> CanvasAnalysisResponse {
+        guard let candidate = response.candidates.first,
+              let part = candidate.content.parts.first else {
+            throw AIServiceError.invalidResponse("No response content")
+        }
+        
+        let responseText = part.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Extract JSON from the response (handle cases where AI includes extra text)
+        guard let jsonStart = responseText.range(of: "{"),
+              let jsonEnd = responseText.range(of: "}", options: .backwards) else {
+            throw AIServiceError.invalidResponse("No JSON found in response")
+        }
+        
+        let jsonString = String(responseText[jsonStart.lowerBound...jsonEnd.upperBound])
+        
+        do {
+            let jsonData = jsonString.data(using: .utf8)!
+            let analysisResponse = try JSONDecoder().decode(CanvasAnalysisResponse.self, from: jsonData)
+            return analysisResponse
+        } catch {
+            // Fallback: Create suggestions from the raw text
+            return createFallbackSuggestions(from: responseText)
+        }
+    }
+    
+    private func createFallbackSuggestions(from text: String) -> CanvasAnalysisResponse {
+        // If JSON parsing fails, create basic suggestions from the text
+        let suggestions = [
+            AISuggestion(
+                id: UUID().uuidString,
+                type: "general",
+                description: "AI suggested improvements based on current design",
+                confidence: 0.7
+            )
+        ]
+        
+        return CanvasAnalysisResponse(suggestions: suggestions)
+    }
+}
+
+// MARK: - AI Variation Models
+
+struct DesignVariation: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let layers: [SimpleLayer]  // Complete layer set for this variation
+    let type: VariationType
+}
+
+enum VariationType {
+    case original
+    case colorScheme
+    case layout
+    case typography
+    case composition
+    case mixed
+}
+
+struct DesignSuggestion: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let type: SuggestionType
+    let changes: [LayerChange]
+}
+
+enum SuggestionType {
+    case colorScheme
+    case layout
+    case typography
+    case composition
+    case general
+}
+
+struct LayerChange {
+    let layerId: String?
+    let changeType: ChangeType
+    let newValue: String
+}
+
+enum ChangeType {
+    case backgroundColor
+    case textColor
+    case fontSize
+    case position
+    case content
+    case add
+    case remove
 }
 
 #Preview {
