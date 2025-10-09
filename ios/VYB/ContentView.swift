@@ -13,17 +13,19 @@ struct ContentView: View {
     @State private var selectedLayerForStyling: SimpleLayer?
     @State private var selectedLayerForEditing: String?
     
-    // AI Integration State
+    // AI Integration State - History Graph System
     @State private var isAnalyzingWithAI = false
-    @State private var swipeProgress: CGFloat = 0
-    @State private var designVariations: [DesignVariation] = []
-    @State private var currentVariationIndex = 0
-    @State private var isInVariationMode = false
+    @State private var historyStates: [HistoryState] = []
+    @State private var currentHistoryIndex = 0
+    @State private var scrollOffset: CGFloat = 0
+    @State private var showingAPIKeyAlert = false
+    @State private var apiKeyInput = ""
+    @State private var geminiAPIKey = "AIzaSyABpqGNJGVbTVVp1p2ZdrgBSaMCovakEog"
     private let aiService = AIService()
     
-    // AI Gesture Configuration
-    private let swipeThreshold: CGFloat = 50
-    private let aiActivationThreshold: CGFloat = 100
+    // History Navigation Configuration
+    private let scrollThreshold: CGFloat = 50
+    private let aiTriggerThreshold: CGFloat = 100
     
     // Computed property to get current selected layer as single source of truth
     private var currentSelectedLayer: SimpleLayer? {
@@ -31,19 +33,37 @@ struct ContentView: View {
         return currentLayers.first(where: { $0.id == selectedId })
     }
     
-    // Get current layers - either original or from selected variation
+    // Convert SimpleLayerData to SimpleLayer
+    private func convertToSimpleLayer(_ layerData: SimpleLayerData) -> SimpleLayer {
+        return SimpleLayer(
+            id: layerData.id,
+            type: layerData.type,
+            content: layerData.content,
+            x: layerData.x,
+            y: layerData.y
+        )
+    }
+    
+    // Get current layers from history state
     private var currentLayers: [SimpleLayer] {
-        if isInVariationMode && !designVariations.isEmpty && currentVariationIndex < designVariations.count {
-            return designVariations[currentVariationIndex].layers
+        if historyStates.isEmpty {
+            return layers
         }
-        return layers
+        guard currentHistoryIndex >= 0 && currentHistoryIndex < historyStates.count else {
+            return layers
+        }
+        return historyStates[currentHistoryIndex].layers
+    }
+    
+    // Check if we're at the current editable state (latest in history)
+    private var isAtCurrentState: Bool {
+        return currentHistoryIndex == historyStates.count - 1
     }
     
     var body: some View {
         mainContent
             .gesture(combinedGesture)
             .overlay(swipeIndicatorOverlay)
-            .overlay(variationNavigationOverlay)
     }
     
     private var mainContent: some View {
@@ -148,11 +168,12 @@ struct ContentView: View {
                         
                         // Render layers within canvas bounds, sorted by z-order
                         ForEach(currentLayers.sorted(by: { $0.zOrder < $1.zOrder }), id: \.id) { layer in
-                            LayerView(
-                                layer: .constant(layer), // Use the variation layer directly in read-only mode
+                            HistoryLayerView(
+                                layer: layer,
                                 canvasWidth: canvasWidth,
                                 canvasHeight: canvasHeight,
                                 selectedLayerForEditing: selectedLayerForEditing,
+                                isEditable: true,
                                 onEditLayer: { layer in
                                     selectedLayerForEditing = layer.id
                                     showLayerEditorModal = true
@@ -163,13 +184,18 @@ struct ContentView: View {
                                     } else {
                                         selectedLayerForEditing = layer.id
                                     }
+                                },
+                                onLayerModified: { modifiedLayer in
+                                    updateLayerInHistory(modifiedLayer)
                                 }
                             )
                         }
                     }
                     .frame(width: canvasWidth, height: canvasHeight)
                     .onAppear {
+                        NSLog("🎨 ContentView appeared - Initializing history system")
                         canvasSize = CGSize(width: canvasWidth, height: canvasHeight)
+                        initializeHistory()
                     }
                     .onChange(of: geometry.size) { oldValue, newValue in
                         let newCanvasWidth = newValue.width
@@ -185,11 +211,11 @@ struct ContentView: View {
             
             // Facebook Action Buttons - Keep authentic post structure
             HStack {
-                FacebookActionButton(icon: "hand.thumbsup", label: "Like")
+                FacebookActionButton(icon: "hand.thumbsup", text: "Like", color: .secondary)
                 Spacer()
-                FacebookActionButton(icon: "bubble.left", label: "Comment")
+                FacebookActionButton(icon: "bubble.left", text: "Comment", color: .secondary)
                 Spacer()
-                FacebookActionButton(icon: "arrowshape.turn.up.right", label: "Share")
+                FacebookActionButton(icon: "arrowshape.turn.up.right", text: "Share", color: .secondary)
             }
             .padding(.horizontal, 32)
             .padding(.vertical, 10)
@@ -351,7 +377,7 @@ struct ContentView: View {
                             selectedLayerForEditing = currentLayer.id
                             showLayerEditorModal = true
                         } else {
-                            print("Layer not found in manager: \(layer.id)")
+                            NSLog("Layer not found in manager: \(layer.id)")
                         }
                     }
                 }
@@ -399,6 +425,16 @@ struct ContentView: View {
                 }
             }
         }
+        .alert("Gemini API Key Required", isPresented: $showingAPIKeyAlert) {
+            TextField("Enter your Gemini API key", text: $apiKeyInput)
+            Button("Cancel", role: .cancel) { }
+            Button("Save") {
+                geminiAPIKey = apiKeyInput
+                apiKeyInput = ""
+            }
+        } message: {
+            Text("To use AI-powered design variations, please enter your Google Gemini API key. You can get one from the Google AI Studio.")
+        }
     }
     
     private func addLayer(type: String) {
@@ -411,11 +447,15 @@ struct ContentView: View {
             content: type == "text" ? "New Text" : type.capitalized,
             x: Double.random(in: 50...(canvasWidth - 50)),
             y: Double.random(in: 50...(canvasHeight - 50)),
-            zOrder: layers.count
+            zOrder: currentLayers.count
         )
-        layers.append(newLayer)
         
-        // Don't auto-select or show modal - let user manually tap to edit
+        // Update current layers and save to history
+        var updatedLayers = currentLayers
+        updatedLayers.append(newLayer)
+        layers = updatedLayers
+        
+        saveCurrentStateToHistory(source: .userEdit, title: "Added \(type.capitalized) Layer")
     }
     
     private func moveLayerToFront(_ layerId: String) {
@@ -469,225 +509,254 @@ struct ContentView: View {
         }
     }
     
-    private func alignmentIcon(_ alignment: TextAlignment) -> String {
+    private func alignmentIcon(_ alignment: CustomTextAlignment) -> String {
         switch alignment {
-        case .leading: return "text.alignleft"
+        case .left: return "text.alignleft"
         case .center: return "text.aligncenter"
-        case .trailing: return "text.alignright"
+        case .right: return "text.alignright"
+        case .justify: return "text.justify"
         }
     }
     
     private var combinedGesture: some Gesture {
         DragGesture()
             .onChanged { value in
-                if !isInVariationMode {
-                    // First time: swipe up to trigger AI analysis
-                    if value.translation.height < 0 {
-                        swipeProgress = min(abs(value.translation.height) / aiActivationThreshold, 1.0)
-                    }
-                }
+                NSLog("� Scroll gesture: height=\(value.translation.height)")
+                scrollOffset = value.translation.height
             }
             .onEnded { value in
-                if !isInVariationMode {
-                    // Trigger AI analysis on upward swipe
-                    if abs(value.translation.height) > aiActivationThreshold && value.translation.height < 0 && !isAnalyzingWithAI {
-                        triggerAIAnalysis()
-                    }
-                    swipeProgress = 0
-                } else {
-                    // Navigate through variations with vertical swipes
-                    let swipeThreshold: CGFloat = 50
-                    if abs(value.translation.height) > swipeThreshold {
-                        if value.translation.height > 0 {
-                            // Swipe down - next variation
-                            navigateToNextVariation()
-                        } else {
-                            // Swipe up - previous variation  
-                            navigateToPreviousVariation()
-                        }
-                    } else if abs(value.translation.height) < 10 && abs(value.translation.width) < 10 {
-                        // Small movement = tap gesture - apply current variation and exit
-                        applyCurrentVariation()
+                let scrollDistance = abs(value.translation.height)
+                
+                if scrollDistance > scrollThreshold {
+                    if value.translation.height > 0 {
+                        // Scroll down - go to previous history state
+                        navigateToPreviousState()
+                    } else {
+                        // Scroll up - go to next history state or trigger AI
+                        navigateToNextState()
                     }
                 }
+                scrollOffset = 0
             }
     }
     
     private var swipeIndicatorOverlay: some View {
-        Group {
-            if swipeProgress > 0 && !isInVariationMode {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        AISwipeIndicator(progress: swipeProgress, isAnalyzing: isAnalyzingWithAI)
-                        Spacer()
-                    }
-                    .padding(.bottom, 50)
+        VStack {
+            Spacer()
+            HStack {
+                Spacer()
+                if isAnalyzingWithAI {
+                    HistoryIndicator(
+                        currentIndex: currentHistoryIndex,
+                        totalStates: historyStates.count,
+                        isAnalyzing: true,
+                        isAtCurrentState: isAtCurrentState
+                    )
+                } else if !historyStates.isEmpty {
+                    HistoryIndicator(
+                        currentIndex: currentHistoryIndex,
+                        totalStates: historyStates.count,
+                        isAnalyzing: false,
+                        isAtCurrentState: isAtCurrentState
+                    )
                 }
+                Spacer()
             }
+            .padding(.bottom, 50)
         }
     }
     
-    private var variationNavigationOverlay: some View {
-        Group {
-            // No overlay - just show the canvas changes directly
-        }
-    }
+
     
     // MARK: - AI Integration Functions
     
     private func triggerAIAnalysis() {
-        guard !isAnalyzingWithAI else { return }
+        NSLog("🚀 triggerAIAnalysis() called")
         
+        guard !isAnalyzingWithAI else { 
+            NSLog("❌ Already analyzing, returning")
+            return 
+        }
+        
+        // Check if API key is configured
+        guard !geminiAPIKey.isEmpty else {
+            NSLog("❌ API key is empty, showing alert")
+            showingAPIKeyAlert = true
+            return
+        }
+        
+        NSLog("✅ Starting AI analysis with current layers...")
         isAnalyzingWithAI = true
         
         Task {
             do {
-                // Configure AI service with mock API key for now
-                await aiService.configure(apiKey: "mock-api-key")
+                // Configure AI service with user's API key
+                await aiService.configure(apiKey: geminiAPIKey)
                 
-                // Create canvas data for analysis
-                let canvasData = DesignCanvasData(
-                    id: UUID().uuidString,
-                    deviceType: "iPhone",
-                    dimensions: CanvasDimensions(width: canvasSize.width, height: canvasSize.height, pixelDensity: 2.0),
-                    layers: layers,
-                    metadata: CanvasMetadata(createdAt: Date(), modifiedAt: Date()),
-                    state: "active"
-                )
+                // Get current layers from history state
+                let baseLayers = currentLayers.isEmpty ? createSampleLayers() : currentLayers
+                let variations = try await aiService.generateDesignVariations(for: baseLayers)
                 
-                // Request design variations from AI (this will fail with mock key, triggering fallback)
-                let _ = try await aiService.analyzeCanvas(canvasData)
-                // This line won't be reached due to mock API key failure - fallback will handle it
+                await MainActor.run {
+                    // Add each AI variation as a new history state
+                    for variation in variations {
+                        let modifiedLayers = self.applyVariationToLayers(variation, originalLayers: baseLayers)
+                        let historyState = HistoryState(
+                            layers: modifiedLayers,
+                            source: .aiGenerated,
+                            title: variation.title
+                        )
+                        self.historyStates.append(historyState)
+                    }
+                    
+                    // Move to first new AI suggestion
+                    if !variations.isEmpty {
+                        self.currentHistoryIndex = self.historyStates.count - variations.count
+                    }
+                    
+                    self.isAnalyzingWithAI = false
+                    NSLog("✅ AI Analysis completed - added \(variations.count) states to history")
+                }
                 
             } catch {
                 await MainActor.run {
-                    // Create fallback variations to demonstrate the UI
-                    self.designVariations = createDemoVariations()
-                    self.currentVariationIndex = 0
                     self.isAnalyzingWithAI = false
-                    self.isInVariationMode = true
+                    NSLog("❌ AI Analysis error: \(error)")
                 }
-                print("AI Analysis error: \(error)")
             }
         }
     }
     
     // MARK: - AI Design Variations
-    
-    /// Creates demo design variations for the current canvas content.
-    /// In production, this would call the Gemini AI API to generate real variations.
-    private func createDemoVariations() -> [DesignVariation] {
-        var variations: [DesignVariation] = []
-        
-        // If canvas is empty, create some sample content for demo
-        let baseLayers = layers.isEmpty ? createSampleLayers() : layers
-        
-        // Original variation
-        variations.append(DesignVariation(
-            title: "Original",
-            description: "Your original design",
-            layers: baseLayers,
-            type: .original
-        ))
-        
-        // Color scheme variation
-        var colorVariationLayers = baseLayers
-        for i in 0..<colorVariationLayers.count {
-            if colorVariationLayers[i].type == "text" {
-                colorVariationLayers[i].textColor = Color.blue
-            }
-        }
-        variations.append(DesignVariation(
-            title: "Blue Theme",
-            description: "Enhanced with a cohesive blue color scheme",
-            layers: colorVariationLayers,
-            type: .colorScheme
-        ))
-        
-        // Typography variation  
-        var typographyVariationLayers = baseLayers
-        for i in 0..<typographyVariationLayers.count {
-            if typographyVariationLayers[i].type == "text" {
-                typographyVariationLayers[i].fontSize = max(typographyVariationLayers[i].fontSize + 4, 10)
-                typographyVariationLayers[i].fontWeight = .bold
-            }
-        }
-        variations.append(DesignVariation(
-            title: "Bold Typography",
-            description: "Improved text hierarchy with larger, bolder fonts",
-            layers: typographyVariationLayers,
-            type: .typography
-        ))
-        
-        // Layout variation
-        var layoutVariationLayers = baseLayers
-        for i in 0..<layoutVariationLayers.count {
-            // Move layers significantly for better composition
-            layoutVariationLayers[i].x += 50
-            layoutVariationLayers[i].y += 30
-        }
-        variations.append(DesignVariation(
-            title: "Balanced Layout",
-            description: "Optimized positioning following design principles",
-            layers: layoutVariationLayers,
-            type: .layout
-        ))
-        
-        return variations
-    }
+
     
     /// Creates sample layers for demo purposes when canvas is empty
     private func createSampleLayers() -> [SimpleLayer] {
         return [
             SimpleLayer(
                 id: UUID().uuidString,
-                type: "text",
-                content: "Hello World",
-                x: 100,
-                y: 80,
+                type: "background",
+                content: "Background",
+                x: 150,
+                y: 100,
                 zOrder: 0
             ),
             SimpleLayer(
                 id: UUID().uuidString,
                 type: "text",
-                content: "AI Generated",
-                x: 120,
-                y: 120,
+                content: "Hello World",
+                x: 100,
+                y: 80,
                 zOrder: 1
+            ),
+            SimpleLayer(
+                id: UUID().uuidString,
+                type: "image",
+                content: "Photo",
+                x: 200,
+                y: 120,
+                zOrder: 2
+            ),
+            SimpleLayer(
+                id: UUID().uuidString,
+                type: "shape",
+                content: "Circle",
+                x: 120,
+                y: 160,
+                zOrder: 3
+            ),
+            SimpleLayer(
+                id: UUID().uuidString,
+                type: "text",
+                content: "Sample Text",
+                x: 140,
+                y: 200,
+                zOrder: 4
             )
         ]
     }
     
-    /// Navigate to the next design variation (TikTok-style swipe down)
-    private func navigateToNextVariation() {
-        guard !designVariations.isEmpty else { return }
-        currentVariationIndex = (currentVariationIndex + 1) % designVariations.count
+    // MARK: - Variation Navigation Functions
+    
+    /// Apply a design variation to the original layers
+    private func applyVariationToLayers(_ variation: DesignVariation, originalLayers: [SimpleLayer]) -> [SimpleLayer] {
+        return originalLayers.map { layer in
+            // Find matching layer in variation
+            if let variationLayer = variation.layers.first(where: { $0.id == layer.id }) {
+                // Create modified layer with variation data
+                var modifiedLayer = layer
+                
+                // Apply changes from variation layer
+                modifiedLayer.content = variationLayer.content
+                modifiedLayer.x = variationLayer.x
+                modifiedLayer.y = variationLayer.y
+                
+                return modifiedLayer
+            }
+            return layer
+        }
     }
     
-    /// Navigate to the previous design variation (TikTok-style swipe up)
-    private func navigateToPreviousVariation() {
-        guard !designVariations.isEmpty else { return }
-        currentVariationIndex = currentVariationIndex > 0 ? currentVariationIndex - 1 : designVariations.count - 1
+    /// Navigate to previous state in history
+    private func navigateToPreviousState() {
+        if currentHistoryIndex > 0 {
+            currentHistoryIndex -= 1
+            NSLog("📜 Navigated to history index: \(currentHistoryIndex)")
+        } else {
+            NSLog("� Already at first history state")
+        }
     }
     
-    /// Exit variation browsing mode and return to normal editing
-    private func exitVariationMode() {
-        isInVariationMode = false
-        designVariations = []
-        currentVariationIndex = 0
+    /// Navigate to next state in history or trigger AI if at the end
+    private func navigateToNextState() {
+        if currentHistoryIndex < historyStates.count - 1 {
+            currentHistoryIndex += 1
+            NSLog("📜 Navigated to history index: \(currentHistoryIndex)")
+        } else {
+            // At the end of history - trigger AI for more suggestions
+            NSLog("� At end of history - triggering AI for more suggestions")
+            triggerAIAnalysis()
+        }
     }
     
-    /// Apply the currently selected variation to the main canvas
-    private func applyCurrentVariation() {
-        guard !designVariations.isEmpty && currentVariationIndex < designVariations.count else { return }
+    /// Add current state to history
+    private func saveCurrentStateToHistory(source: HistorySource, title: String? = nil) {
+        let newState = HistoryState(layers: layers, source: source, title: title)
         
-        // Apply the current variation's layers to the main layers
-        layers = designVariations[currentVariationIndex].layers
+        // Remove any states after current index if user made changes
+        if currentHistoryIndex < historyStates.count - 1 {
+            historyStates.removeLast(historyStates.count - currentHistoryIndex - 1)
+        }
         
-        // Exit variation mode
-        exitVariationMode()
+        historyStates.append(newState)
+        currentHistoryIndex = historyStates.count - 1
+        
+        NSLog("💾 Saved state to history: '\(newState.title)' at index \(currentHistoryIndex)")
+    }
+    
+    /// Initialize history with current state
+    private func initializeHistory() {
+        if historyStates.isEmpty {
+            let initialState = HistoryState(
+                layers: layers.isEmpty ? createSampleLayers() : layers,
+                source: .initial,
+                title: "Initial Canvas"
+            )
+            historyStates = [initialState]
+            currentHistoryIndex = 0
+            layers = historyStates[0].layers
+            NSLog("🎯 Initialized history with initial state")
+        }
+    }
+    
+    /// Update a specific layer and save to history
+    private func updateLayerInHistory(_ modifiedLayer: SimpleLayer) {
+        var updatedLayers = currentLayers
+        if let index = updatedLayers.firstIndex(where: { $0.id == modifiedLayer.id }) {
+            updatedLayers[index] = modifiedLayer
+            layers = updatedLayers
+            saveCurrentStateToHistory(source: .userEdit, title: "Modified \(modifiedLayer.type.capitalized) Layer")
+        }
     }
 
 }
@@ -701,11 +770,15 @@ struct AISwipeIndicator: View {
     var body: some View {
         VStack(spacing: 8) {
             if isAnalyzing {
-                HStack(spacing: 8) {
+                VStack(spacing: 6) {
                     ProgressView()
-                        .scaleEffect(0.8)
-                    Text("Analyzing design...")
+                        .scaleEffect(0.9)
+                        .tint(.blue)
+                    Text("AI is generating variations...")
                         .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.blue)
+                    Text("This may take a few seconds")
+                        .font(.system(size: 11, weight: .regular))
                         .foregroundColor(.secondary)
                 }
             } else {
@@ -732,30 +805,242 @@ struct AISwipeIndicator: View {
     }
 }
 
-
-
-struct FacebookActionButton: View {
-    let icon: String
-    let label: String
+struct HistoryIndicator: View {
+    let currentIndex: Int
+    let totalStates: Int
+    let isAnalyzing: Bool
+    let isAtCurrentState: Bool
     
     var body: some View {
-        Button(action: {}) {
-            HStack(spacing: 6) {
-                Image(systemName: icon)
-                    .font(.system(size: 16, weight: .medium))
-                Text(label)
-                    .font(.system(size: 15, weight: .medium))
+        VStack(spacing: 8) {
+            if isAnalyzing {
+                VStack(spacing: 6) {
+                    ProgressView()
+                        .scaleEffect(0.9)
+                        .tint(.blue)
+                    Text("AI is generating suggestions...")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.blue)
+                }
+            } else {
+                VStack(spacing: 6) {
+                    // History position indicator
+                    HStack(spacing: 4) {
+                        ForEach(0..<min(totalStates, 7), id: \.self) { index in
+                            Circle()
+                                .fill(index == currentIndex ? Color.blue : Color.gray.opacity(0.3))
+                                .frame(width: 8, height: 8)
+                        }
+                        if totalStates > 7 {
+                            Text("...")
+                                .font(.system(size: 12))
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    // Current state info
+                    VStack(spacing: 2) {
+                        if currentIndex < totalStates {
+                            let currentState = totalStates > currentIndex ? "State \(currentIndex + 1) of \(totalStates)" : "End of History"
+                            Text(currentState)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        // Current state indicator
+                        if isAtCurrentState {
+                            Text("📍 Current")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.blue)
+                        } else {
+                            Text("� History")
+                                .font(.system(size: 10, weight: .medium))
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    
+                    // Navigation hints
+                    HStack(spacing: 16) {
+                        if currentIndex > 0 {
+                            HStack(spacing: 2) {
+                                Image(systemName: "arrow.down")
+                                    .font(.system(size: 10))
+                                Text("Previous")
+                                    .font(.system(size: 10))
+                            }
+                            .foregroundColor(.gray)
+                        }
+                        
+                        if currentIndex < totalStates - 1 {
+                            HStack(spacing: 2) {
+                                Image(systemName: "arrow.up")
+                                    .font(.system(size: 10))
+                                Text("Next")
+                                    .font(.system(size: 10))
+                            }
+                            .foregroundColor(.gray)
+                        } else {
+                            HStack(spacing: 2) {
+                                Image(systemName: "arrow.up")
+                                    .font(.system(size: 10))
+                                Text("AI More")
+                                    .font(.system(size: 10))
+                            }
+                            .foregroundColor(.blue)
+                        }
+                    }
+                }
             }
-            .padding(.horizontal, 18)
-            .padding(.vertical, 8)
-            .background(Color.gray.opacity(0.08))
-            .cornerRadius(16)
         }
-        .buttonStyle(PlainButtonStyle())
+        .padding(12)
+        .background(Color.white.opacity(0.9))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
     }
 }
 
-public struct SimpleLayer: Identifiable, Codable {
+// MARK: - History-aware Layer View
+struct HistoryLayerView: View {
+    let layer: SimpleLayer
+    let canvasWidth: Double
+    let canvasHeight: Double
+    let selectedLayerForEditing: String?
+    let isEditable: Bool
+    let onEditLayer: (SimpleLayer) -> Void
+    let onToggleSelection: () -> Void
+    let onLayerModified: (SimpleLayer) -> Void
+    
+    @State private var editableLayer: SimpleLayer
+    @State private var dragOffset = CGSize.zero
+    @State private var isDragging = false
+    
+    init(layer: SimpleLayer, canvasWidth: Double, canvasHeight: Double, selectedLayerForEditing: String?, isEditable: Bool, onEditLayer: @escaping (SimpleLayer) -> Void, onToggleSelection: @escaping () -> Void, onLayerModified: @escaping (SimpleLayer) -> Void) {
+        self.layer = layer
+        self.canvasWidth = canvasWidth
+        self.canvasHeight = canvasHeight
+        self.selectedLayerForEditing = selectedLayerForEditing
+        self.isEditable = isEditable
+        self.onEditLayer = onEditLayer
+        self.onToggleSelection = onToggleSelection
+        self.onLayerModified = onLayerModified
+        self._editableLayer = State(initialValue: layer)
+    }
+    
+    private var layerContent: some View {
+        Group {
+            if layer.type == "text" {
+                textLayerView
+            } else if layer.type == "image" {
+                imageLayerView
+            } else if layer.type == "shape" {
+                shapeLayerView
+            } else if layer.type == "background" {
+                backgroundLayerView
+            }
+        }
+    }
+    
+    private func swiftUITextAlignment(_ alignment: CustomTextAlignment) -> SwiftUI.TextAlignment {
+        switch alignment {
+        case .left: return .leading
+        case .center: return .center
+        case .right: return .trailing
+        case .justify: return .center
+        }
+    }
+    
+    private var textLayerView: some View {
+        Text(layer.content)
+            .font(.system(size: layer.fontSize, weight: layer.fontWeight))
+            .italic(layer.isItalic)
+            .underline(layer.isUnderlined)
+            .foregroundColor(layer.textColor)
+            .multilineTextAlignment(swiftUITextAlignment(layer.textAlignment))
+            .shadow(
+                color: layer.hasShadow ? layer.shadowColor : Color.clear,
+                radius: layer.hasShadow ? 2 : 0,
+                x: layer.hasShadow ? 1 : 0,
+                y: layer.hasShadow ? 1 : 0
+            )
+            .padding(8)
+            .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+            .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+            .cornerRadius(4)
+    }
+    
+    private var imageLayerView: some View {
+        Image(systemName: "photo")
+            .font(.system(size: 40))
+            .foregroundColor(.blue)
+            .padding(8)
+            .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+            .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+            .cornerRadius(4)
+    }
+    
+    private var shapeLayerView: some View {
+        Circle()
+            .fill(Color.red)
+            .frame(width: 50, height: 50)
+            .overlay(
+                Circle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+            )
+    }
+    
+    private var backgroundLayerView: some View {
+        Rectangle()
+            .fill(Color.yellow.opacity(0.3))
+            .frame(width: 100, height: 60)
+            .cornerRadius(4)
+            .overlay(
+                Rectangle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    .cornerRadius(4)
+            )
+    }
+    
+    private var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                isDragging = true
+                dragOffset = value.translation
+            }
+            .onEnded { value in
+                isDragging = false
+                
+                let newX = max(25, min(canvasWidth - 25, editableLayer.x + value.translation.width))
+                let newY = max(25, min(canvasHeight - 25, editableLayer.y + value.translation.height))
+                
+                editableLayer.x = newX
+                editableLayer.y = newY
+                dragOffset = .zero
+                
+                onLayerModified(editableLayer)
+            }
+    }
+    
+    var body: some View {
+        layerContent
+            .position(x: editableLayer.x + dragOffset.width, y: editableLayer.y + dragOffset.height)
+            .scaleEffect(isDragging && isEditable ? 1.1 : 1.0)
+            .opacity(isDragging ? 0.8 : 1.0)
+            .gesture(dragGesture)
+            .onTapGesture {
+                onToggleSelection()
+            }
+            .onTapGesture(count: 2) {
+                onEditLayer(layer)
+            }
+            .onChange(of: layer) { oldValue, newValue in
+                editableLayer = newValue
+            }
+    }
+}
+
+// FacebookActionButton is already defined in FacebookPostView.swift
+
+public struct SimpleLayer: Identifiable, Codable, Equatable {
     public let id: String
     let type: String
     var content: String
@@ -769,7 +1054,7 @@ public struct SimpleLayer: Identifiable, Codable {
     var textColor: Color = .black
     var isItalic: Bool = false
     var isUnderlined: Bool = false
-    var textAlignment: TextAlignment = .leading
+    var textAlignment: CustomTextAlignment = .center
     var hasShadow: Bool = false
     var shadowColor: Color = .gray
     var hasStroke: Bool = false
@@ -822,10 +1107,10 @@ public struct SimpleLayer: Identifiable, Codable {
         // Encode text alignment as string
         let alignmentString: String
         switch textAlignment {
-        case .leading: alignmentString = "leading"
+        case .left: alignmentString = "left"
         case .center: alignmentString = "center"
-        case .trailing: alignmentString = "trailing"
-        default: alignmentString = "leading"
+        case .right: alignmentString = "right"
+        case .justify: alignmentString = "justify"
         }
         try container.encode(alignmentString, forKey: .textAlignment)
         
@@ -873,13 +1158,14 @@ public struct SimpleLayer: Identifiable, Codable {
         // Decode text alignment from string
         if let alignmentString = try container.decodeIfPresent(String.self, forKey: .textAlignment) {
             switch alignmentString {
-            case "leading": textAlignment = .leading
+            case "left", "leading": textAlignment = .left
             case "center": textAlignment = .center
-            case "trailing": textAlignment = .trailing
-            default: textAlignment = .leading
+            case "right", "trailing": textAlignment = .right
+            case "justify": textAlignment = .justify
+            default: textAlignment = .left
             }
         } else {
-            textAlignment = .leading
+            textAlignment = .left
         }
         
         hasShadow = try container.decodeIfPresent(Bool.self, forKey: .hasShadow) ?? false
@@ -901,6 +1187,37 @@ public struct SimpleLayer: Identifiable, Codable {
         }
         
         strokeWidth = try container.decodeIfPresent(CGFloat.self, forKey: .strokeWidth) ?? 1.0
+    }
+}
+
+// MARK: - History State Model
+struct HistoryState: Identifiable, Codable {
+    let id: String
+    let layers: [SimpleLayer]
+    let timestamp: Date
+    let source: HistorySource
+    let title: String
+    
+    init(layers: [SimpleLayer], source: HistorySource, title: String? = nil) {
+        self.id = UUID().uuidString
+        self.layers = layers
+        self.timestamp = Date()
+        self.source = source
+        self.title = title ?? source.defaultTitle
+    }
+}
+
+enum HistorySource: String, Codable {
+    case userEdit = "user_edit"
+    case aiGenerated = "ai_generated"
+    case initial = "initial"
+    
+    var defaultTitle: String {
+        switch self {
+        case .userEdit: return "User Edit"
+        case .aiGenerated: return "AI Suggestion"
+        case .initial: return "Initial State"
+        }
     }
 }
 
@@ -1039,84 +1356,119 @@ struct LayerView: View {
     let selectedLayerForEditing: String?
     let onEditLayer: (SimpleLayer) -> Void
     let onToggleSelection: () -> Void
+    let onLayerModified: (SimpleLayer) -> Void
     @State private var dragOffset = CGSize.zero
     @State private var isDragging = false
     
-    var body: some View {
+    private var layerContent: some View {
         Group {
             if layer.type == "text" {
-                Text(layer.content)
-                    .font(.system(size: layer.fontSize, weight: layer.fontWeight))
-                    .italic(layer.isItalic)
-                    .underline(layer.isUnderlined)
-                    .foregroundColor(layer.textColor)
-                    .multilineTextAlignment(layer.textAlignment)
-                    .shadow(
-                        color: layer.hasShadow ? layer.shadowColor : Color.clear,
-                        radius: layer.hasShadow ? 2 : 0,
-                        x: layer.hasShadow ? 1 : 0,
-                        y: layer.hasShadow ? 1 : 0
-                    )
-                    .padding(8)
-                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
-                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
-                    .cornerRadius(4)
+                textLayerView
             } else if layer.type == "image" {
-                Image(systemName: "photo")
-                    .font(.system(size: 40))
-                    .foregroundColor(.blue)
-                    .padding(8)
-                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
-                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
-                    .cornerRadius(4)
+                imageLayerView
             } else if layer.type == "shape" {
-                Circle()
-                    .fill(Color.red)
-                    .frame(width: 50, height: 50)
-                    .overlay(
-                        Circle()
-                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
-                    )
+                shapeLayerView
             } else if layer.type == "background" {
-                Rectangle()
-                    .fill(Color.yellow.opacity(0.3))
-                    .frame(width: 100, height: 60)
-                    .cornerRadius(4)
-                    .overlay(
-                        Rectangle()
-                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
-                            .cornerRadius(4)
-                    )
+                backgroundLayerView
             }
         }
-        .position(x: layer.x + dragOffset.width, y: layer.y + dragOffset.height)
-        .scaleEffect(isDragging ? 1.1 : 1.0)
-        .opacity(isDragging ? 0.8 : 1.0)
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    isDragging = true
-                    dragOffset = value.translation
-                }
-                .onEnded { value in
-                    isDragging = false
-                    
-                    // Calculate new position within canvas bounds
-                    let newX = max(25, min(canvasWidth - 25, layer.x + value.translation.width))
-                    let newY = max(25, min(canvasHeight - 25, layer.y + value.translation.height))
-                    
-                    layer.x = newX
-                    layer.y = newY
-                    dragOffset = .zero
-                }
-        )
-        .onTapGesture {
-            onToggleSelection()
+    }
+    
+    private func swiftUITextAlignment(_ alignment: CustomTextAlignment) -> SwiftUI.TextAlignment {
+        switch alignment {
+        case .left: return .leading
+        case .center: return .center
+        case .right: return .trailing
+        case .justify: return .center // SwiftUI doesn't have justify, fallback to center
         }
-        .onTapGesture(count: 2) {
-            // Double tap to open layer editor
-            onEditLayer(layer)
-        }
+    }
+    
+    private var textLayerView: some View {
+        Text(layer.content)
+            .font(.system(size: layer.fontSize, weight: layer.fontWeight))
+            .italic(layer.isItalic)
+            .underline(layer.isUnderlined)
+            .foregroundColor(layer.textColor)
+            .multilineTextAlignment(swiftUITextAlignment(layer.textAlignment))
+            .shadow(
+                color: layer.hasShadow ? layer.shadowColor : Color.clear,
+                radius: layer.hasShadow ? 2 : 0,
+                x: layer.hasShadow ? 1 : 0,
+                y: layer.hasShadow ? 1 : 0
+            )
+            .padding(8)
+            .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+            .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+            .cornerRadius(4)
+    }
+    
+    private var imageLayerView: some View {
+        Image(systemName: "photo")
+            .font(.system(size: 40))
+            .foregroundColor(.blue)
+            .padding(8)
+            .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+            .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+            .cornerRadius(4)
+    }
+    
+    private var shapeLayerView: some View {
+        Circle()
+            .fill(Color.red)
+            .frame(width: 50, height: 50)
+            .overlay(
+                Circle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+            )
+    }
+    
+    private var backgroundLayerView: some View {
+        Rectangle()
+            .fill(Color.yellow.opacity(0.3))
+            .frame(width: 100, height: 60)
+            .cornerRadius(4)
+            .overlay(
+                Rectangle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    .cornerRadius(4)
+            )
+    }
+    
+    private var dragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                isDragging = true
+                dragOffset = value.translation
+            }
+            .onEnded { value in
+                isDragging = false
+                
+                // Calculate new position within canvas bounds
+                let newX = max(25, min(canvasWidth - 25, layer.x + value.translation.width))
+                let newY = max(25, min(canvasHeight - 25, layer.y + value.translation.height))
+                
+                layer.x = newX
+                layer.y = newY
+                dragOffset = .zero
+                
+                // Notify parent of layer modification
+                onLayerModified(layer)
+            }
+    }
+    
+    var body: some View {
+        layerContent
+            .position(x: layer.x + dragOffset.width, y: layer.y + dragOffset.height)
+            .scaleEffect(isDragging ? 1.1 : 1.0)
+            .opacity(isDragging ? 0.8 : 1.0)
+            .gesture(dragGesture)
+            .onTapGesture {
+                onToggleSelection()
+            }
+            .onTapGesture(count: 2) {
+                // Double tap to open layer editor
+                onEditLayer(layer)
+            }
     }
 }
 
@@ -1128,146 +1480,158 @@ struct TextStyleModalView: View {
     @Binding var layer: SimpleLayer
     @Environment(\.dismiss) private var dismiss
     
+    private var fontSizeSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Font Size: \(Int(layer.fontSize))")
+                .font(.system(size: 16, weight: .medium))
+            Slider(value: $layer.fontSize, in: 12...48, step: 1)
+                .tint(.blue)
+        }
+    }
+    
+    private var fontWeightSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Font Weight")
+                .font(.system(size: 16, weight: .medium))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach([Font.Weight.ultraLight, .light, .regular, .medium, .semibold, .bold, .heavy, .black], id: \.self) { weight in
+                        Button(weightName(weight)) {
+                            layer.fontWeight = weight
+                        }
+                        .font(.system(size: 14))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(layer.fontWeight == weight ? Color.blue : Color.gray.opacity(0.2))
+                        .foregroundColor(layer.fontWeight == weight ? .white : .primary)
+                        .cornerRadius(8)
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+    
+    private var textStyleSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Text Style")
+                .font(.system(size: 16, weight: .medium))
+            HStack(spacing: 12) {
+                Button(action: { layer.isItalic.toggle() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "italic")
+                        Text("Italic")
+                    }
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(layer.isItalic ? Color.blue : Color.gray.opacity(0.2))
+                    .foregroundColor(layer.isItalic ? .white : .primary)
+                    .cornerRadius(8)
+                }
+                
+                Button(action: { layer.isUnderlined.toggle() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "underline")
+                        Text("Underline")
+                    }
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(layer.isUnderlined ? Color.blue : Color.gray.opacity(0.2))
+                    .foregroundColor(layer.isUnderlined ? .white : .primary)
+                    .cornerRadius(8)
+                }
+            }
+        }
+    }
+    
+    private var textColorSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Text Color")
+                .font(.system(size: 16, weight: .medium))
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach([Color.black, .white, .red, .blue, .green, .orange, .purple, .pink, .yellow], id: \.self) { color in
+                        Button(action: { layer.textColor = color }) {
+                            Circle()
+                                .fill(color)
+                                .frame(width: 40, height: 40)
+                                .overlay(
+                                    Circle()
+                                        .stroke(layer.textColor == color ? Color.blue : Color.gray, lineWidth: layer.textColor == color ? 3 : 1)
+                                )
+                        }
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
+        }
+    }
+    
+    private var textEffectsSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Effects")
+                .font(.system(size: 16, weight: .medium))
+            
+            HStack(spacing: 12) {
+                Button(action: { layer.hasShadow.toggle() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "shadow")
+                        Text("Shadow")
+                    }
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(layer.hasShadow ? Color.blue : Color.gray.opacity(0.2))
+                    .foregroundColor(layer.hasShadow ? .white : .primary)
+                    .cornerRadius(8)
+                }
+                
+                Button(action: { layer.hasStroke.toggle() }) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "pencil.tip")
+                        Text("Stroke")
+                    }
+                    .font(.system(size: 14))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(layer.hasStroke ? Color.blue : Color.gray.opacity(0.2))
+                    .foregroundColor(layer.hasStroke ? .white : .primary)
+                    .cornerRadius(8)
+                }
+            }
+        }
+    }
+    
+    private var textAlignmentSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Alignment")
+                .font(.system(size: 16, weight: .medium))
+            HStack(spacing: 12) {
+                ForEach([CustomTextAlignment.left, .center, .right], id: \.self) { alignment in
+                    Button(action: { layer.textAlignment = alignment }) {
+                        Image(systemName: alignmentIcon(alignment))
+                            .font(.system(size: 20))
+                            .padding(12)
+                            .background(layer.textAlignment == alignment ? Color.blue : Color.gray.opacity(0.2))
+                            .foregroundColor(layer.textAlignment == alignment ? .white : .primary)
+                            .cornerRadius(8)
+                    }
+                }
+            }
+        }
+    }
+    
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 20) {
-                // Font Size
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Font Size: \(Int(layer.fontSize))")
-                        .font(.system(size: 16, weight: .medium))
-                    Slider(value: $layer.fontSize, in: 12...48, step: 1)
-                        .tint(.blue)
-                }
-                
-                // Font Weight
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Font Weight")
-                        .font(.system(size: 16, weight: .medium))
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach([Font.Weight.ultraLight, .light, .regular, .medium, .semibold, .bold, .heavy, .black], id: \.self) { weight in
-                                Button(weightName(weight)) {
-                                    layer.fontWeight = weight
-                                }
-                                .font(.system(size: 14))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(layer.fontWeight == weight ? Color.blue : Color.gray.opacity(0.2))
-                                .foregroundColor(layer.fontWeight == weight ? .white : .primary)
-                                .cornerRadius(8)
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                }
-                
-                // Text Style Toggles
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Text Style")
-                        .font(.system(size: 16, weight: .medium))
-                    HStack(spacing: 12) {
-                        Button(action: { layer.isItalic.toggle() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "italic")
-                                Text("Italic")
-                            }
-                            .font(.system(size: 14))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(layer.isItalic ? Color.blue : Color.gray.opacity(0.2))
-                            .foregroundColor(layer.isItalic ? .white : .primary)
-                            .cornerRadius(8)
-                        }
-                        
-                        Button(action: { layer.isUnderlined.toggle() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "underline")
-                                Text("Underline")
-                            }
-                            .font(.system(size: 14))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(layer.isUnderlined ? Color.blue : Color.gray.opacity(0.2))
-                            .foregroundColor(layer.isUnderlined ? .white : .primary)
-                            .cornerRadius(8)
-                        }
-                    }
-                }
-                
-                // Text Color
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Text Color")
-                        .font(.system(size: 16, weight: .medium))
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach([Color.black, .white, .red, .blue, .green, .orange, .purple, .pink, .yellow], id: \.self) { color in
-                                Button(action: { layer.textColor = color }) {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 40, height: 40)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(layer.textColor == color ? Color.blue : Color.gray, lineWidth: layer.textColor == color ? 3 : 1)
-                                        )
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 4)
-                    }
-                }
-                
-                // Text Effects
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Effects")
-                        .font(.system(size: 16, weight: .medium))
-                    
-                    HStack(spacing: 12) {
-                        Button(action: { layer.hasShadow.toggle() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "shadow")
-                                Text("Shadow")
-                            }
-                            .font(.system(size: 14))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(layer.hasShadow ? Color.blue : Color.gray.opacity(0.2))
-                            .foregroundColor(layer.hasShadow ? .white : .primary)
-                            .cornerRadius(8)
-                        }
-                        
-                        Button(action: { layer.hasStroke.toggle() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "pencil.tip")
-                                Text("Stroke")
-                            }
-                            .font(.system(size: 14))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .background(layer.hasStroke ? Color.blue : Color.gray.opacity(0.2))
-                            .foregroundColor(layer.hasStroke ? .white : .primary)
-                            .cornerRadius(8)
-                        }
-                    }
-                }
-                
-                // Text Alignment
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Alignment")
-                        .font(.system(size: 16, weight: .medium))
-                    HStack(spacing: 12) {
-                        ForEach([TextAlignment.leading, .center, .trailing], id: \.self) { alignment in
-                            Button(action: { layer.textAlignment = alignment }) {
-                                Image(systemName: alignmentIcon(alignment))
-                                    .font(.system(size: 20))
-                                    .padding(12)
-                                    .background(layer.textAlignment == alignment ? Color.blue : Color.gray.opacity(0.2))
-                                    .foregroundColor(layer.textAlignment == alignment ? .white : .primary)
-                                    .cornerRadius(8)
-                            }
-                        }
-                    }
-                }
-                
+                fontSizeSection
+                fontWeightSection
+                textStyleSection
+                textColorSection
+                textEffectsSection
+                textAlignmentSection
                 Spacer()
             }
             .padding(20)
@@ -1298,11 +1662,12 @@ struct TextStyleModalView: View {
         }
     }
     
-    private func alignmentIcon(_ alignment: TextAlignment) -> String {
+    private func alignmentIcon(_ alignment: CustomTextAlignment) -> String {
         switch alignment {
-        case .leading: return "text.alignleft"
+        case .left: return "text.alignleft"
         case .center: return "text.aligncenter"
-        case .trailing: return "text.alignright"
+        case .right: return "text.alignright"
+        case .justify: return "text.justify"
         }
     }
 }
@@ -1642,7 +2007,7 @@ struct TextLayerSettings: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.secondary)
                 HStack(spacing: 12) {
-                    ForEach([TextAlignment.leading, .center, .trailing], id: \.self) { alignment in
+                    ForEach([CustomTextAlignment.left, .center, .right], id: \.self) { alignment in
                         Button(action: { layer.textAlignment = alignment }) {
                             Image(systemName: alignmentIcon(alignment))
                                 .font(.system(size: 18))
@@ -1746,11 +2111,12 @@ struct TextLayerSettings: View {
         }
     }
     
-    private func alignmentIcon(_ alignment: TextAlignment) -> String {
+    private func alignmentIcon(_ alignment: CustomTextAlignment) -> String {
         switch alignment {
-        case .leading: return "text.alignleft"
+        case .left: return "text.alignleft"
         case .center: return "text.aligncenter"
-        case .trailing: return "text.alignright"
+        case .right: return "text.alignright"
+        case .justify: return "text.justify"
         }
     }
 }
@@ -1818,396 +2184,7 @@ struct BackgroundLayerSettings: View {
     }
 }
 
-// MARK: - AI Service (TDD Implementation)
-
-public enum AIServiceError: LocalizedError, Equatable {
-    case notConfigured
-    case authError(String)
-    case validationError(String)
-    case networkError(Error)
-    case apiError(String)
-    case parseError(String)
-    case invalidURL
-    case encodingError(Error)
-    case httpError(Int)
-    case invalidResponse(String)
-    
-    public var errorDescription: String? {
-        switch self {
-        case .notConfigured:
-            return "AI Service not configured"
-        case .authError(let message):
-            return "Authentication Error: \(message)"
-        case .validationError(let message):
-            return "Validation Error: \(message)"
-        case .networkError(let error):
-            return "Network Error: \(error.localizedDescription)"
-        case .apiError(let message):
-            return "API Error: \(message)"
-        case .parseError(let message):
-            return "Parse Error: \(message)"
-        case .invalidURL:
-            return "Invalid API URL"
-        case .encodingError(let error):
-            return "Encoding Error: \(error.localizedDescription)"
-        case .httpError(let statusCode):
-            return "HTTP Error: \(statusCode)"
-        case .invalidResponse(let message):
-            return "Invalid Response: \(message)"
-        }
-    }
-    
-    public static func == (lhs: AIServiceError, rhs: AIServiceError) -> Bool {
-        switch (lhs, rhs) {
-        case (.notConfigured, .notConfigured),
-             (.invalidURL, .invalidURL):
-            return true
-        case (.authError(let lhsMessage), .authError(let rhsMessage)),
-             (.validationError(let lhsMessage), .validationError(let rhsMessage)),
-             (.apiError(let lhsMessage), .apiError(let rhsMessage)),
-             (.parseError(let lhsMessage), .parseError(let rhsMessage)),
-             (.invalidResponse(let lhsMessage), .invalidResponse(let rhsMessage)):
-            return lhsMessage == rhsMessage
-        case (.httpError(let lhsCode), .httpError(let rhsCode)):
-            return lhsCode == rhsCode
-        case (.networkError(let lhsError), .networkError(let rhsError)),
-             (.encodingError(let lhsError), .encodingError(let rhsError)):
-            return lhsError.localizedDescription == rhsError.localizedDescription
-        default:
-            return false
-        }
-    }
-}
-
-public struct CanvasDimensions: Codable {
-    public let width: Double
-    public let height: Double
-    public let pixelDensity: Double
-    
-    public init(width: Double, height: Double, pixelDensity: Double) {
-        self.width = width
-        self.height = height
-        self.pixelDensity = pixelDensity
-    }
-}
-
-public struct CanvasMetadata: Codable {
-    public let createdAt: Date
-    public let modifiedAt: Date
-    
-    public init(createdAt: Date, modifiedAt: Date) {
-        self.createdAt = createdAt
-        self.modifiedAt = modifiedAt
-    }
-}
-
-// Use the full SimpleLayer struct for AI service (already defined above with Codable support)
-
-public struct DesignCanvasData: Codable {
-    public let id: String
-    public let deviceType: String
-    public let dimensions: CanvasDimensions
-    public let layers: [SimpleLayer]
-    public let metadata: CanvasMetadata
-    public let state: String
-    
-    public init(id: String, deviceType: String, dimensions: CanvasDimensions, layers: [SimpleLayer], metadata: CanvasMetadata, state: String) {
-        self.id = id
-        self.deviceType = deviceType
-        self.dimensions = dimensions
-        self.layers = layers
-        self.metadata = metadata
-        self.state = state
-    }
-}
-
-public struct CanvasAnalysisResponse: Codable {
-    public let suggestions: [AISuggestion]
-    
-    public init(suggestions: [AISuggestion]) {
-        self.suggestions = suggestions
-    }
-}
-
-public struct AISuggestion: Codable {
-    public let id: String
-    public let type: String
-    public let description: String
-    public let confidence: Double
-    
-    public init(id: String, type: String, description: String, confidence: Double) {
-        self.id = id
-        self.type = type
-        self.description = description
-        self.confidence = confidence
-    }
-}
-
-// MARK: - Gemini AI API Models
-public struct GeminiRequest: Codable {
-    public let contents: [GeminiContent]
-    public let generationConfig: GeminiGenerationConfig
-    
-    public init(contents: [GeminiContent], generationConfig: GeminiGenerationConfig) {
-        self.contents = contents
-        self.generationConfig = generationConfig
-    }
-}
-
-public struct GeminiContent: Codable {
-    public let parts: [GeminiPart]
-    
-    public init(parts: [GeminiPart]) {
-        self.parts = parts
-    }
-}
-
-public struct GeminiPart: Codable {
-    public let text: String
-    
-    public init(text: String) {
-        self.text = text
-    }
-}
-
-public struct GeminiGenerationConfig: Codable {
-    public let temperature: Double
-    public let topK: Int
-    public let topP: Double
-    public let maxOutputTokens: Int
-    
-    public init(temperature: Double = 0.7, topK: Int = 40, topP: Double = 0.95, maxOutputTokens: Int = 1024) {
-        self.temperature = temperature
-        self.topK = topK
-        self.topP = topP
-        self.maxOutputTokens = maxOutputTokens
-    }
-}
-
-public struct GeminiResponse: Codable {
-    public let candidates: [GeminiCandidate]
-    
-    public init(candidates: [GeminiCandidate]) {
-        self.candidates = candidates
-    }
-}
-
-public struct GeminiCandidate: Codable {
-    public let content: GeminiContent
-    public let finishReason: String?
-    
-    public init(content: GeminiContent, finishReason: String?) {
-        self.content = content
-        self.finishReason = finishReason
-    }
-}
-
-public class AIService {
-    private var apiKey: String?
-    private let baseURL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent"
-    private let session = URLSession.shared
-    
-    public var isConfigured: Bool {
-        return apiKey != nil
-    }
-    
-    public init() {
-        // Initialize with environment variable if available
-        if let envApiKey = ProcessInfo.processInfo.environment["GEMINI_API_KEY"] {
-            self.apiKey = envApiKey
-        }
-    }
-    
-    public func configure(apiKey: String) {
-        self.apiKey = apiKey
-    }
-    
-    public func analyzeCanvas(_ canvasData: DesignCanvasData) async throws -> CanvasAnalysisResponse {
-        guard let apiKey = apiKey else {
-            throw AIServiceError.notConfigured
-        }
-        
-        // Create the prompt for Gemini AI
-        let prompt = createAnalysisPrompt(from: canvasData)
-        
-        // Create the request
-        let geminiRequest = GeminiRequest(
-            contents: [GeminiContent(parts: [GeminiPart(text: prompt)])],
-            generationConfig: GeminiGenerationConfig()
-        )
-        
-        // Build the URL with API key
-        guard let url = URL(string: "\(baseURL)?key=\(apiKey)") else {
-            throw AIServiceError.invalidURL
-        }
-        
-        // Create HTTP request
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
-        // Encode the request body
-        do {
-            request.httpBody = try JSONEncoder().encode(geminiRequest)
-        } catch {
-            throw AIServiceError.encodingError(error)
-        }
-        
-        // Make the API call
-        do {
-            let (data, response) = try await session.data(for: request)
-            
-            // Check HTTP response
-            if let httpResponse = response as? HTTPURLResponse {
-                guard httpResponse.statusCode == 200 else {
-                    throw AIServiceError.httpError(httpResponse.statusCode)
-                }
-            }
-            
-            // Decode the response
-            let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
-            
-            // Parse suggestions from the response
-            return try parseGeminiResponse(geminiResponse)
-            
-        } catch let error as AIServiceError {
-            throw error
-        } catch {
-            throw AIServiceError.networkError(error)
-        }
-    }
-    
-    private func createAnalysisPrompt(from canvasData: DesignCanvasData) -> String {
-        let layersDescription = canvasData.layers.map { layer in
-            "- \(layer.type.capitalized): '\(layer.content)' at position (\(layer.x), \(layer.y))"
-        }.joined(separator: "\n")
-        
-        return """
-        You are a professional design AI assistant. Analyze this mobile app design canvas and provide creative suggestions for improvement.
-        
-        Canvas Details:
-        - Device: \(canvasData.deviceType)
-        - Dimensions: \(canvasData.dimensions.width)x\(canvasData.dimensions.height)
-        - Current state: \(canvasData.state)
-        
-        Current layers:
-        \(layersDescription.isEmpty ? "No layers present" : layersDescription)
-        
-        Please provide 3-5 specific design suggestions in the following JSON format:
-        {
-          "suggestions": [
-            {
-              "id": "unique-id-1",
-              "type": "layout|typography|color|content|spacing",
-              "description": "Specific actionable suggestion",
-              "confidence": 0.85
-            }
-          ]
-        }
-        
-        Focus on:
-        1. Visual hierarchy and composition
-        2. Typography and readability
-        3. Color harmony and contrast
-        4. Layout and spacing improvements
-        5. Content structure and flow
-        
-        Provide only the JSON response, no additional text.
-        """
-    }
-    
-    private func parseGeminiResponse(_ response: GeminiResponse) throws -> CanvasAnalysisResponse {
-        guard let candidate = response.candidates.first,
-              let part = candidate.content.parts.first else {
-            throw AIServiceError.invalidResponse("No response content")
-        }
-        
-        let responseText = part.text.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        // Extract JSON from the response (handle cases where AI includes extra text)
-        guard let jsonStart = responseText.range(of: "{"),
-              let jsonEnd = responseText.range(of: "}", options: .backwards) else {
-            throw AIServiceError.invalidResponse("No JSON found in response")
-        }
-        
-        let jsonString = String(responseText[jsonStart.lowerBound...jsonEnd.upperBound])
-        
-        do {
-            let jsonData = jsonString.data(using: .utf8)!
-            let analysisResponse = try JSONDecoder().decode(CanvasAnalysisResponse.self, from: jsonData)
-            return analysisResponse
-        } catch {
-            // Fallback: Create suggestions from the raw text
-            return createFallbackSuggestions(from: responseText)
-        }
-    }
-    
-    private func createFallbackSuggestions(from text: String) -> CanvasAnalysisResponse {
-        // If JSON parsing fails, create basic suggestions from the text
-        let suggestions = [
-            AISuggestion(
-                id: UUID().uuidString,
-                type: "general",
-                description: "AI suggested improvements based on current design",
-                confidence: 0.7
-            )
-        ]
-        
-        return CanvasAnalysisResponse(suggestions: suggestions)
-    }
-}
-
 // MARK: - AI Variation Models
-
-struct DesignVariation: Identifiable {
-    let id = UUID()
-    let title: String
-    let description: String
-    let layers: [SimpleLayer]  // Complete layer set for this variation
-    let type: VariationType
-}
-
-enum VariationType {
-    case original
-    case colorScheme
-    case layout
-    case typography
-    case composition
-    case mixed
-}
-
-struct DesignSuggestion: Identifiable {
-    let id = UUID()
-    let title: String
-    let description: String
-    let type: SuggestionType
-    let changes: [LayerChange]
-}
-
-enum SuggestionType {
-    case colorScheme
-    case layout
-    case typography
-    case composition
-    case general
-}
-
-struct LayerChange {
-    let layerId: String?
-    let changeType: ChangeType
-    let newValue: String
-}
-
-enum ChangeType {
-    case backgroundColor
-    case textColor
-    case fontSize
-    case position
-    case content
-    case add
-    case remove
-}
-
 #Preview {
     ContentView()
 }
