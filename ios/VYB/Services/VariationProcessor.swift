@@ -51,18 +51,7 @@ enum JSONValue: Codable, Equatable {
 
 // MARK: - Processing Types
 
-struct LayerChange: Codable, Identifiable {
-    let id = UUID()
-    let layerId: String
-    let property: String
-    let currentValue: JSONValue
-    let suggestedValue: JSONValue
-    let reason: String
-    
-    private enum CodingKeys: String, CodingKey {
-        case layerId, property, currentValue, suggestedValue, reason
-    }
-}
+// Using LayerChange from AIService.swift
 
 struct ProcessingOptions {
     let preserveOriginal: Bool
@@ -159,16 +148,7 @@ struct SimpleMetadata: Codable {
     let tags: [String]
 }
 
-struct SimpleLayerData: Codable {
-    let id: String
-    let type: String
-    let zIndex: Int
-    var content: [String: JSONValue]
-    var transform: SimpleTransform
-    var style: [String: JSONValue]
-    var constraints: [String: JSONValue]
-    let metadata: SimpleLayerMetadata
-}
+// Using SimpleLayerData from AIService.swift
 
 struct SimpleTransform: Codable {
     let x: Double

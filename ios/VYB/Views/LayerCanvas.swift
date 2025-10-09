@@ -49,6 +49,11 @@ struct LayerRenderer: View {
                 ShapeLayerView(layer: layer)
             case .background:
                 BackgroundLayerView(layer: layer)
+            case .group:
+                // Group layers are containers - just show a placeholder
+                Text("Group")
+                    .font(.caption)
+                    .foregroundColor(.gray)
             }
         }
         .position(

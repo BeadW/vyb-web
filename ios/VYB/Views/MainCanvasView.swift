@@ -84,16 +84,18 @@ struct MainCanvasView: View {
                     geometry: geometry
                 ) {
                     // Canvas view inside device simulation
-                    if let canvas = currentCanvas {
-                        CanvasView(canvas: canvas, deviceType: selectedDevice)
-                            .accessibilityIdentifier("Canvas View")
-                    } else {
-                        // Loading or empty state
-                        VStack(spacing: 16) {
-                            ProgressView()
-                            Text("Initializing Canvas...")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
+                    Group {
+                        if let canvas = currentCanvas {
+                            CanvasView(canvas: canvas, deviceType: selectedDevice)
+                                .accessibilityIdentifier("Canvas View")
+                        } else {
+                            // Loading or empty state
+                            VStack(spacing: 16) {
+                                ProgressView()
+                                Text("Initializing Canvas...")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
                 }
@@ -382,39 +384,19 @@ class CanvasManager: ObservableObject {
         print("Redo")
     }
     
-    private func dimensionsForDevice(_ deviceType: DeviceType) -> CanvasDimensions {
+    private func dimensionsForDevice(_ deviceType: DeviceType) -> LocalCanvasDimensions {
         switch deviceType {
         case .iPhone15Pro:
-            return CanvasDimensions(width: 393, height: 852, pixelDensity: 3.0)
+            return LocalCanvasDimensions(width: 393, height: 852, pixelDensity: 3.0)
         case .iPhone15Plus:
-            return CanvasDimensions(width: 430, height: 932, pixelDensity: 3.0)
+            return LocalCanvasDimensions(width: 430, height: 932, pixelDensity: 3.0)
         case .iPadPro11:
-            return CanvasDimensions(width: 834, height: 1194, pixelDensity: 2.0)
+            return LocalCanvasDimensions(width: 834, height: 1194, pixelDensity: 2.0)
         case .iPadPro129:
-            return CanvasDimensions(width: 1024, height: 1366, pixelDensity: 2.0)
+            return LocalCanvasDimensions(width: 1024, height: 1366, pixelDensity: 2.0)
         default:
-            return CanvasDimensions(width: 393, height: 852, pixelDensity: 3.0)
+            return LocalCanvasDimensions(width: 393, height: 852, pixelDensity: 3.0)
         }
     }
 }
 
-// MARK: - Shape Type Enum
-enum ShapeType {
-    case rectangle, circle, triangle
-}
-
-// MARK: - Persistence Controller (placeholder)
-struct PersistenceController {
-    static let shared = PersistenceController()
-    
-    let container: NSPersistentContainer
-    
-    init() {
-        container = NSPersistentContainer(name: "VYBModel")
-        container.loadPersistentStores { _, error in
-            if let error = error {
-                print("Core Data error: \(error)")
-            }
-        }
-    }
-}

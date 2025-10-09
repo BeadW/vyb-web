@@ -71,9 +71,9 @@ public struct LayerStyle: Codable {
 }
 
 public struct ShadowData: Codable {
-    let x: Double
-    let y: Double
-    let blur: Double
+    var x: Double
+    var y: Double
+    var blur: Double
     let spread: Double
     let color: String
 }

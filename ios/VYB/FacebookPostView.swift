@@ -221,6 +221,11 @@ struct SimpleLayerView: View {
                             .font(.caption)
                             .foregroundColor(.purple)
                     )
+            case .group:
+                // Group layers are containers - just show a placeholder
+                Text("Group")
+                    .font(.caption)
+                    .foregroundColor(.gray)
             }
         }
         .scaleEffect(CGFloat(layer.transform.scaleX))

@@ -3,28 +3,13 @@ import CoreData
 
 // MARK: - Simple Layer Types for UI Components
 
-enum LayerTool: CaseIterable {
-    case select, text, image, shape, background
-    
-    var displayName: String {
-        switch self {
-        case .select: return "Select"
-        case .text: return "Text"
-        case .image: return "Image"
-        case .shape: return "Shape"
-        case .background: return "Background"
-        }
-    }
-    
-    var iconName: String {
-        switch self {
-        case .select: return "cursorarrow.click.2"
-        case .text: return "textformat"
-        case .image: return "photo"
-        case .shape: return "circle.square"
-        case .background: return "rectangle.fill"
-        }
-    }
+import SwiftUI
+import CoreData
+
+// LayerTool is defined in LayerManager.swift
+
+enum FontStyle {
+    case bold, italic, underline
 }
 
 // MARK: - Simplified Layer Manager for UI Components
@@ -32,7 +17,7 @@ enum LayerTool: CaseIterable {
 @MainActor
 class SimpleLayerManager: ObservableObject {
     @Published var selectedLayerCount: Int = 0
-    @Published var currentTool: LayerTool = .select
+    @Published var currentTool: SimpleLayerType = .text
     @Published var canUndo = false
     @Published var canRedo = false
     
@@ -59,22 +44,22 @@ class SimpleLayerManager: ObservableObject {
     @Published var strokeWidth: Double = 2
     
     // Layer list for UI
-    @Published var layerItems: [LayerItem] = []
+    @Published var layerItems: [SimpleLayerItem] = []
     
     init() {
         // Create some sample layers for demo
         layerItems = [
-            LayerItem(id: "1", name: "Background", type: .background, isVisible: true, isLocked: false),
-            LayerItem(id: "2", name: "Main Text", type: .text, isVisible: true, isLocked: false),
-            LayerItem(id: "3", name: "Profile Image", type: .image, isVisible: true, isLocked: false)
+            SimpleLayerItem(id: "1", name: "Background", type: .background, isVisible: true, isLocked: false),
+            SimpleLayerItem(id: "2", name: "Main Text", type: .text, isVisible: true, isLocked: false),
+            SimpleLayerItem(id: "3", name: "Profile Image", type: .image, isVisible: true, isLocked: false)
         ]
     }
     
-    func selectTool(_ tool: LayerTool) {
+    func selectTool(_ tool: SimpleLayerType) {
         currentTool = tool
     }
     
-    func toggleFontStyle(_ style: FontStyleButton.Style) {
+    func toggleFontStyle(_ style: FontStyle) {
         switch style {
         case .bold:
             isBold.toggle()
@@ -102,7 +87,7 @@ class SimpleLayerManager: ObservableObject {
     }
     
     func addTextLayer() {
-        let newLayer = LayerItem(
+        let newLayer = SimpleLayerItem(
             id: UUID().uuidString,
             name: "Text Layer \(layerItems.count + 1)",
             type: .text,
@@ -113,7 +98,7 @@ class SimpleLayerManager: ObservableObject {
     }
     
     func addImageLayer() {
-        let newLayer = LayerItem(
+        let newLayer = SimpleLayerItem(
             id: UUID().uuidString,
             name: "Image Layer \(layerItems.count + 1)",
             type: .image,
@@ -123,29 +108,44 @@ class SimpleLayerManager: ObservableObject {
         layerItems.append(newLayer)
     }
     
-    func deleteLayer(_ layer: LayerItem) {
+    func deleteLayer(_ layer: SimpleLayerItem) {
         layerItems.removeAll { $0.id == layer.id }
     }
     
-    func toggleLayerVisibility(_ layer: LayerItem) {
+    func toggleLayerVisibility(_ layer: SimpleLayerItem) {
         if let index = layerItems.firstIndex(where: { $0.id == layer.id }) {
             layerItems[index].isVisible.toggle()
         }
     }
     
-    func toggleLayerLock(_ layer: LayerItem) {
+    func toggleLayerLock(_ layer: SimpleLayerItem) {
         if let index = layerItems.firstIndex(where: { $0.id == layer.id }) {
             layerItems[index].isLocked.toggle()
         }
     }
 }
 
+// MARK: - Simple Layer Types
+
+enum SimpleLayerType: String, CaseIterable, Hashable {
+    case background, text, image, shape
+    
+    var displayName: String {
+        switch self {
+        case .background: return "Background"
+        case .text: return "Text"
+        case .image: return "Image"
+        case .shape: return "Shape"
+        }
+    }
+}
+
 // MARK: - Layer Item for UI
 
-struct LayerItem: Identifiable, Hashable {
+struct SimpleLayerItem: Identifiable, Hashable {
     let id: String
     var name: String
-    let type: LayerTool
+    let type: SimpleLayerType
     var isVisible: Bool
     var isLocked: Bool
 }

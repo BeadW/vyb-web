@@ -2,6 +2,19 @@ import Foundation
 import CoreData
 import SwiftUI
 
+// MARK: - Canvas Dimensions (local definition)
+public struct LocalCanvasDimensions: Codable {
+    public let width: Double
+    public let height: Double  
+    public let pixelDensity: Double
+    
+    public init(width: Double, height: Double, pixelDensity: Double) {
+        self.width = width
+        self.height = height
+        self.pixelDensity = pixelDensity
+    }
+}
+
 // MARK: - Device Type Enum
 public enum DeviceType: String, CaseIterable, Codable {
     case iPhone15Pro = "iPhone 15 Pro"
@@ -22,20 +35,13 @@ public enum CanvasState: String, CaseIterable, Codable {
     case loading = "loading"
 }
 
-// MARK: - Canvas Dimensions
-public struct CanvasDimensions: Codable {
-    let width: Double
-    let height: Double
-    let pixelDensity: Double
-}
-
-// MARK: - Canvas Metadata
-public struct CanvasMetadata: Codable {
+// MARK: - Canvas Metadata (local definition)
+public struct LocalCanvasMetadata: Codable {
     var createdAt: Date
     var modifiedAt: Date
     var tags: [String]
-    var description: String?
-    var author: String?
+    var version: String
+    var deviceType: String
 }
 
 // MARK: - Core Data Entity
@@ -60,12 +66,12 @@ public class DesignCanvas: NSManagedObject {
         }
     }
     
-    public var dimensions: CanvasDimensions {
+    public var dimensions: LocalCanvasDimensions {
         get {
             do {
-                return try JSONDecoder().decode(CanvasDimensions.self, from: dimensionsData)
+                return try JSONDecoder().decode(LocalCanvasDimensions.self, from: dimensionsData)
             } catch {
-                return CanvasDimensions(width: 393, height: 852, pixelDensity: 3) // Default iPhone 15 Pro
+                return LocalCanvasDimensions(width: 393, height: 852, pixelDensity: 3) // Default iPhone 15 Pro
             }
         }
         set {
@@ -77,12 +83,12 @@ public class DesignCanvas: NSManagedObject {
         }
     }
     
-    public var metadata: CanvasMetadata {
+    public var metadata: LocalCanvasMetadata {
         get {
             do {
-                return try JSONDecoder().decode(CanvasMetadata.self, from: metadataData)
+                return try JSONDecoder().decode(LocalCanvasMetadata.self, from: metadataData)
             } catch {
-                return CanvasMetadata(createdAt: Date(), modifiedAt: Date(), tags: [])
+                return LocalCanvasMetadata(createdAt: Date(), modifiedAt: Date(), tags: [], version: "1.0", deviceType: "iPhone")
             }
         }
         set {
@@ -267,8 +273,8 @@ extension DesignCanvas {
                 "createdAt": ISO8601DateFormatter().string(from: metadata.createdAt),
                 "modifiedAt": ISO8601DateFormatter().string(from: metadata.modifiedAt),
                 "tags": metadata.tags,
-                "description": metadata.description as Any,
-                "author": metadata.author as Any
+                "version": metadata.version,
+                "deviceType": metadata.deviceType
             ],
             "state": state.rawValue
         ]
@@ -294,19 +300,19 @@ extension DesignCanvas {
         let canvas = DesignCanvas(context: context)
         canvas.id = id
         canvas.deviceType = deviceType
-        canvas.dimensions = CanvasDimensions(width: width, height: height, pixelDensity: pixelDensity)
+        canvas.dimensions = LocalCanvasDimensions(width: width, height: height, pixelDensity: pixelDensity)
         canvas.state = state
         
         let formatter = ISO8601DateFormatter()
         let createdAt = formatter.date(from: createdAtString) ?? Date()
         let modifiedAt = formatter.date(from: modifiedAtString) ?? Date()
         
-        canvas.metadata = CanvasMetadata(
+        canvas.metadata = LocalCanvasMetadata(
             createdAt: createdAt,
             modifiedAt: modifiedAt,
             tags: tags,
-            description: metadataDict["description"] as? String,
-            author: metadataDict["author"] as? String
+            version: "1.0",
+            deviceType: deviceType.rawValue
         )
         
         return canvas

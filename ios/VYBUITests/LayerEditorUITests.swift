@@ -1,7 +1,7 @@
 import XCTest
 @testable import VYB
 
-final class VYBUITests: XCTestCase {
+final class LayerEditorUITests: XCTestCase {
     
     var app: XCUIApplication!
     

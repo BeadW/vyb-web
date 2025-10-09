@@ -3,337 +3,557 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A1001 /* VYBApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1002 /* VYBApp.swift */; };
-		A1003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1004 /* ContentView.swift */; };
-		A1005 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A1006 /* Assets.xcassets */; };
-		A1020 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1021 /* CoreGraphics.framework */; };
-		A1022 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A1023 /* Metal.framework */; };
+		015ADFA7CFEF026023B43127 /* MainCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3AABED91707AA2E13B8850 /* MainCanvasView.swift */; };
+		054759646C1982C0A5B93E8D /* ShapeLayerModalBugTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB68E5F2C6758B15E664E756 /* ShapeLayerModalBugTest.swift */; };
+		09036216742FD72EE1BCEB20 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 211CC5E84B61FE026267D3FA /* Metal.framework */; };
+		0E624CBC3C7B3AD23C2FCC70 /* LayerEditorUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE2B7EB07B9B7EA15E46832F /* LayerEditorUITests.swift */; };
+		0FD5C153F3C0A9F7FAC788C1 /* ModalBugValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1978DD5033CC915A75AD1D2 /* ModalBugValidationTests.swift */; };
+		107A3F8C66EAF39F95CEBD17 /* ToolSectionViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965CDE1727C1821D52CF7165 /* ToolSectionViews.swift */; };
+		160136B051AF168377E596EA /* LayerUIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = 091F75B73785D575BEBAD833 /* LayerUIComponents.swift */; };
+		2461FFD3082E81CDC0AE8003 /* LayerCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4786476B67061986F0F6D9C /* LayerCanvas.swift */; };
+		28C8268D38B897EF73E36FDF /* LayerEditorModalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87C1CC5B8F1E1ED23AC59186 /* LayerEditorModalTests.swift */; };
+		2AF5F3AB8873D102B0EBAAC8 /* LayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A1795FB16B822D8AB29464B /* LayerManager.swift */; };
+		2DFEAA885079B112C717864D /* LayerState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A9B26EF683444386A270E24 /* LayerState.swift */; };
+		2E6952A292C26E0DCA21D9E9 /* AIWorkflowUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D9B57DF9288001A5E0ED0F /* AIWorkflowUITests.swift */; };
+		3FF8CE94AA228A0D372DB17E /* AIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D99BBEADE2A092BAAF93339 /* AIServiceTests.swift */; };
+		44167AC8C5546BA903D28843 /* ActualUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5747AC9558BB81CC072932 /* ActualUITests.swift */; };
+		501118C22F2A9B06214CA96B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0F7582FD402FC98C7D0296A /* ContentView.swift */; };
+		5B1DF214AC3A02D0856D32E5 /* FacebookPostView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144369BBDB1F6F76EFA62CEE /* FacebookPostView.swift */; };
+		5B84B26899D16DFD2BF2A674 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40F59452BA0FFB05F9F0B323 /* CanvasView.swift */; };
+		5FAFBC1E646A21DEF380C831 /* VYBApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF39B91D0CBF8ECFEDD42563 /* VYBApp.swift */; };
+		655C6A99A1CE847ED85E4FBE /* LayerEditorTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3011C6B55A04F75C7D4B7F56 /* LayerEditorTest.swift */; };
+		67B022E4684778B96F26B7D9 /* LayerList.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2EDD4B12613F19EC358C75F /* LayerList.swift */; };
+		687B3CF7AF02180A33B4408C /* DeviceSimulationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A0461A8274BDA7EE2BAA757 /* DeviceSimulationTests.swift */; };
+		705055192EF982A45344CB91 /* VYBUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A03DD85B077ECA45276A5800 /* VYBUITests.swift */; };
+		7E2C8656614C16FCBA53D4D4 /* AppIconView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CA7BF24B748AAE89F5418A9 /* AppIconView.swift */; };
+		8E7B41A8849CAB935CF37FF1 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D2DA833E0F269CBA320CE7E3 /* CoreGraphics.framework */; };
+		920CE8AE2CB412E908283568 /* VYBUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CD843ADD431921CC4F8F98B /* VYBUITestsLaunchTests.swift */; };
+		9D3F40B249C32796D9D42929 /* AISwipeGestureUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2BF044110F03ADF024E6397 /* AISwipeGestureUITests.swift */; };
+		A150D635AACA8C9B43958AA4 /* ManualBugValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B1ED2908460F85049002277 /* ManualBugValidationTests.swift */; };
+		A2BBEC60807437188F41962F /* VYBTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDC041CC3B174C8AC3BCDAF4 /* VYBTests.swift */; };
+		A2CAD1E16B209BB88813FB92 /* SimpleLayerCodableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEB35FCB4E804D5A430A40B2 /* SimpleLayerCodableTests.swift */; };
+		A90C849DCD9FCE941F1D84A9 /* DeviceSimulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 939BDBAFE6D814181CA0504C /* DeviceSimulation.swift */; };
+		AA92730FF05114C2B981C743 /* LayerPropertiesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53D4F3B3D85BA9B5472E11F8 /* LayerPropertiesPanel.swift */; };
+		B07DA6AF2E10D7F09EEB13D0 /* LayerToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183D58CC0B4E88D9BF7905F4 /* LayerToolbar.swift */; };
+		B655C64A24399F4906CCA8D6 /* CurrentStateUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9EC2DABD88712E8B315FB74 /* CurrentStateUITests.swift */; };
+		C18EC3546B6F43D0876E4A7B /* CanvasInteractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 337A019F47B745400D28A6A4 /* CanvasInteractionTests.swift */; };
+		D7A05ABFCD20C263CB0A40CB /* LayerManagementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9416DCEA0C90DAD0082C5F8B /* LayerManagementView.swift */; };
+		DB448227BB118600A9CCE281 /* VYBTestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 225D894655AA03D50AFACE25 /* VYBTestsLaunchTests.swift */; };
+		E1B3C0B4D58BC2ADA7641019 /* SimpleLayerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D53641BDDB396636BF3F716E /* SimpleLayerManager.swift */; };
+		E1F566E6B21A643C59A7E651 /* AIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FC54D039CBFD51B60BBA027 /* AIService.swift */; };
+		E20A92ABB8642BB00A0DBED7 /* Layer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D5646B3F37D231510D2C9B /* Layer.swift */; };
+		E4046C84843529420F95466A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 32DA71657D842097650A316E /* Assets.xcassets */; };
+		EDD0DD1B1576126BFC1B1675 /* CanvasManipulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8620ACBB046627FED5C63296 /* CanvasManipulation.swift */; };
+		F1BC147630E5320DDFC58E81 /* AIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37F52DFD4EFF5CC7048A385 /* AIServiceTests.swift */; };
+		FFE676CAE468DDB7C3D9FCC6 /* DesignCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60502AA33A703BDBC6BFEF62 /* DesignCanvas.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		A240F3352E91299D0065AAB8 /* PBXContainerItemProxy */ = {
+		DDAAFD00C9769392393728F4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = A1016 /* Project object */;
+			containerPortal = 471015B1A77E4F859D5CD4D2 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = A1012;
+			remoteGlobalIDString = 01EEC364AF169F95121DB5B7;
 			remoteInfo = VYB;
 		};
-		A240F3422E9129B10065AAB8 /* PBXContainerItemProxy */ = {
+		DF043E2917C89D829DB2F302 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = A1016 /* Project object */;
+			containerPortal = 471015B1A77E4F859D5CD4D2 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = A1012;
+			remoteGlobalIDString = 01EEC364AF169F95121DB5B7;
 			remoteInfo = VYB;
 		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		A1002 /* VYBApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBApp.swift; sourceTree = "<group>"; };
-		A1004 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
-		A1006 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		A1007 /* VYB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VYB.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1021 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
-		A1023 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		A240F30D2E9128F00065AAB8 /* VYBUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBUITests.swift; sourceTree = "<group>"; };
-		A240F30F2E9129050065AAB8 /* CanvasInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasInteractionTests.swift; sourceTree = "<group>"; };
-		A240F3102E9129050065AAB8 /* DeviceSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSimulationTests.swift; sourceTree = "<group>"; };
-		A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VYBUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A240F33E2E9129B10065AAB8 /* VYBTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VYBTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A240F34E2E912AA80065AAB8 /* VYBTests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = VYBTests; sourceTree = "<group>"; };
-		A240F34F2E912AB40065AAB8 /* ios */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ios; sourceTree = "<group>"; };
-		A240F3502E912AC20065AAB8 /* VYBUITests */ = {isa = PBXFileReference; lastKnownFileType = folder; path = VYBUITests; sourceTree = "<group>"; };
+		091F75B73785D575BEBAD833 /* LayerUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerUIComponents.swift; sourceTree = "<group>"; };
+		0E81D8BEE6BC186334247D64 /* VYB.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VYB.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0FC54D039CBFD51B60BBA027 /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
+		11D5646B3F37D231510D2C9B /* Layer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layer.swift; sourceTree = "<group>"; };
+		144369BBDB1F6F76EFA62CEE /* FacebookPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacebookPostView.swift; sourceTree = "<group>"; };
+		183D58CC0B4E88D9BF7905F4 /* LayerToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerToolbar.swift; sourceTree = "<group>"; };
+		211CC5E84B61FE026267D3FA /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		225D894655AA03D50AFACE25 /* VYBTestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBTestsLaunchTests.swift; sourceTree = "<group>"; };
+		3011C6B55A04F75C7D4B7F56 /* LayerEditorTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerEditorTest.swift; sourceTree = "<group>"; };
+		32DA71657D842097650A316E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		337A019F47B745400D28A6A4 /* CanvasInteractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasInteractionTests.swift; sourceTree = "<group>"; };
+		3A9B26EF683444386A270E24 /* LayerState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerState.swift; sourceTree = "<group>"; };
+		40F59452BA0FFB05F9F0B323 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasView.swift; sourceTree = "<group>"; };
+		4A0461A8274BDA7EE2BAA757 /* DeviceSimulationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSimulationTests.swift; sourceTree = "<group>"; };
+		4B3AABED91707AA2E13B8850 /* MainCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainCanvasView.swift; sourceTree = "<group>"; };
+		4CA7BF24B748AAE89F5418A9 /* AppIconView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppIconView.swift; sourceTree = "<group>"; };
+		53D4F3B3D85BA9B5472E11F8 /* LayerPropertiesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerPropertiesPanel.swift; sourceTree = "<group>"; };
+		5CD843ADD431921CC4F8F98B /* VYBUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		60502AA33A703BDBC6BFEF62 /* DesignCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignCanvas.swift; sourceTree = "<group>"; };
+		7433AEB689F506ED7CEBEACE /* VYBUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VYBUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B1ED2908460F85049002277 /* ManualBugValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualBugValidationTests.swift; sourceTree = "<group>"; };
+		8620ACBB046627FED5C63296 /* CanvasManipulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasManipulation.swift; sourceTree = "<group>"; };
+		87C1CC5B8F1E1ED23AC59186 /* LayerEditorModalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerEditorModalTests.swift; sourceTree = "<group>"; };
+		8A1795FB16B822D8AB29464B /* LayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerManager.swift; sourceTree = "<group>"; };
+		939BDBAFE6D814181CA0504C /* DeviceSimulation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceSimulation.swift; sourceTree = "<group>"; };
+		9416DCEA0C90DAD0082C5F8B /* LayerManagementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerManagementView.swift; sourceTree = "<group>"; };
+		965CDE1727C1821D52CF7165 /* ToolSectionViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolSectionViews.swift; sourceTree = "<group>"; };
+		9D99BBEADE2A092BAAF93339 /* AIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIServiceTests.swift; sourceTree = "<group>"; };
+		A03DD85B077ECA45276A5800 /* VYBUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBUITests.swift; sourceTree = "<group>"; };
+		AE5747AC9558BB81CC072932 /* ActualUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActualUITests.swift; sourceTree = "<group>"; };
+		B43D14FF601861962D64DC06 /* VYBTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VYBTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		BB68E5F2C6758B15E664E756 /* ShapeLayerModalBugTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShapeLayerModalBugTest.swift; sourceTree = "<group>"; };
+		BEB35FCB4E804D5A430A40B2 /* SimpleLayerCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleLayerCodableTests.swift; sourceTree = "<group>"; };
+		C2BF044110F03ADF024E6397 /* AISwipeGestureUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISwipeGestureUITests.swift; sourceTree = "<group>"; };
+		C37F52DFD4EFF5CC7048A385 /* AIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIServiceTests.swift; sourceTree = "<group>"; };
+		C4786476B67061986F0F6D9C /* LayerCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerCanvas.swift; sourceTree = "<group>"; };
+		C9EC2DABD88712E8B315FB74 /* CurrentStateUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentStateUITests.swift; sourceTree = "<group>"; };
+		CF39B91D0CBF8ECFEDD42563 /* VYBApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBApp.swift; sourceTree = "<group>"; };
+		D0F7582FD402FC98C7D0296A /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		D2DA833E0F269CBA320CE7E3 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
+		D2EDD4B12613F19EC358C75F /* LayerList.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerList.swift; sourceTree = "<group>"; };
+		D53641BDDB396636BF3F716E /* SimpleLayerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimpleLayerManager.swift; sourceTree = "<group>"; };
+		DDC041CC3B174C8AC3BCDAF4 /* VYBTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VYBTests.swift; sourceTree = "<group>"; };
+		EE2B7EB07B9B7EA15E46832F /* LayerEditorUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerEditorUITests.swift; sourceTree = "<group>"; };
+		F1978DD5033CC915A75AD1D2 /* ModalBugValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModalBugValidationTests.swift; sourceTree = "<group>"; };
+		F3D9B57DF9288001A5E0ED0F /* AIWorkflowUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIWorkflowUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		A240F3182E91297C0065AAB8 /* VYBTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBTests; sourceTree = "<group>"; };
-		A240F3302E91299D0065AAB8 /* VYBUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBUITests; sourceTree = "<group>"; };
-		A240F33F2E9129B10065AAB8 /* VYBTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VYBTests; sourceTree = "<group>"; };
-/* End PBXFileSystemSynchronizedRootGroup section */
-
 /* Begin PBXFrameworksBuildPhase section */
-		A1008 /* Frameworks */ = {
+		2B7D06CDB87E984F6B16FEDB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1020 /* CoreGraphics.framework in Frameworks */,
-				A1022 /* Metal.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A240F32C2E91299D0065AAB8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A240F33B2E9129B10065AAB8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				8E7B41A8849CAB935CF37FF1 /* CoreGraphics.framework in Frameworks */,
+				09036216742FD72EE1BCEB20 /* Metal.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A1009 = {
+		0C4071AAAE05B8D210E7E543 /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				A240F3502E912AC20065AAB8 /* VYBUITests */,
-				A240F34F2E912AB40065AAB8 /* ios */,
-				A240F34E2E912AA80065AAB8 /* VYBTests */,
-				A240F3122E9129050065AAB8 /* VYBTests */,
-				A240F30E2E9128F00065AAB8 /* VYBUITests */,
-				A1010 /* VYB */,
-				A240F3182E91297C0065AAB8 /* VYBTests */,
-				A240F3302E91299D0065AAB8 /* VYBUITests */,
-				A240F33F2E9129B10065AAB8 /* VYBTests */,
-				A1011 /* Products */,
-				A1024 /* Frameworks */,
-			);
-			sourceTree = "<group>";
-		};
-		A1010 /* VYB */ = {
-			isa = PBXGroup;
-			children = (
-				A1002 /* VYBApp.swift */,
-				A1004 /* ContentView.swift */,
-				A1006 /* Assets.xcassets */,
-			);
-			path = VYB;
-			sourceTree = "<group>";
-		};
-		A1011 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				A1007 /* VYB.app */,
-				A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */,
-				A240F33E2E9129B10065AAB8 /* VYBTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
-		A1024 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				A1021 /* CoreGraphics.framework */,
-				A1023 /* Metal.framework */,
-			);
-			name = Frameworks;
-			sourceTree = "<group>";
-		};
-		A240F30E2E9128F00065AAB8 /* VYBUITests */ = {
-			isa = PBXGroup;
-			children = (
-				A240F30D2E9128F00065AAB8 /* VYBUITests.swift */,
-			);
-			path = VYBUITests;
-			sourceTree = "<group>";
-		};
-		A240F3112E9129050065AAB8 /* UI */ = {
-			isa = PBXGroup;
-			children = (
-				A240F30F2E9129050065AAB8 /* CanvasInteractionTests.swift */,
-				A240F3102E9129050065AAB8 /* DeviceSimulationTests.swift */,
+				337A019F47B745400D28A6A4 /* CanvasInteractionTests.swift */,
+				4A0461A8274BDA7EE2BAA757 /* DeviceSimulationTests.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
 		};
-		A240F3122E9129050065AAB8 /* VYBTests */ = {
+		34F4B046ED2D118FCCE05DFE /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				A240F3112E9129050065AAB8 /* UI */,
+				60502AA33A703BDBC6BFEF62 /* DesignCanvas.swift */,
+				11D5646B3F37D231510D2C9B /* Layer.swift */,
+				3A9B26EF683444386A270E24 /* LayerState.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		45E69C72D853029B977DE91F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0E81D8BEE6BC186334247D64 /* VYB.app */,
+				B43D14FF601861962D64DC06 /* VYBTests.xctest */,
+				7433AEB689F506ED7CEBEACE /* VYBUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		47022779CD93BCF32127C872 /* VYB */ = {
+			isa = PBXGroup;
+			children = (
+				4CA7BF24B748AAE89F5418A9 /* AppIconView.swift */,
+				32DA71657D842097650A316E /* Assets.xcassets */,
+				D0F7582FD402FC98C7D0296A /* ContentView.swift */,
+				144369BBDB1F6F76EFA62CEE /* FacebookPostView.swift */,
+				3011C6B55A04F75C7D4B7F56 /* LayerEditorTest.swift */,
+				CF39B91D0CBF8ECFEDD42563 /* VYBApp.swift */,
+				34F4B046ED2D118FCCE05DFE /* Models */,
+				8C0D2FA1B61247E16C218CCE /* Services */,
+				AC2D75BD259F1EA43E754EAA /* Views */,
+			);
+			path = VYB;
+			sourceTree = "<group>";
+		};
+		63142FADBCC02F1CB878EF81 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D2DA833E0F269CBA320CE7E3 /* CoreGraphics.framework */,
+				211CC5E84B61FE026267D3FA /* Metal.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		783C73A54AA3B5ACC434ECA5 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				9D99BBEADE2A092BAAF93339 /* AIServiceTests.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		7F7ACB9B376F4B81E840F66C /* VYBTests */ = {
+			isa = PBXGroup;
+			children = (
+				C37F52DFD4EFF5CC7048A385 /* AIServiceTests.swift */,
+				87C1CC5B8F1E1ED23AC59186 /* LayerEditorModalTests.swift */,
+				BEB35FCB4E804D5A430A40B2 /* SimpleLayerCodableTests.swift */,
+				DDC041CC3B174C8AC3BCDAF4 /* VYBTests.swift */,
+				225D894655AA03D50AFACE25 /* VYBTestsLaunchTests.swift */,
+				783C73A54AA3B5ACC434ECA5 /* Services */,
+				0C4071AAAE05B8D210E7E543 /* UI */,
 			);
 			path = VYBTests;
+			sourceTree = "<group>";
+		};
+		8C0D2FA1B61247E16C218CCE /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				0FC54D039CBFD51B60BBA027 /* AIService.swift */,
+				8620ACBB046627FED5C63296 /* CanvasManipulation.swift */,
+				8A1795FB16B822D8AB29464B /* LayerManager.swift */,
+				D53641BDDB396636BF3F716E /* SimpleLayerManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		982AC519CA3940726CE643A7 /* VYBUITests */ = {
+			isa = PBXGroup;
+			children = (
+				AE5747AC9558BB81CC072932 /* ActualUITests.swift */,
+				C2BF044110F03ADF024E6397 /* AISwipeGestureUITests.swift */,
+				F3D9B57DF9288001A5E0ED0F /* AIWorkflowUITests.swift */,
+				C9EC2DABD88712E8B315FB74 /* CurrentStateUITests.swift */,
+				EE2B7EB07B9B7EA15E46832F /* LayerEditorUITests.swift */,
+				7B1ED2908460F85049002277 /* ManualBugValidationTests.swift */,
+				F1978DD5033CC915A75AD1D2 /* ModalBugValidationTests.swift */,
+				BB68E5F2C6758B15E664E756 /* ShapeLayerModalBugTest.swift */,
+				A03DD85B077ECA45276A5800 /* VYBUITests.swift */,
+				5CD843ADD431921CC4F8F98B /* VYBUITestsLaunchTests.swift */,
+			);
+			path = VYBUITests;
+			sourceTree = "<group>";
+		};
+		AC2D75BD259F1EA43E754EAA /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				40F59452BA0FFB05F9F0B323 /* CanvasView.swift */,
+				939BDBAFE6D814181CA0504C /* DeviceSimulation.swift */,
+				C4786476B67061986F0F6D9C /* LayerCanvas.swift */,
+				D2EDD4B12613F19EC358C75F /* LayerList.swift */,
+				9416DCEA0C90DAD0082C5F8B /* LayerManagementView.swift */,
+				53D4F3B3D85BA9B5472E11F8 /* LayerPropertiesPanel.swift */,
+				183D58CC0B4E88D9BF7905F4 /* LayerToolbar.swift */,
+				091F75B73785D575BEBAD833 /* LayerUIComponents.swift */,
+				4B3AABED91707AA2E13B8850 /* MainCanvasView.swift */,
+				965CDE1727C1821D52CF7165 /* ToolSectionViews.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		FF56D16199620130A94B3CCC = {
+			isa = PBXGroup;
+			children = (
+				47022779CD93BCF32127C872 /* VYB */,
+				7F7ACB9B376F4B81E840F66C /* VYBTests */,
+				982AC519CA3940726CE643A7 /* VYBUITests */,
+				63142FADBCC02F1CB878EF81 /* Frameworks */,
+				45E69C72D853029B977DE91F /* Products */,
+			);
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A1012 /* VYB */ = {
+		01EEC364AF169F95121DB5B7 /* VYB */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A1013 /* Build configuration list for PBXNativeTarget "VYB" */;
+			buildConfigurationList = F7A20150F3A54A6BD215EC1C /* Build configuration list for PBXNativeTarget "VYB" */;
 			buildPhases = (
-				A1014 /* Sources */,
-				A1008 /* Frameworks */,
-				A1015 /* Resources */,
+				999D6AE10C049DED8DBCDF7B /* Sources */,
+				58A266DDB576AA877E379111 /* Resources */,
+				2B7D06CDB87E984F6B16FEDB /* Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = VYB;
+			packageProductDependencies = (
+			);
 			productName = VYB;
-			productReference = A1007 /* VYB.app */;
+			productReference = 0E81D8BEE6BC186334247D64 /* VYB.app */;
 			productType = "com.apple.product-type.application";
 		};
-		A240F32E2E91299D0065AAB8 /* VYBUITests */ = {
+		C2B1897DE33BDC5D4F8D4DAC /* VYBUITests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A240F3372E91299D0065AAB8 /* Build configuration list for PBXNativeTarget "VYBUITests" */;
+			buildConfigurationList = 23A3E50BFBC0F8B70D0A77E3 /* Build configuration list for PBXNativeTarget "VYBUITests" */;
 			buildPhases = (
-				A240F32B2E91299D0065AAB8 /* Sources */,
-				A240F32C2E91299D0065AAB8 /* Frameworks */,
-				A240F32D2E91299D0065AAB8 /* Resources */,
+				F0BB2E15289A01DD75853586 /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A240F3362E91299D0065AAB8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A240F3302E91299D0065AAB8 /* VYBUITests */,
+				B11E1A31A1F97555ED7DF0C0 /* PBXTargetDependency */,
 			);
 			name = VYBUITests;
 			packageProductDependencies = (
 			);
 			productName = VYBUITests;
-			productReference = A240F32F2E91299D0065AAB8 /* VYBUITests.xctest */;
+			productReference = 7433AEB689F506ED7CEBEACE /* VYBUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
-		A240F33D2E9129B10065AAB8 /* VYBTests */ = {
+		FB2CD97CB376890FFE912247 /* VYBTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A240F3442E9129B10065AAB8 /* Build configuration list for PBXNativeTarget "VYBTests" */;
+			buildConfigurationList = 3B6D13F418E82AEB6B4A3652 /* Build configuration list for PBXNativeTarget "VYBTests" */;
 			buildPhases = (
-				A240F33A2E9129B10065AAB8 /* Sources */,
-				A240F33B2E9129B10065AAB8 /* Frameworks */,
-				A240F33C2E9129B10065AAB8 /* Resources */,
+				ED362C7DAE7EB309E7FE1D4E /* Sources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				A240F3432E9129B10065AAB8 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A240F33F2E9129B10065AAB8 /* VYBTests */,
+				11DF07E5118D458A9B442E65 /* PBXTargetDependency */,
 			);
 			name = VYBTests;
 			packageProductDependencies = (
 			);
 			productName = VYBTests;
-			productReference = A240F33E2E9129B10065AAB8 /* VYBTests.xctest */;
+			productReference = B43D14FF601861962D64DC06 /* VYBTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		A1016 /* Project object */ = {
+		471015B1A77E4F859D5CD4D2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 2600;
-				LastUpgradeCheck = 1600;
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					A1012 = {
-						CreatedOnToolsVersion = 16.0;
-					};
-					A240F32E2E91299D0065AAB8 = {
-						CreatedOnToolsVersion = 26.0;
-						TestTargetID = A1012;
-					};
-					A240F33D2E9129B10065AAB8 = {
-						CreatedOnToolsVersion = 26.0;
-						TestTargetID = A1012;
+					C2B1897DE33BDC5D4F8D4DAC = {
+						TestTargetID = 01EEC364AF169F95121DB5B7;
 					};
 				};
 			};
-			buildConfigurationList = A1017 /* Build configuration list for PBXProject "VYB" */;
+			buildConfigurationList = F1BA517DF4BF5F59295184C7 /* Build configuration list for PBXProject "VYB" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				en,
 				Base,
+				en,
 			);
-			mainGroup = A1009;
-			productRefGroup = A1011 /* Products */;
+			mainGroup = FF56D16199620130A94B3CCC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A1012 /* VYB */,
-				A240F32E2E91299D0065AAB8 /* VYBUITests */,
-				A240F33D2E9129B10065AAB8 /* VYBTests */,
+				01EEC364AF169F95121DB5B7 /* VYB */,
+				FB2CD97CB376890FFE912247 /* VYBTests */,
+				C2B1897DE33BDC5D4F8D4DAC /* VYBUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		A1015 /* Resources */ = {
+		58A266DDB576AA877E379111 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1005 /* Assets.xcassets in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A240F32D2E91299D0065AAB8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A240F33C2E9129B10065AAB8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
+				E4046C84843529420F95466A /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		A1014 /* Sources */ = {
+		999D6AE10C049DED8DBCDF7B /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A1003 /* ContentView.swift in Sources */,
-				A1001 /* VYBApp.swift in Sources */,
+				E1F566E6B21A643C59A7E651 /* AIService.swift in Sources */,
+				7E2C8656614C16FCBA53D4D4 /* AppIconView.swift in Sources */,
+				EDD0DD1B1576126BFC1B1675 /* CanvasManipulation.swift in Sources */,
+				5B84B26899D16DFD2BF2A674 /* CanvasView.swift in Sources */,
+				501118C22F2A9B06214CA96B /* ContentView.swift in Sources */,
+				FFE676CAE468DDB7C3D9FCC6 /* DesignCanvas.swift in Sources */,
+				A90C849DCD9FCE941F1D84A9 /* DeviceSimulation.swift in Sources */,
+				5B1DF214AC3A02D0856D32E5 /* FacebookPostView.swift in Sources */,
+				E20A92ABB8642BB00A0DBED7 /* Layer.swift in Sources */,
+				2461FFD3082E81CDC0AE8003 /* LayerCanvas.swift in Sources */,
+				655C6A99A1CE847ED85E4FBE /* LayerEditorTest.swift in Sources */,
+				67B022E4684778B96F26B7D9 /* LayerList.swift in Sources */,
+				D7A05ABFCD20C263CB0A40CB /* LayerManagementView.swift in Sources */,
+				2AF5F3AB8873D102B0EBAAC8 /* LayerManager.swift in Sources */,
+				AA92730FF05114C2B981C743 /* LayerPropertiesPanel.swift in Sources */,
+				2DFEAA885079B112C717864D /* LayerState.swift in Sources */,
+				B07DA6AF2E10D7F09EEB13D0 /* LayerToolbar.swift in Sources */,
+				160136B051AF168377E596EA /* LayerUIComponents.swift in Sources */,
+				015ADFA7CFEF026023B43127 /* MainCanvasView.swift in Sources */,
+				E1B3C0B4D58BC2ADA7641019 /* SimpleLayerManager.swift in Sources */,
+				107A3F8C66EAF39F95CEBD17 /* ToolSectionViews.swift in Sources */,
+				5FAFBC1E646A21DEF380C831 /* VYBApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A240F32B2E91299D0065AAB8 /* Sources */ = {
+		ED362C7DAE7EB309E7FE1D4E /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F1BC147630E5320DDFC58E81 /* AIServiceTests.swift in Sources */,
+				3FF8CE94AA228A0D372DB17E /* AIServiceTests.swift in Sources */,
+				C18EC3546B6F43D0876E4A7B /* CanvasInteractionTests.swift in Sources */,
+				687B3CF7AF02180A33B4408C /* DeviceSimulationTests.swift in Sources */,
+				28C8268D38B897EF73E36FDF /* LayerEditorModalTests.swift in Sources */,
+				A2CAD1E16B209BB88813FB92 /* SimpleLayerCodableTests.swift in Sources */,
+				A2BBEC60807437188F41962F /* VYBTests.swift in Sources */,
+				DB448227BB118600A9CCE281 /* VYBTestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A240F33A2E9129B10065AAB8 /* Sources */ = {
+		F0BB2E15289A01DD75853586 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9D3F40B249C32796D9D42929 /* AISwipeGestureUITests.swift in Sources */,
+				2E6952A292C26E0DCA21D9E9 /* AIWorkflowUITests.swift in Sources */,
+				44167AC8C5546BA903D28843 /* ActualUITests.swift in Sources */,
+				B655C64A24399F4906CCA8D6 /* CurrentStateUITests.swift in Sources */,
+				0E624CBC3C7B3AD23C2FCC70 /* LayerEditorUITests.swift in Sources */,
+				A150D635AACA8C9B43958AA4 /* ManualBugValidationTests.swift in Sources */,
+				0FD5C153F3C0A9F7FAC788C1 /* ModalBugValidationTests.swift in Sources */,
+				054759646C1982C0A5B93E8D /* ShapeLayerModalBugTest.swift in Sources */,
+				705055192EF982A45344CB91 /* VYBUITests.swift in Sources */,
+				920CE8AE2CB412E908283568 /* VYBUITestsLaunchTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		A240F3362E91299D0065AAB8 /* PBXTargetDependency */ = {
+		11DF07E5118D458A9B442E65 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A1012 /* VYB */;
-			targetProxy = A240F3352E91299D0065AAB8 /* PBXContainerItemProxy */;
+			target = 01EEC364AF169F95121DB5B7 /* VYB */;
+			targetProxy = DDAAFD00C9769392393728F4 /* PBXContainerItemProxy */;
 		};
-		A240F3432E9129B10065AAB8 /* PBXTargetDependency */ = {
+		B11E1A31A1F97555ED7DF0C0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = A1012 /* VYB */;
-			targetProxy = A240F3422E9129B10065AAB8 /* PBXContainerItemProxy */;
+			target = 01EEC364AF169F95121DB5B7 /* VYB */;
+			targetProxy = DF043E2917C89D829DB2F302 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
-		A1018 /* Debug */ = {
+		0E752ACF6C5154C9036276CD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/VYB";
+			};
+			name = Release;
+		};
+		12065774233D38084AC99713 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vyb.VYB;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		43734F0D2E2DACEF559C215D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VYB;
+			};
+			name = Debug;
+		};
+		65D71F92F5B34638DC06C034 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/VYB";
+			};
+			name = Debug;
+		};
+		AA0254225C4E5C4C854398BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = VYB;
+			};
+			name = Release;
+		};
+		E57DDC36D8C20B8442209C96 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -363,14 +583,13 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
 					"$(inherited)",
+					"DEBUG=1",
 				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -379,24 +598,46 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
-		A1019 /* Release */ = {
+		F03582E3C32BCF97E612391C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.vyb.VYB;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		F2FAE9ACA35DAFB43F72CA49 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -426,8 +667,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -436,199 +676,56 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
-				VALIDATE_PRODUCT = YES;
-			};
-			name = Release;
-		};
-		A1025 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = FPK2ZPTLKF;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.vyb.VYB;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Debug;
-		};
-		A1026 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "";
-				DEVELOPMENT_TEAM = FPK2ZPTLKF;
-				ENABLE_PREVIEWS = YES;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.vyb.VYB;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		A240F3382E91299D0065AAB8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FPK2ZPTLKF;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = VYB;
-			};
-			name = Debug;
-		};
-		A240F3392E91299D0065AAB8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FPK2ZPTLKF;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = VYB;
-			};
-			name = Release;
-		};
-		A240F3452E9129B10065AAB8 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FPK2ZPTLKF;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VYB";
-			};
-			name = Debug;
-		};
-		A240F3462E9129B10065AAB8 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = FPK2ZPTLKF;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = vyb.VYBTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/VYB.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/VYB";
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A1013 /* Build configuration list for PBXNativeTarget "VYB" */ = {
+		23A3E50BFBC0F8B70D0A77E3 /* Build configuration list for PBXNativeTarget "VYBUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1025 /* Debug */,
-				A1026 /* Release */,
+				43734F0D2E2DACEF559C215D /* Debug */,
+				AA0254225C4E5C4C854398BE /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
-		A1017 /* Build configuration list for PBXProject "VYB" */ = {
+		3B6D13F418E82AEB6B4A3652 /* Build configuration list for PBXNativeTarget "VYBTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A1018 /* Debug */,
-				A1019 /* Release */,
+				65D71F92F5B34638DC06C034 /* Debug */,
+				0E752ACF6C5154C9036276CD /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
-		A240F3372E91299D0065AAB8 /* Build configuration list for PBXNativeTarget "VYBUITests" */ = {
+		F1BA517DF4BF5F59295184C7 /* Build configuration list for PBXProject "VYB" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A240F3382E91299D0065AAB8 /* Debug */,
-				A240F3392E91299D0065AAB8 /* Release */,
+				E57DDC36D8C20B8442209C96 /* Debug */,
+				F2FAE9ACA35DAFB43F72CA49 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
-		A240F3442E9129B10065AAB8 /* Build configuration list for PBXNativeTarget "VYBTests" */ = {
+		F7A20150F3A54A6BD215EC1C /* Build configuration list for PBXNativeTarget "VYB" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				A240F3452E9129B10065AAB8 /* Debug */,
-				A240F3462E9129B10065AAB8 /* Release */,
+				12065774233D38084AC99713 /* Debug */,
+				F03582E3C32BCF97E612391C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
+			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = A1016 /* Project object */;
+	rootObject = 471015B1A77E4F859D5CD4D2 /* Project object */;
 }

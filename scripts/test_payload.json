@@ -1,0 +1,66 @@
+{
+    "contents": [{
+      "parts": [{
+        "text": "Analyze this design and create exactly 3 variations with specific changes:\n\nCURRENT DESIGN:\nLayer layer1: text Hello World at (100, 50)\nLayer layer2: image Photo at (200, 120)\n\nFor each variation, specify EXACT changes using layer IDs above:\n- Move layers to better positions (x, y coordinates)\n- Update text content to be more engaging\n- Change text colors for contrast\n\nEach variation should modify 1-2 layers with concrete changes."
+      }]
+    }],
+    "generationConfig": {
+      "temperature": 0.7,
+      "maxOutputTokens": 2048,
+      "response_mime_type": "application/json",
+      "response_json_schema": {
+        "type": "object",
+        "properties": {
+          "variations": {
+            "type": "array",
+            "description": "Array of exactly 3 design variations",
+            "maxItems": 3,
+            "items": {
+              "type": "object",
+              "description": "A design variation with concrete layer changes",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Brief title like 'Bold Text' or 'Centered Layout'"
+                },
+                "description": {
+                  "type": "string", 
+                  "description": "What will visually change"
+                },
+                "layerChanges": {
+                  "type": "array",
+                  "description": "Specific layer modifications",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "description": "Layer ID to modify"
+                      },
+                      "changes": {
+                        "type": "object",
+                        "description": "Properties to change",
+                        "properties": {
+                          "x": {"type": "number", "description": "New X position"},
+                          "y": {"type": "number", "description": "New Y position"},
+                          "content": {"type": "string", "description": "New text content"},
+                          "textColor": {"type": "string", "description": "Text color: red, blue, green, black, white"}
+                        },
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": ["id", "changes"],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": ["title", "description", "layerChanges"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["variations"],
+        "additionalProperties": false
+      }
+    }
+  }'

@@ -1,139 +1,126 @@
-# VYB - Visual Yield Builder
+# VYB - Visual Design Platform
 
-A powerful visual canvas application for creating interactive social media content with AI-powered collaboration features.
+A cross-platform visual design tool with TikTok-style navigation and AI-powered design variations.
 
-## 🚀 Project Overview
+## 🎯 Overview
 
-VYB is a cross-platform visual design application that allows users to create engaging visuals within a familiar social media post interface. The app combines the authenticity of Facebook-style posts with powerful canvas editing capabilities.
+VYB is a revolutionary visual design platform that combines intuitive TikTok-style navigation with powerful AI-assisted design generation. Create, iterate, and explore design variations with seamless cross-platform compatibility.
 
-## ✨ Current Features
+## ✨ Features
 
-### 🎨 **Layer System**
-- **Z-order Management**: Complete layer hierarchy with visual controls
-- **Draggable Elements**: Touch-and-drag positioning on 16:10 aspect ratio canvas
-- **Visual Indicators**: Clear z-order display and selection states
-- **Layer Types**: Text, Image, Shape, and Background layers
+- **🎬 TikTok-Style Navigation**: Smooth vertical scrolling through design history and variations
+- **🤖 AI-Powered Design Generation**: Create design alternatives using Gemini AI integration
+- **🌐 Cross-Platform**: Native apps for Web (React/TypeScript), iOS (Swift), and Android (Kotlin)
+- **⚡ Real-time Design Editing**: Live layer manipulation with instant feedback
+- **📱 Responsive Design**: Optimized for mobile-first design workflows
+- **🎨 Advanced Layer System**: Professional-grade layer management and manipulation
 
-### 📝 **Advanced Text Styling**
-- **Font Controls**: Size (12-48px), weight (UltraLight to Black), alignment
-- **Color System**: 9-color palette with visual selection indicators
-- **Text Effects**: Shadow and stroke effects with customizable properties
-- **Style Options**: Italic, underline, and comprehensive formatting
-- **Real-time Preview**: Live updates while editing
+## � Project Structure
 
-### 🖼️ **Canvas Management**
-- **16:10 Aspect Ratio**: Optimized for social media content
-- **Responsive Design**: Adapts to different screen sizes
-- **Interactive Elements**: Tap to select, double-tap to edit text
-- **Multi-layer Rendering**: Proper z-order rendering with performance optimization
-
-### 📱 **User Interface**
-- **Facebook Post Structure**: Authentic social media post layout
-- **Modal Interactions**: Dedicated modals for detailed styling and layer management
-- **Clean Controls**: Context-aware toolbar with color-coded actions
-- **Visual Hierarchy**: Clear separation between content and editing tools
-
-### 🎯 **Professional App Icon**
-- **VYB Branding**: Blue-to-purple gradient with yellow accent
-- **Modern Design**: Professional appearance with proper iOS integration
-- **Multiple Sizes**: Complete asset catalog with all required resolutions
-
-## 🏗️ Technical Architecture
-
-### **iOS (SwiftUI)**
-- **ContentView**: Main interface with modal architecture
-- **SimpleLayer Model**: Comprehensive layer data structure
-- **LayerView**: Interactive canvas elements with drag gestures
-- **Modal Views**: TextStyleModalView and LayerManagerModalView
-- **Binding System**: Real-time updates across all components
-
-### **Cross-Platform Structure**
 ```
-├── ios/                    # Native iOS application
-├── web/                   # Future web implementation  
-├── android/               # Future Android implementation
-├── shared/                # Cross-platform contracts and types
-└── specs/                 # Feature specifications and documentation
+vyb-web/
+├── 📱 ios/                   # Swift iOS application
+│   ├── VYB/                  # Main iOS source code
+│   ├── VYBTests/            # Unit tests  
+│   └── VYBUITests/          # UI automation tests
+├── 🌐 web/                   # React/TypeScript web app
+├── 🤖 android/               # Kotlin Android application  
+├── 🤝 shared/                # Cross-platform shared code
+├── 📚 docs/                  # Project documentation
+│   ├── assets/              # Screenshots and images
+│   ├── AI_INTEGRATION_SUCCESS.md
+│   ├── PROJECT_SUMMARY.md
+│   └── UI_TESTING_GUIDE.md
+├── 🔧 scripts/               # Build and automation scripts
+│   └── ios/                 # iOS-specific scripts
+├── 🧪 test-artifacts/        # Test outputs and reports
+└── 📋 specs/                 # Technical specifications
 ```
 
-### **Key Files**
-- `ios/VYB/ContentView.swift` - Main UI with restructured layout
-- `ios/VYB/AppIconView.swift` - SwiftUI app icon design
-- `shared/types/` - TypeScript type definitions
-- `specs/002-visual-ai-collaboration/` - Current feature specifications
+## 🚀 Quick Start
 
-## 🎯 Development Progress
+### Prerequisites
+- **iOS**: Xcode 15+, iOS 17+ deployment target
+- **Web**: Node.js 18+, npm/yarn
+- **Android**: Android Studio, Kotlin 1.9+
 
-### ✅ **Completed Features**
-1. **Layer Hierarchy & Ordering** - Complete z-order system with visual controls
-2. **Advanced Text Styling** - Comprehensive text formatting with modal interface
-3. **UI Layout & Modal Improvements** - Restructured for better UX and authenticity  
-4. **App Icon Creation** - Professional VYB branding with gradient design
-
-### 🚧 **Next Features**
-1. **Shape Library Implementation** - Basic geometric shapes with controls
-2. **Image Layer Support** - Upload and positioning system
-3. **Background Templates** - Gradient and pattern options
-4. **Canvas Tools & Interactions** - Zoom, pan, undo/redo, multi-select
-5. **Export & Sharing Options** - Multiple formats with social media integration
-
-## 🛠️ Development Setup
-
-### **iOS Development**
+### iOS Development
 ```bash
 cd ios
-xcodebuild -project VYB.xcodeproj -scheme VYB build
-xcrun simctl install booted [path-to-app]
-xcrun simctl launch booted com.vyb.VYB
+# Open VYB.xcodeproj in Xcode
+# Select iOS Simulator (iPhone 15 Pro recommended)
+# Build and run (⌘+R)
 ```
 
-### **Testing & Validation**
-- **UI Testing**: XCUITest framework with screenshot validation
-- **Manual Testing**: Comprehensive gesture and interaction testing
-- **Visual Validation**: Screenshot-based progress tracking
+### Web Development  
+```bash
+cd web
+npm install
+npm run dev
+```
 
-## 📸 **Visual Progress**
+### Android Development
+```bash
+cd android
+./gradlew build
+./gradlew installDebug
+```
 
-The project includes comprehensive screenshot documentation:
-- `ios/ui-final-with-icon.png` - Current app state with new icon
-- `ios/home-screen-with-icon.png` - iOS home screen showing app icon
-- `test-artifacts/` - Complete testing screenshot collection
+## 🎨 Current Features
 
-## 🎨 **Design Philosophy**
+### TikTok-Style Navigation System
+- **Smooth Scrolling**: Natural vertical navigation through design history
+- **Automatic AI Generation**: Scroll triggers create new design variations
+- **History Management**: Complete timeline of design iterations
+- **No Read-Only Restrictions**: Edit any layer in any history state
 
-1. **Authenticity First**: Maintain familiar social media post structure
-2. **Progressive Enhancement**: Add powerful editing without breaking UX flow
-3. **Modal Interactions**: Detailed editing in focused, non-intrusive modals
-4. **Visual Hierarchy**: Clear separation between content consumption and creation
-5. **Professional Polish**: Production-ready UI with proper branding
+### AI Integration (Gemini API)
+- **Maximum Token Limits**: 8192 tokens for complete response generation
+- **Structured JSON Schema**: Consistent variation format with metadata
+- **Error Handling**: Robust parsing with fallback mechanisms
+- **Real-time Generation**: Instant design alternatives based on current state
 
-## 🔄 **Development Workflow**
+## 🛠️ Development
 
-This project follows a feature-branch workflow:
-- `main` - Stable releases
-- `001-build-an-application` - Initial foundation
-- `002-visual-ai-collaboration` - Current feature development
+### Key Technologies
+- **iOS**: SwiftUI, Combine, structured concurrency
+- **Web**: React 18, TypeScript 5, Tailwind CSS
+- **Android**: Jetpack Compose, Kotlin coroutines
+- **AI**: Google Gemini API, structured JSON responses
 
-## 📝 **Contributing**
+### Testing Strategy
+- **iOS**: XCTest unit tests, XCUITest automation
+- **Web**: Jest, React Testing Library, Playwright
+- **Android**: JUnit, Espresso UI testing
 
-1. Create feature branches from `main`
-2. Follow the established SwiftUI patterns
-3. Include screenshot validation for UI changes
-4. Update documentation for new features
-5. Test on iOS Simulator with comprehensive scenarios
+## � Documentation
 
-## 🚀 **Vision**
+- **[AI Integration Guide](docs/AI_INTEGRATION_SUCCESS.md)** - Complete AI setup and usage
+- **[UI Testing Guide](docs/UI_TESTING_GUIDE.md)** - Automated testing strategies  
+- **[Project Summary](docs/PROJECT_SUMMARY.md)** - Technical architecture overview
+- **[iOS Testing Report](docs/iOS_UI_TESTING_SUMMARY.md)** - Platform-specific test results
 
-VYB aims to democratize visual content creation by combining:
-- **Familiar Interfaces** - Social media post structures users know
-- **Professional Tools** - Advanced editing capabilities
-- **AI Integration** - Smart suggestions and automated enhancements
-- **Cross-Platform Reach** - iOS, Android, and Web implementations
+## 🧹 Repository Standards
 
-## 📜 **License**
+This repository follows strict organization standards:
+- **No scattered screenshots** - All images in `docs/assets/`
+- **No build artifacts** - Comprehensive `.gitignore` rules
+- **Organized scripts** - All automation in `scripts/` directory
+- **Centralized docs** - All documentation in `docs/` directory
+- **Clean git history** - Meaningful commits with proper organization
 
-[License information to be determined]
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Follow the established project structure
+4. Test thoroughly on your target platform
+5. Submit a pull request with clear description
+
+## � License
+
+[License information to be added]
 
 ---
 
-**Built with ❤️ using SwiftUI, TypeScript, and modern development practices.**
+**Last Updated**: October 2025 | **Status**: Active Development
