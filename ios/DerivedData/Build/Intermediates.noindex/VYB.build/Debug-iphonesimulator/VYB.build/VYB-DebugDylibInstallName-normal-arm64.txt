@@ -1,1 +1,0 @@
-@rpath/VYB.debug.dylib
