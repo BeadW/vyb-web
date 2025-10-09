@@ -1,4 +1,5 @@
 import Foundation
+import CoreGraphics
 
 // MARK: - Error Handling
 
@@ -14,12 +15,42 @@ public enum AIServiceError: Error {
 
 // MARK: - Canvas Data Models
 
+/// Canvas bounds information for AI analysis
+public struct CanvasBounds: Codable {
+    public let width: Double
+    public let height: Double
+    
+    public init(width: Double, height: Double) {
+        self.width = width
+        self.height = height
+    }
+    
+    public init(from size: CGSize) {
+        self.width = Double(size.width)
+        self.height = Double(size.height)
+    }
+    
+    /// Check if a point is within canvas bounds
+    public func contains(x: Double, y: Double) -> Bool {
+        return x >= 0 && x <= width && y >= 0 && y <= height
+    }
+    
+    /// Get center point of canvas
+    public var center: (x: Double, y: Double) {
+        return (x: width / 2.0, y: height / 2.0)
+    }
+}
+
 /// Canvas data structure for analysis
 public struct DesignCanvasData {
     public let layers: [Any]
+    public let canvasSize: CGSize
+    public let canvasBounds: CanvasBounds
     
-    public init(layers: [Any]) {
+    public init(layers: [Any], canvasSize: CGSize = CGSize(width: 400, height: 500)) {
         self.layers = layers
+        self.canvasSize = canvasSize
+        self.canvasBounds = CanvasBounds(from: canvasSize)
     }
 }
 
@@ -63,6 +94,42 @@ public struct SimpleLayerData: Identifiable, Codable {
         self.content = content
         self.x = x
         self.y = y
+    }
+    
+    /// Check if layer is visible within given canvas bounds
+    public func isVisible(within bounds: CanvasBounds) -> Bool {
+        return bounds.contains(x: x, y: y)
+    }
+    
+    /// Get visibility status description for AI
+    public func visibilityDescription(within bounds: CanvasBounds) -> String {
+        if isVisible(within: bounds) {
+            return "visible on canvas"
+        } else {
+            let direction: String
+            
+            if x < 0 && y < 0 {
+                direction = "off-canvas (top-left)"
+            } else if x > bounds.width && y < 0 {
+                direction = "off-canvas (top-right)"
+            } else if x < 0 && y > bounds.height {
+                direction = "off-canvas (bottom-left)"
+            } else if x > bounds.width && y > bounds.height {
+                direction = "off-canvas (bottom-right)"
+            } else if x < 0 {
+                direction = "off-canvas (left)"
+            } else if x > bounds.width {
+                direction = "off-canvas (right)"
+            } else if y < 0 {
+                direction = "off-canvas (top)"
+            } else if y > bounds.height {
+                direction = "off-canvas (bottom)"
+            } else {
+                direction = "partially off-canvas"
+            }
+            
+            return direction
+        }
     }
 }
 
@@ -326,8 +393,9 @@ class AIService {
     }
     
     /// Generate design variations using Gemini AI API with structured responses
-    func generateDesignVariations(for layers: [Any]) async throws -> [DesignVariation] {
+    func generateDesignVariations(for layers: [Any], canvasSize: CGSize = CGSize(width: 400, height: 500)) async throws -> [DesignVariation] {
         NSLog("🎨 AIService: generateDesignVariations called with \(layers.count) layers")
+        NSLog("🎨 AIService: Canvas dimensions: \(canvasSize.width) x \(canvasSize.height)")
         
         guard let apiKey = apiKey, !apiKey.isEmpty else {
             NSLog("❌ AIService: API key not configured")
@@ -335,6 +403,8 @@ class AIService {
         }
         
         NSLog("✅ AIService: API key is configured")
+        
+        let canvasBounds = CanvasBounds(from: canvasSize)
         
         // Convert layers to SimpleLayerData for analysis and modifications
         let simpleLayerData = layers.compactMap { layer -> SimpleLayerData? in
@@ -358,11 +428,12 @@ class AIService {
         
         NSLog("📊 AIService: Generated \(simpleLayerData.count) layer descriptions")
         for (index, layer) in simpleLayerData.enumerated() {
-            NSLog("📊 AIService: Layer \(index): id: \(layer.id), type: \(layer.type), content: \(layer.content), x: \(layer.x), y: \(layer.y)")
+            let visibility = layer.visibilityDescription(within: canvasBounds)
+            NSLog("📊 AIService: Layer \(index): id: \(layer.id), type: \(layer.type), content: \(layer.content), x: \(layer.x), y: \(layer.y) (\(visibility))")
         }
         
-        // Create design analysis prompt with layer data
-        let prompt = createDesignAnalysisPrompt(layers: simpleLayerData)
+        // Create design analysis prompt with layer data and canvas bounds
+        let prompt = createDesignAnalysisPrompt(layers: simpleLayerData, canvasBounds: canvasBounds)
         NSLog("📝 AIService: Created prompt for Gemini API")
         
         // Make Gemini AI API call with structured response
@@ -379,29 +450,38 @@ class AIService {
     }
     
     /// Create a concise design analysis prompt for Gemini AI
-    private func createDesignAnalysisPrompt(layers: [SimpleLayerData]) -> String {
-        // Round coordinates to prevent floating point precision issues
+    private func createDesignAnalysisPrompt(layers: [SimpleLayerData], canvasBounds: CanvasBounds) -> String {
+        // Round coordinates to prevent floating point precision issues and include visibility info
         let layerInfo = layers.map { layer in
             let x = round(layer.x * 100) / 100 // Round to 2 decimal places
             let y = round(layer.y * 100) / 100
-            return "Layer \(layer.id): \(layer.type) '\(layer.content)' at (\(x), \(y))"
+            let visibility = layer.visibilityDescription(within: canvasBounds)
+            return "Layer \(layer.id): \(layer.type) '\(layer.content)' at (\(x), \(y)) - \(visibility)"
         }.joined(separator: "\n")
         
         return """
         Analyze this design and create exactly 3 variations with specific changes:
 
-        CURRENT DESIGN:
+        CANVAS BOUNDS: width: \(canvasBounds.width), height: \(canvasBounds.height)
+        - Visible area: (0, 0) to (\(canvasBounds.width), \(canvasBounds.height))
+        - Canvas center: (\(canvasBounds.center.x), \(canvasBounds.center.y))
+
+        CURRENT DESIGN LAYERS:
         \(layerInfo)
 
-        IMPORTANT: Use coordinates rounded to 2 decimal places only (e.g., 150.50, not 150.000000...).
+        IMPORTANT POSITIONING RULES:
+        - Coordinates (0, 0) = top-left corner of visible canvas
+        - Coordinates (\(canvasBounds.width), \(canvasBounds.height)) = bottom-right corner of visible canvas
+        - Layers positioned outside (0, 0) to (\(canvasBounds.width), \(canvasBounds.height)) are OFF-CANVAS and invisible to users
+        - Only place layers off-canvas if it's a deliberate design choice
+        - Use coordinates rounded to 2 decimal places only (e.g., 150.50, not 150.000000...)
         
-        For each variation, specify EXACT changes to make using the layer IDs above. 
-        Focus on changes that will be visually obvious:
-        - Move layers to better positions (change x, y coordinates with max 2 decimal places)
+        For each variation, specify EXACT changes using the layer IDs above:
+        - Move layers to better positions (prioritize keeping them ON-CANVAS unless deliberately hiding them)
         - Update text content to be more engaging
         - Change text colors for better contrast
         
-        Each variation should modify 1-2 layers with concrete changes.
+        Each variation should modify 1-2 layers with concrete, visible changes.
         """
     }
     

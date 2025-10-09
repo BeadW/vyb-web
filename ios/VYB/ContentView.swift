@@ -3,8 +3,90 @@ import SwiftUI
 struct ContentView: View {
     @State private var isEditing = false
     @State private var editingText = "What's on your mind?"
-    @State private var layers: [SimpleLayer] = []
-    @State private var canvasSize: CGSize = .zero
+    @State private var layers: [SimpleLayer] = {
+        var layers: [SimpleLayer] = []
+        
+        // Background layer - will be rendered as gradient by the background layer view
+        var backgroundLayer = SimpleLayer(
+            id: "background-gradient",
+            type: "background",
+            content: "Salon Background",
+            x: 200,
+            y: 250,
+            zOrder: 0
+        )
+        layers.append(backgroundLayer)
+        
+        // Title layer with emojis - positioned within canvas
+        var titleLayer = SimpleLayer(
+            id: "title-text",
+            type: "text",
+            content: "🚫 Cancellation Policy ⚠️",
+            x: 200,
+            y: 60,
+            zOrder: 1
+        )
+        titleLayer.fontSize = 22
+        titleLayer.fontWeight = .bold
+        titleLayer.textColor = .white
+        titleLayer.textAlignment = .center
+        titleLayer.hasShadow = true
+        titleLayer.shadowColor = .black
+        layers.append(titleLayer)
+        
+        // Main policy text - positioned within visible area
+        var mainTextLayer = SimpleLayer(
+            id: "main-policy-text",
+            type: "text",
+            content: "A 50% fee will apply for no-shows or cancellations made within 3 hours of your appointment.",
+            x: 200,
+            y: 180,
+            zOrder: 2
+        )
+        mainTextLayer.fontSize = 16
+        mainTextLayer.fontWeight = .medium
+        mainTextLayer.textColor = .white
+        mainTextLayer.textAlignment = .center
+        mainTextLayer.hasShadow = true
+        mainTextLayer.shadowColor = .black
+        layers.append(mainTextLayer)
+        
+        // Subtitle layer - positioned within canvas bounds
+        var subtitleLayer = SimpleLayer(
+            id: "subtitle-text",
+            type: "text",
+            content: "Thank you for understanding — this helps us manage our time and continue providing the best service. ❤️",
+            x: 200,
+            y: 320,
+            zOrder: 3
+        )
+        subtitleLayer.fontSize = 12
+        subtitleLayer.fontWeight = .regular
+        subtitleLayer.textColor = .white
+        subtitleLayer.textAlignment = .center
+        layers.append(subtitleLayer)
+        
+        // Logo layer - positioned at bottom within canvas
+        var logoLayer = SimpleLayer(
+            id: "bella-salon-logo",
+            type: "text",
+            content: "✨ Bella Salon ✨",
+            x: 200,
+            y: 420,
+            zOrder: 4
+        )
+        logoLayer.fontSize = 18
+        logoLayer.fontWeight = .bold
+        logoLayer.textColor = .white
+        logoLayer.textAlignment = .center
+        logoLayer.hasStroke = true
+        logoLayer.strokeColor = .yellow
+        logoLayer.strokeWidth = 1.0
+        layers.append(logoLayer)
+        
+        return layers
+    }()
+    @State private var canvasSize: CGSize = CGSize(width: 400, height: 500)
     @State private var isEditingLayer: String? = nil
     @State private var showTextStylePanel = false
     @State private var showTextStyleModal = false
@@ -595,7 +677,7 @@ struct ContentView: View {
                 
                 // Get current layers from history state
                 let baseLayers = currentLayers.isEmpty ? createSampleLayers() : currentLayers
-                let variations = try await aiService.generateDesignVariations(for: baseLayers)
+                let variations = try await aiService.generateDesignVariations(for: baseLayers, canvasSize: canvasSize)
                 
                 await MainActor.run {
                     // Add each AI variation as a new history state
@@ -990,13 +1072,22 @@ struct HistoryLayerView: View {
     
     private var backgroundLayerView: some View {
         Rectangle()
-            .fill(Color.yellow.opacity(0.3))
-            .frame(width: 100, height: 60)
-            .cornerRadius(4)
+            .fill(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.pink.opacity(0.15),
+                        Color.purple.opacity(0.1)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: canvasWidth, height: canvasHeight)
+            .cornerRadius(8)
             .overlay(
                 Rectangle()
                     .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
-                    .cornerRadius(4)
+                    .cornerRadius(8)
             )
     }
     
@@ -1022,10 +1113,13 @@ struct HistoryLayerView: View {
     
     var body: some View {
         layerContent
-            .position(x: editableLayer.x + dragOffset.width, y: editableLayer.y + dragOffset.height)
+            .position(
+                x: layer.type == "background" ? canvasWidth / 2 : editableLayer.x + dragOffset.width,
+                y: layer.type == "background" ? canvasHeight / 2 : editableLayer.y + dragOffset.height
+            )
             .scaleEffect(isDragging && isEditable ? 1.1 : 1.0)
             .opacity(isDragging ? 0.8 : 1.0)
-            .gesture(dragGesture)
+            .gesture(layer.type == "background" ? nil : dragGesture)
             .onTapGesture {
                 onToggleSelection()
             }
@@ -1424,13 +1518,22 @@ struct LayerView: View {
     
     private var backgroundLayerView: some View {
         Rectangle()
-            .fill(Color.yellow.opacity(0.3))
-            .frame(width: 100, height: 60)
-            .cornerRadius(4)
+            .fill(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.pink.opacity(0.15),
+                        Color.purple.opacity(0.1)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: canvasWidth, height: canvasHeight)
+            .cornerRadius(8)
             .overlay(
                 Rectangle()
                     .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
-                    .cornerRadius(4)
+                    .cornerRadius(8)
             )
     }
     
@@ -1458,10 +1561,13 @@ struct LayerView: View {
     
     var body: some View {
         layerContent
-            .position(x: layer.x + dragOffset.width, y: layer.y + dragOffset.height)
+            .position(
+                x: layer.type == "background" ? canvasWidth / 2 : layer.x + dragOffset.width,
+                y: layer.type == "background" ? canvasHeight / 2 : layer.y + dragOffset.height
+            )
             .scaleEffect(isDragging ? 1.1 : 1.0)
             .opacity(isDragging ? 0.8 : 1.0)
-            .gesture(dragGesture)
+            .gesture(layer.type == "background" ? nil : dragGesture)
             .onTapGesture {
                 onToggleSelection()
             }
@@ -2182,6 +2288,7 @@ struct BackgroundLayerSettings: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
+
 }
 
 // MARK: - AI Variation Models
