@@ -1,0 +1,707 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vyb.com/schemas/ai-response.json",
+  "title": "AI Response",
+  "description": "Response payload from AI collaboration services",
+  "type": "object",
+  "required": ["requestId", "status", "timestamp"],
+  "properties": {
+    "requestId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Matching request identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["success", "error", "partial", "processing"],
+      "description": "Response status"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Response timestamp"
+    },
+    "processingTime": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Processing time in milliseconds"
+    },
+    "result": {
+      "oneOf": [
+        { "$ref": "#/$defs/ImageResult" },
+        { "$ref": "#/$defs/TextResult" },
+        { "$ref": "#/$defs/SuggestionResult" },
+        { "$ref": "#/$defs/AnalysisResult" },
+        { "$ref": "#/$defs/ColorPaletteResult" },
+        { "$ref": "#/$defs/StyleTransferResult" },
+        { "$ref": "#/$defs/BackgroundRemovalResult" },
+        { "$ref": "#/$defs/ObjectDetectionResult" },
+        { "$ref": "#/$defs/ContentFillResult" }
+      ],
+      "description": "AI-generated result"
+    },
+    "error": {
+      "$ref": "#/$defs/AIError",
+      "description": "Error information if status is 'error'"
+    },
+    "metadata": {
+      "$ref": "#/$defs/ResponseMetadata",
+      "description": "Additional response metadata"
+    }
+  },
+  "$defs": {
+    "ImageResult": {
+      "type": "object",
+      "required": ["images"],
+      "properties": {
+        "images": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GeneratedImage"
+          },
+          "minItems": 1
+        },
+        "prompt": {
+          "type": "string",
+          "description": "Final processed prompt used"
+        },
+        "negativePrompt": {
+          "type": "string"
+        },
+        "seed": {
+          "type": "integer"
+        },
+        "model": {
+          "type": "string"
+        }
+      }
+    },
+    "TextResult": {
+      "type": "object",
+      "required": ["text"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 10000
+        },
+        "alternatives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 5
+        },
+        "wordCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "readabilityScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "tone": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    },
+    "SuggestionResult": {
+      "type": "object",
+      "required": ["suggestions"],
+      "properties": {
+        "suggestions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          },
+          "minItems": 1
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "category": {
+          "type": "string"
+        }
+      }
+    },
+    "AnalysisResult": {
+      "type": "object",
+      "required": ["analysis"],
+      "properties": {
+        "analysis": {
+          "$ref": "#/$defs/CanvasAnalysis"
+        },
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Overall quality score"
+        },
+        "recommendations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          }
+        }
+      }
+    },
+    "ColorPaletteResult": {
+      "type": "object",
+      "required": ["palette"],
+      "properties": {
+        "palette": {
+          "$ref": "#/$defs/ColorPalette"
+        },
+        "harmony": {
+          "type": "string",
+          "enum": ["excellent", "good", "fair", "poor"]
+        },
+        "accessibility": {
+          "$ref": "#/$defs/AccessibilityInfo"
+        }
+      }
+    },
+    "StyleTransferResult": {
+      "type": "object",
+      "required": ["image"],
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/GeneratedImage"
+        },
+        "appliedStyle": {
+          "type": "string"
+        },
+        "strength": {
+          "type": "number"
+        }
+      }
+    },
+    "BackgroundRemovalResult": {
+      "type": "object",
+      "required": ["image"],
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/GeneratedImage"
+        },
+        "mask": {
+          "$ref": "#/$defs/GeneratedImage",
+          "description": "Segmentation mask if requested"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "ObjectDetectionResult": {
+      "type": "object",
+      "required": ["objects"],
+      "properties": {
+        "objects": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DetectedObject"
+          }
+        },
+        "totalObjects": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "ContentFillResult": {
+      "type": "object",
+      "required": ["image"],
+      "properties": {
+        "image": {
+          "$ref": "#/$defs/GeneratedImage"
+        },
+        "fillQuality": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "method": {
+          "type": "string"
+        }
+      }
+    },
+    "GeneratedImage": {
+      "type": "object",
+      "required": ["url", "width", "height"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "Image URL or base64 data URI"
+        },
+        "width": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "format": {
+          "type": "string",
+          "enum": ["png", "jpg", "webp", "svg"]
+        },
+        "size": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "thumbnail": {
+          "type": "string",
+          "format": "uri",
+          "description": "Thumbnail URL for large images"
+        }
+      }
+    },
+    "Suggestion": {
+      "type": "object",
+      "required": ["id", "type", "description"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "color-change", "layout-adjustment", "font-change", 
+            "spacing-improvement", "element-addition", "element-removal",
+            "style-enhancement", "accessibility-fix", "branding-alignment"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 5,
+          "maxLength": 500
+        },
+        "impact": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Expected improvement impact"
+        },
+        "effort": {
+          "type": "string",
+          "enum": ["easy", "medium", "complex"],
+          "description": "Implementation effort required"
+        },
+        "targetElementIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "previewUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Preview image of suggested change"
+        },
+        "actionable": {
+          "type": "boolean",
+          "default": true,
+          "description": "Whether suggestion can be auto-applied"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "Parameters for auto-applying the suggestion"
+        }
+      }
+    },
+    "CanvasAnalysis": {
+      "type": "object",
+      "properties": {
+        "composition": {
+          "$ref": "#/$defs/CompositionAnalysis"
+        },
+        "colorHarmony": {
+          "$ref": "#/$defs/ColorAnalysis"
+        },
+        "typography": {
+          "$ref": "#/$defs/TypographyAnalysis"
+        },
+        "accessibility": {
+          "$ref": "#/$defs/AccessibilityAnalysis"
+        },
+        "branding": {
+          "$ref": "#/$defs/BrandingAnalysis"
+        },
+        "emotional": {
+          "$ref": "#/$defs/EmotionalAnalysis"
+        }
+      }
+    },
+    "CompositionAnalysis": {
+      "type": "object",
+      "properties": {
+        "balance": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "hierarchy": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "spacing": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "alignment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "density": {
+          "type": "string",
+          "enum": ["sparse", "balanced", "dense", "overcrowded"]
+        },
+        "focusPoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FocusPoint"
+          }
+        }
+      }
+    },
+    "ColorAnalysis": {
+      "type": "object",
+      "properties": {
+        "harmony": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "contrast": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "dominantColors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mood": {
+          "type": "string",
+          "enum": ["warm", "cool", "vibrant", "muted", "energetic", "calming"]
+        },
+        "accessibilityIssues": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "TypographyAnalysis": {
+      "type": "object",
+      "properties": {
+        "readability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "hierarchy": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "consistency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "fontCount": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "averageFontSize": {
+          "type": "number"
+        }
+      }
+    },
+    "AccessibilityAnalysis": {
+      "type": "object",
+      "properties": {
+        "overallScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "colorContrast": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "textSize": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "issues": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AccessibilityIssue"
+          }
+        }
+      }
+    },
+    "BrandingAnalysis": {
+      "type": "object",
+      "properties": {
+        "consistency": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "brandAlignment": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "recognizability": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "EmotionalAnalysis": {
+      "type": "object",
+      "properties": {
+        "mood": {
+          "type": "string",
+          "enum": ["happy", "sad", "energetic", "calm", "professional", "playful", "serious"]
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "emotions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "emotion": { "type": "string" },
+              "strength": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "ColorPalette": {
+      "type": "object",
+      "required": ["colors"],
+      "properties": {
+        "colors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PaletteColor"
+          },
+          "minItems": 2
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "PaletteColor": {
+      "type": "object",
+      "required": ["hex"],
+      "properties": {
+        "hex": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$"
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "role": {
+          "type": "string",
+          "enum": ["primary", "secondary", "accent", "background", "text", "neutral"]
+        },
+        "usage": {
+          "type": "string",
+          "maxLength": 200
+        }
+      }
+    },
+    "DetectedObject": {
+      "type": "object",
+      "required": ["label", "confidence", "bounds"],
+      "properties": {
+        "label": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "bounds": {
+          "$ref": "#/$defs/Rectangle"
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Additional object attributes"
+        }
+      }
+    },
+    "FocusPoint": {
+      "type": "object",
+      "required": ["x", "y", "strength"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "strength": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "elementId": {
+          "type": "string",
+          "format": "uuid"
+        }
+      }
+    },
+    "AccessibilityIssue": {
+      "type": "object",
+      "required": ["type", "severity", "description"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["contrast", "text-size", "color-only", "focus-order", "alt-text"]
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high", "critical"]
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 300
+        },
+        "elementId": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "fix": {
+          "type": "string",
+          "maxLength": 300
+        }
+      }
+    },
+    "AccessibilityInfo": {
+      "type": "object",
+      "properties": {
+        "wcagAA": {
+          "type": "boolean",
+          "description": "Meets WCAG AA standards"
+        },
+        "wcagAAA": {
+          "type": "boolean",
+          "description": "Meets WCAG AAA standards"
+        },
+        "contrastRatios": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "foreground": { "type": "string" },
+              "background": { "type": "string" },
+              "ratio": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "Rectangle": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "width": { "type": "number", "minimum": 0 },
+        "height": { "type": "number", "minimum": 0 }
+      }
+    },
+    "AIError": {
+      "type": "object",
+      "required": ["code", "message"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "INVALID_REQUEST", "TIMEOUT", "RATE_LIMIT_EXCEEDED",
+            "CONTENT_FILTERED", "MODEL_UNAVAILABLE", "QUOTA_EXCEEDED",
+            "INTERNAL_ERROR", "AUTHENTICATION_FAILED", "VALIDATION_ERROR"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "details": {
+          "type": "object",
+          "description": "Additional error details"
+        },
+        "retryable": {
+          "type": "boolean",
+          "description": "Whether the request can be retried"
+        },
+        "retryAfter": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Seconds to wait before retry"
+        }
+      }
+    },
+    "ResponseMetadata": {
+      "type": "object",
+      "properties": {
+        "model": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "version": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "tokensUsed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "creditsUsed": {
+          "type": "number",
+          "minimum": 0
+        },
+        "region": {
+          "type": "string",
+          "maxLength": 50
+        },
+        "cacheHit": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

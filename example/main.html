@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- --------------------------------------------------------------------------------------
+    INLINE README: AI CREATIVE STUDIO WITH BRANCHING HISTORY
+    ======================================================================================
+    
+    1. PROJECT GOAL (THE "WHY"):
+    This application simulates a cutting-edge creative design environment that leverages an 
+    AI partner (Gemini API) to assist with aesthetic iterations. The primary purpose is 
+    to demonstrate a non-linear, *branching* history model (a Directed Acyclic Graph or DAG)
+    that saves all manual user edits and all AI suggestions, allowing the user to explore 
+    multiple creative pathways without losing any version.
+    
+    2. CORE ARCHITECTURE (THE "WHAT"):
+    - Front-End: A single-file HTML/Tailwind/JavaScript application.
+    - Canvas: Uses the **Fabric.js** library for vector-like, object-based manipulation 
+      (moving, scaling, coloring) of text and images on a 2D canvas.
+    - History Engine (DAG): The entire canvas state (layers, positions, colors, background)
+      is captured in a JSON object. This state is saved into a `historyNodes` map.
+        - **Linear Nodes (Manual Edits):** Saved sequentially (A -> B -> C).
+        - **Branching Nodes (AI Suggestions):** Saved as children of a root node (Root -> AI-1, AI-2, AI-3).
+    - Persistence: History is stored locally using **localStorage**.
+    - AI Integration: Uses the **Gemini 2.5 Flash** API with a structured JSON schema
+      to receive the current design state and return an aesthetically iterated design.
+    
+    3. UNIQUE USER INTERACTION (THE "HOW"):
+    The primary control method for AI iteration is the scroll gesture over the phone screen area:
+    
+    - **SCROLL DOWN / SWIPE LEFT (Redo/Next AI):**
+        - If the user is on an existing manual node, scrolls forward linearly (Redo).
+        - If the user is on the latest manual node (Root), it tries to load the next existing AI suggestion (AI-1, AI-2, etc.).
+        - If no next AI suggestion exists, it triggers a **NEW AI GENERATION**.
+        
+    - **SCROLL UP / SWIPE RIGHT (Undo/Previous AI):**
+        - If the user is on an AI suggestion node (AI-N), it moves back to the previous suggestion (AI-N-1) or to the Root node.
+        - If the user is on a manual node, it moves back linearly (Undo).
+        
+    -------------------------------------------------------------------------------------- -->
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Native Creative Studio with Branching History</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Fabric.js for GPU-accelerated Canvas rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <style>
+        /* Set default font and ensure full app-like height */
+        body { 
+            font-family: 'Inter', sans-serif; 
+            height: 100vh;
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        /* Styles for the inner screen area where the post image lives */
+        #post-canvas-container {
+            width: 100%;
+            aspect-ratio: 1/1; 
+            transition: border-color 0.3s ease-in-out;
+            touch-action: none; 
+            user-select: none;
+            overflow: hidden; 
+            position: relative; /* CRITICAL for overlay positioning */
+        }
+        
+        /* Ensure the Fabric canvas fills its container but maintains its internal resolution */
+        #main-canvas {
+            display: block;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        
+        /* Custom scrollbar for control panel and JSON output */
+        #controls::-webkit-scrollbar, #jsonOutput::-webkit-scrollbar, #layerListContainer::-webkit-scrollbar {
+            width: 8px;
+        }
+        #controls::-webkit-scrollbar-thumb, #jsonOutput::-webkit-scrollbar-thumb, #layerListContainer::-webkit-scrollbar-thumb {
+            background-color: #d1d5db; /* gray-300 */
+            border-radius: 4px;
+        }
+        
+        /* Custom style for the layer list item */
+        .layer-item {
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        .layer-item:hover {
+            background-color: #e5e7eb; /* gray-200 */
+        }
+        .layer-item.active {
+            background-color: #bfdbfe; /* blue-200 */
+            border-left: 3px solid #3b82f6; /* blue-500 */
+            font-weight: 600;
+        }
+        
+        /* Flex container for canvas area should allow its contents to center vertically/horizontally */
+        #canvas-area-wrapper {
+            flex: 1;
+            overflow-y: auto; /* Allows the entire wrapper to scroll if the viewport is very small */
+        }
+
+        .action-button {
+            transition: transform 0.1s;
+        }
+        .action-button:active {
+            transform: scale(0.95);
+        }
+
+        /* AI Processing Animation */
+        @keyframes magicShimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        .shimmer-active {
+            opacity: 1 !important; /* Override opacity-0 class */
+            /* Subtle blue/indigo gradient shimmer effect */
+            background: linear-gradient(90deg, 
+                rgba(129, 140, 248, 0.1) 0%, /* indigo-300 transparent */
+                rgba(129, 140, 248, 0.4) 30%, /* indigo-300 semi-transparent */
+                rgba(129, 140, 248, 0.1) 60%  /* indigo-300 transparent */
+            );
+            background-size: 200% 100%;
+            animation: magicShimmer 1.5s linear infinite;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50 h-screen overflow-hidden flex flex-col">
+
+    <!-- 1. APPLICATION HEADER BAR -->
+    <header class="bg-white shadow-lg border-b border-gray-200 p-4 flex items-center justify-between z-10">
+        <h1 class="text-xl font-extrabold text-gray-800 tracking-wide">AI Creative Studio <span class="text-indigo-600 text-sm font-semibold ml-2">(Branching History)</span></h1>
+        <div class="flex items-center space-x-4">
+             <div id="storageStatus" class="text-xs text-gray-500 font-medium p-1 bg-gray-100 rounded-lg border">
+                Storage: Local
+            </div>
+            <button onclick="exportPNG()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-1.5 px-4 rounded-lg shadow-md transition duration-150 text-sm action-button">
+                Export PNG
+            </button>
+        </div>
+    </header>
+
+    <!-- 2. MAIN WORKSPACE AREA (Sidebar + Canvas, takes remaining height) -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- CONTROLS PANEL (Fixed-width Sidebar) -->
+        <div id="controls" class="w-full sm:w-80 lg:w-96 p-4 bg-white border-r border-gray-200 flex flex-col overflow-y-auto shadow-2xl z-10">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Design Tools</h2>
+            
+            <!-- AI Collaboration - History/Action Indicator -->
+            <div class="mb-6 pb-4 border-b border-gray-200">
+                <div id="ai-indicator" class="w-full bg-indigo-100 text-indigo-700 font-bold py-3 px-4 rounded-xl text-center shadow-lg text-base">
+                    Loading History...
+                </div>
+                <p class="text-xs text-gray-500 mt-2 text-center font-medium">
+                    **Scroll Down:** Generate Next AI Suggestion / Redo Linear History.<br/>
+                    **Scroll Up:** Go Back through AI Suggestions / Undo Linear History.<br/>
+                    **Swipe Left/Right (simulated):** Use the buttons below.
+                </p>
+                
+                <!-- Manual Undo/Redo Buttons (Simulating Left/Right Swipes) -->
+                <div class="flex justify-between gap-3 mt-3">
+                    <button onclick="handleLinearHistory('undo')" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-3 rounded-lg transition duration-150 text-sm flex items-center justify-center action-button" id="undoBtn">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8m-10 0a7 7 0 1114 0h-2M13 3v2M5.636 5.636l1.414 1.414"></path></svg>
+                        Undo (Left)
+                    </button>
+                    <button onclick="handleLinearHistory('redo')" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-3 rounded-lg transition duration-150 text-sm flex items-center justify-center action-button" id="redoBtn">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H5m2 0a7 7 0 1114 0h-2M11 21v-2M18.364 18.364l-1.414-1.414"></path></svg>
+                        Redo (Right)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Layer Management and List -->
+            <div class="mb-6 pb-4 border-b border-gray-200 flex flex-col">
+                <h3 class="font-medium text-lg mb-3">Layers</h3>
+                
+                <!-- Layer Actions (Buttons) -->
+                <div id="layerActions" class="flex gap-2 mb-3">
+                    <button id="addTextLayerBtn" class="flex-1 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-1.5 px-3 rounded-lg transition duration-150 shadow-md text-sm action-button">
+                        + Add Text Layer
+                    </button>
+                    <button id="addImageLayerBtn" class="flex-1 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-1.5 px-3 rounded-lg transition duration-150 shadow-md text-sm action-button">
+                        + Add Image Layer
+                    </button>
+                    <button id="deleteLayerBtn" class="flex-1 bg-red-400 hover:bg-red-500 text-white font-semibold py-1.5 px-3 rounded-lg transition duration-150 shadow-md text-sm action-button" disabled>
+                        Delete
+                    </button>
+                </div>
+
+                <!-- Layer List (Max height enforced to keep the rest of the UI visible) -->
+                <div class="min-h-[100px] max-h-[250px] overflow-y-auto bg-gray-50 border border-gray-200 rounded-xl p-2 shadow-inner" id="layerListContainer">
+                    <p id="noLayersText" class="text-sm text-gray-500 p-2 text-center">No layers. Click '+ Add Layer'.</p>
+                </div>
+            </div>
+            
+            <!-- Active Layer Editor - Contextual Editing -->
+            <div id="layerEditor" class="bg-blue-50 p-4 rounded-xl border border-blue-200 mb-6 shadow-md hidden">
+                <h3 class="font-bold text-base mb-3 text-blue-800">Layer Properties #<span id="activeLayerId"></span></h3>
+
+                <!-- Text Controls -->
+                <div id="textControls" class="grid grid-cols-1 gap-4">
+                    <!-- Text Content -->
+                    <div class="col-span-full">
+                        <label for="layerContent" class="block text-xs font-medium text-gray-700 mb-1">Text Content</label>
+                        <textarea id="layerContent" rows="3" class="w-full border border-gray-300 rounded-lg p-2 text-sm resize-none"></textarea>
+                    </div>
+
+                    <!-- Layout and Style Controls -->
+                    <div class="grid grid-cols-2 gap-3">
+                         <!-- Font Size -->
+                        <div>
+                            <label for="layerSize" class="block text-xs font-medium text-gray-700 mb-1">Font Size</label>
+                            <select id="layerSize" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                                <option value="text-sm">Small (14px)</option>
+                                <option value="text-lg">Medium (18px)</option>
+                                <option value="text-2xl">Large (24px)</option>
+                                <option value="text-4xl">X-Large (36px)</option>
+                                <option value="text-6xl">Massive (60px)</option>
+                            </select>
+                        </div>
+
+                        <!-- Text Color -->
+                        <div>
+                            <label for="layerColor" class="block text-xs font-medium text-gray-700 mb-1">Text Color</label>
+                            <input type="color" id="layerColor" class="w-full h-10 border rounded-lg p-1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Controls -->
+                <div id="imageControls" class="hidden grid grid-cols-1 gap-4">
+                    
+                    <!-- 1. FILE UPLOAD SECTION -->
+                    <div class="col-span-full border-b pb-4 mb-2">
+                        <label class="block text-xs font-medium text-gray-700 mb-2">Upload Image (Saved to Browser Storage)</label>
+                        <input type="file" id="imageFileInput" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-1 file:px-2 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 mb-3"/>
+                        <button id="uploadImageBtn" class="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-3 rounded-lg transition duration-150 shadow-md text-sm disabled:opacity-50 action-button" disabled>
+                            Upload & Embed in State
+                        </button>
+                    </div>
+                     
+                     <!-- 2. IMAGE URL INPUT -->
+                     <div class="col-span-full">
+                        <label for="layerImageUrl" class="block text-xs font-medium text-gray-700 mb-1">Image URL / Base64 Data (View Only)</label>
+                        <input type="text" id="layerImageUrl" class="w-full border border-gray-300 rounded-lg p-2 text-sm text-xs" readonly placeholder="Base64 Data or Image URL">
+                        <p class="text-xs text-red-500 mt-1">Note: Data is saved locally via Base64.</p>
+                    </div>
+
+                     <!-- 3. IMAGE SCALE -->
+                     <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label for="layerScale" class="block text-xs font-medium text-gray-700 mb-1">Scale (0.1 - 2.0)</label>
+                            <input type="number" id="layerScale" min="0.1" max="2.0" step="0.1" value="0.5" class="w-full border border-gray-300 rounded-lg p-2 text-sm">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Canvas Options -->
+            <div class="mt-auto pt-4 border-t border-gray-200" id="canvasSettings">
+                <h3 class="font-medium text-lg mb-2">Canvas Settings</h3>
+                <label for="canvasBgColor" class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+                <input type="color" id="canvasBgColor" value="#f0f0f0" class="w-full h-10 border rounded-lg p-1">
+            </div>
+
+            <!-- Technical JSON Output (Collapsible Details) -->
+            <details class="pt-4 border-t mt-4">
+                <summary class="font-semibold text-xs text-gray-500 uppercase tracking-wider cursor-pointer">JSON Payload (Current State)</summary>
+                <pre id="jsonOutput" class="bg-gray-800 text-green-300 p-3 border border-gray-700 font-mono rounded-lg text-[10px] overflow-x-scroll max-h-20 whitespace-pre-wrap mt-2"></pre>
+            </details>
+
+        </div>
+
+        <!-- CANVAS AREA (Takes remaining width) -->
+        <div id="canvas-area-wrapper" class="flex-1 p-8 flex justify-center items-center">
+            <!-- Mobile Device Mock-up Container (Simulated iPhone) -->
+            <div id="device-mockup" 
+                 class="w-full h-full shadow-2xl bg-gray-900 rounded-[3rem] p-1.5 border-[10px] border-black relative" 
+                 style="max-width: 45vh; max-height: 90vh; aspect-ratio: 9/19.5;">
+                <!-- Simulated Notch/Dynamic Island -->
+                <div class="absolute top-2 left-1/2 -translate-x-1/2 w-1/3 h-6 bg-black rounded-full z-20"></div>
+
+                <!-- Inner Screen Content - NOW LISTENS FOR SCROLL -->
+                <div id="innerScreenContent" 
+                     class="bg-white rounded-[2.5rem] overflow-hidden relative flex flex-col h-full"
+                     tabindex="0" style="outline: none;">
+                    
+                    <!-- Simulated Social Media Header (Facebook style) -->
+                    <div id="social-header" class="p-3 bg-white border-b border-gray-100 z-10 relative flex-shrink-0">
+                        <div class="flex items-center space-x-3">
+                            <img src="https://placehold.co/40x40/4267B2/FFFFFF?text=A" onerror="this.src='https://placehold.co/40x40/4267B2/FFFFFF?text=A'" class="w-10 h-10 rounded-full">
+                            <div>
+                                <p class="text-sm font-bold text-gray-800">Creative Agency</p>
+                                <p class="text-xs text-gray-500 flex items-center">
+                                    5m • 
+                                    <svg class="w-3 h-3 ml-1 fill-gray-500" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 20a10 10 0 1 1 0-20 10 10 0 0 1 0 20zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM9 9H5v2h4v4h2v-4h4V9h-4V5H9v4z"></path></svg>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Canvas Container (The Post Image) - Must have a fixed aspect ratio of 1:1 -->
+                    <div id="post-canvas-container" class="relative w-full mx-auto flex-shrink-0">
+                        <canvas id="main-canvas"></canvas>
+                        <!-- AI Loading Overlay - VISUAL FEEDBACK -->
+                        <div id="ai-overlay" class="absolute inset-0 bg-transparent transition-opacity duration-300 opacity-0 flex items-center justify-center rounded-[2rem] z-20">
+                            <!-- Spinner Icon -->
+                            <svg class="w-12 h-12 text-indigo-500 animate-spin" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Post Body/Caption (Facebook style text) -->
+                    <div class="p-3 pt-2 flex-shrink-0 border-b border-gray-100">
+                        <p class="text-sm text-gray-900 leading-snug">
+                            <span class="font-bold">Creative Agency:</span>
+                            Simulate browsing: **Scroll down over any part of the screen** to generate a new AI version. Scroll up to go back.
+                            <span class="text-blue-600 font-medium cursor-pointer hover:underline ml-1">... see more</span>
+                        </p>
+                    </div>
+
+                    <!-- Simulated Footer Actions -->
+                    <div id="social-footer" class="p-3 bg-white flex-shrink-0">
+                        <div class="flex justify-around text-gray-600 text-sm font-semibold">
+                            <button class="flex items-center py-1 px-3 rounded-full hover:bg-gray-100 transition duration-100 action-button">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.83 1.189l-5.147 8.169a2 2 0 01-1.83.642H8.5a2 2 0 01-2-2v-7a2 2 0 012-2h3m0 0l-1.475-3.076A2 2 0 0111.417 5h2.247a2 2 0 011.84 1.144L16 10m-3 0V7a3 3 0 013-3h.5m-3 3h3m0 0L17.5 7"></path></svg>
+                                Like
+                            </button>
+                            <button class="flex items-center py-1 px-3 rounded-full hover:bg-gray-100 transition duration-100 action-button">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+                                Comment
+                            </button>
+                            <button class="flex items-center py-1 px-3 rounded-full hover:bg-gray-100 transition duration-100 action-button">
+                                <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.882 13.064 9 12.71 9 12c0-.710-.118-1.064-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632-3.316m-6.632 3.316l6.632 3.316m-3.316-6.632l3.316 3.316m-3.316-3.316l3.316-3.316M9 10a3 3 0 11-6 0 3 3 0 016 0zm7-5a3 3 0 11-6 0 3 3 0 016 0zM19 18a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                Share
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Globals & Initialization ---
+        const LOCAL_STORAGE_KEY = 'creativeStudioBranchHistory'; 
+        const apiKey = ""; 
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+        // UI Elements
+        const innerScreenContent = document.getElementById('innerScreenContent'); 
+        const canvasContainer = document.getElementById('post-canvas-container'); 
+        const canvasBgColorInput = document.getElementById('canvasBgColor');
+        const deleteLayerBtn = document.getElementById('deleteLayerBtn');
+        const layerEditor = document.getElementById('layerEditor');
+        const jsonOutput = document.getElementById('jsonOutput');
+        const addTextLayerBtn = document.getElementById('addTextLayerBtn');
+        const addImageLayerBtn = document.getElementById('addImageLayerBtn'); 
+        const aiIndicator = document.getElementById('ai-indicator');
+        const aiOverlay = document.getElementById('ai-overlay'); // Reference to the visual overlay
+        const layerContentInput = document.getElementById('layerContent');
+        const layerSizeSelect = document.getElementById('layerSize');
+        const layerColorInput = document.getElementById('layerColor');
+        const activeLayerIdSpan = document.getElementById('activeLayerId');
+        const layerListContainer = document.getElementById('layerListContainer');
+        const textControls = document.getElementById('textControls');
+        const imageControls = document.getElementById('imageControls');
+        const layerImageUrlInput = document.getElementById('layerImageUrl');
+        const layerScaleInput = document.getElementById('layerScale');
+        const storageStatusSpan = document.getElementById('storageStatus');
+        const imageFileInput = document.getElementById('imageFileInput');
+        const uploadImageBtn = document.getElementById('uploadImageBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+
+        let fabricCanvas;
+        let nextLayerId = 1; // Tracks the next unique ID for new layers
+        let activeLayer = null;
+        let isSaving = false; 
+        let isGenerating = false;
+        
+        // Panning State
+        let isDragging = false;
+        let lastPosX;
+        let lastPosY;
+        
+        // --- CORE HISTORY AND STATE MANAGEMENT (Refactored to DAG) ---
+        let canvasState = null; // The currently loaded/editable state object
+        let historyNodes = {};  // Map of all history nodes: { nodeId: { id, stateData, parentID, suggestionRootID, suggestionIndex } }
+        let currentNodeId = null; // Pointer to the ID of the current active node
+        let nextNodeId = 1; // Counter for unique history node IDs
+
+        // Map Tailwind size classes to actual pixel font sizes for Fabric.js
+        const FONT_SIZE_MAP = {
+            'text-sm': 14, 'text-lg': 18, 'text-2xl': 24, 'text-4xl': 36, 'text-6xl': 60
+        };
+        
+        // --- DEFAULT STATE ---
+        const DEFAULT_CANVAS_STATE = {
+            canvas: { 
+                bgColor: '#f0f0f0',
+                width: 500, 
+                height: 500,
+            },
+            layers: [{
+                id: 1,
+                type: 'text',
+                content: 'Creative History Stack',
+                x: 250, 
+                y: 150,
+                color: '#1e3a8a', 
+                size: 'text-4xl',
+                active: false
+            },
+            {
+                id: 2,
+                type: 'text',
+                content: 'Scroll Up/Down for AI Versions',
+                x: 250, 
+                y: 350,
+                color: '#60a5fa', 
+                size: 'text-lg',
+                active: false
+            }]
+        };
+        
+        // --- NODE HELPER FUNCTIONS ---
+        function generateNodeId() {
+            return `v${nextNodeId++}`;
+        }
+        
+        /** Finds the next node in the linear (redo) timeline. */
+        function findRedoNodeId(currentId) {
+            const children = Object.values(historyNodes).filter(node => node.parentID === currentId);
+            // In a linear timeline, there should only be one direct child
+            return children.length > 0 ? children[0].id : null;
+        }
+
+        /** Gets all AI suggestion nodes based on a root ID, sorted by index. */
+        function getAISuggestions(rootId) {
+            const suggestions = Object.values(historyNodes)
+                .filter(node => node.suggestionRootID === rootId && node.suggestionIndex > 0)
+                .sort((a, b) => a.suggestionIndex - b.suggestionIndex);
+            
+            console.log(`%c[HISTORY] Checking suggestions for Root ${rootId}: Found ${suggestions.length} node(s).`, 'color: orange', suggestions.map(s => s.id));
+            return suggestions;
+        }
+
+        // ----------------------------------------------------------------------------------
+        // --- GEMINI API STRUCTURED RESPONSE SCHEMA (No Change) ---
+        // ----------------------------------------------------------------------------------
+        
+        const RESPONSE_SCHEMA = {
+            type: "OBJECT",
+            properties: {
+                canvas: {
+                    type: "OBJECT",
+                    properties: {
+                        bgColor: { type: "STRING", description: "A subtle and modern hex color code for the background, like #f0f9ff or #0f172a. MUST be a 6-digit hex code starting with #." },
+                        width: { type: "NUMBER" },
+                        height: { type: "NUMBER" }
+                    },
+                    required: ["bgColor", "width", "height"]
+                },
+                layers: {
+                    type: "ARRAY",
+                    items: {
+                        type: "OBJECT",
+                        properties: {
+                            id: { type: "NUMBER", description: "The original ID. Do NOT change this value." },
+                            type: { type: "STRING", enum: ["text", "image"], description: "The layer type. Do NOT change this value." },
+                            content: { type: "STRING", description: "Text content. You can slightly rephrase or adjust, but keep the original meaning. Only required for type: text." },
+                            x: { type: "NUMBER", description: "Horizontal position (0-500). Adjust slightly to reposition the element, but keep it visible." },
+                            y: { type: "NUMBER", description: "Vertical position (0-500). Adjust slightly to reposition the element, but keep it visible." },
+                            color: { type: "STRING", description: "New hex color code for text, e.g., #FFFFFF. MUST be a 6-digit hex code starting with #. Only required for type: text." },
+                            size: { type: "STRING", enum: ["text-sm", "text-lg", "text-2xl", "text-4xl", "text-6xl"], description: "New Tailwind size class to suggest different typography scale. Only required for type: text." },
+                            url: { type: "STRING", description: "The Base64 data or URL. ABSOLUTELY DO NOT CHANGE THIS VALUE, simply copy it from the input." },
+                            scale: { type: "NUMBER", description: "New scale factor (0.1 to 1.0). Adjust slightly to suggest resizing. Only required for type: image." }
+                        },
+                        required: ["id", "type", "x", "y"]
+                    }
+                }
+            },
+            required: ["canvas", "layers"]
+        };
+
+
+        // ----------------------------------------------------------------------------------
+        // --- 1. STORAGE SERVICE ABSTRACTION LAYER (UPDATED FOR HISTORY NODES) ---
+        // ----------------------------------------------------------------------------------
+
+        class LocalStorageAdapter {
+            async loadHistory() {
+                try {
+                    const savedHistory = localStorage.getItem(LOCAL_STORAGE_KEY);
+                    if (savedHistory) {
+                        const parsedHistory = JSON.parse(savedHistory);
+                        if (parsedHistory.historyNodes && parsedHistory.currentNodeId) {
+                             return parsedHistory;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error loading or parsing state from localStorage:", error);
+                }
+                
+                // Return default state formatted for the DAG model
+                const initialId = generateNodeId();
+                const defaultNode = {
+                    id: initialId,
+                    stateData: JSON.parse(JSON.stringify(DEFAULT_CANVAS_STATE)),
+                    parentID: null,
+                    suggestionRootID: null,
+                    suggestionIndex: 0
+                };
+
+                return {
+                    historyNodes: { [initialId]: defaultNode }, 
+                    currentNodeId: initialId,
+                    nextNodeId: nextNodeId // Use the incremented nextNodeId
+                };
+            }
+
+            async saveHistory(historyObject) {
+                if (isSaving) return; 
+                isSaving = true;
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(historyObject));
+                } catch (error) {
+                    console.error("Error saving state to localStorage:", error);
+                } finally {
+                    isSaving = false;
+                }
+            }
+
+            subscribe(callback) {
+                storageStatusSpan.textContent = 'Storage: Local (Branching)';
+                this.loadHistory().then(initialHistory => {
+                    callback(initialHistory);
+                });
+            }
+        }
+
+        const storageService = new LocalStorageAdapter();
+
+        // ----------------------------------------------------------------------------------
+        // --- 2. GEMINI API CALL HANDLER (No Change) ---
+        // ----------------------------------------------------------------------------------
+        
+        async function geminiApiCall(systemPrompt, userQuery, responseSchema, retries = 0) {
+            const MAX_RETRIES = 5;
+            const delay = Math.pow(2, retries) * 1000;
+            
+            const combinedQuery = `${systemPrompt}\n\nUSER REQUEST (Return only the JSON object): ${userQuery}`;
+
+            const payload = {
+                contents: [{ parts: [{ text: combinedQuery }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: responseSchema
+                }
+            };
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!jsonText) {
+                    throw new Error("Gemini response was empty or malformed.");
+                }
+
+                return JSON.parse(jsonText);
+
+            } catch (error) {
+                if (retries < MAX_RETRIES) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return geminiApiCall(systemPrompt, userQuery, responseSchema, retries + 1);
+                } else {
+                    throw new Error("Gemini API call failed after multiple retries.");
+                }
+            }
+        }
+
+        // ----------------------------------------------------------------------------------
+        // --- 3. CORE APPLICATION LOGIC & HISTORY MANAGEMENT (Refactored) ---
+        // ----------------------------------------------------------------------------------
+
+        /** Ensures the Fabric canvas occupies the full container. */
+        function fitCanvasToContainer() {
+            if (!fabricCanvas) return;
+            const containerWidth = canvasContainer.clientWidth;
+            const containerHeight = canvasContainer.clientHeight;
+            fabricCanvas.setWidth(containerWidth);
+            fabricCanvas.setHeight(containerHeight);
+            fabricCanvas.renderAll();
+        }
+
+        /** Calculates the world coordinates of the current visible screen center. */
+        function getScreenCenterWorldCoordinates() {
+            if (!fabricCanvas) return { x: 0, y: 0 };
+            const visibleW = fabricCanvas.getWidth();
+            const visibleH = fabricCanvas.getHeight();
+            const vpt = fabricCanvas.viewportTransform;
+            const worldCenterX = (visibleW / 2 - vpt[4]) / vpt[0]; 
+            const worldCenterY = (visibleH / 2 - vpt[5]) / vpt[3]; 
+            return { x: Math.round(worldCenterX), y: Math.round(worldCenterY) };
+        }
+
+        function initFabric() {
+            const canvasElement = document.getElementById('main-canvas');
+            
+            // Set initial dimensions based on default state structure (will be overwritten by loadHistory)
+            canvasElement.width = DEFAULT_CANVAS_STATE.canvas.width;
+            canvasElement.height = DEFAULT_CANVAS_STATE.canvas.height;
+
+            fabricCanvas = new fabric.Canvas('main-canvas', {
+                backgroundColor: DEFAULT_CANVAS_STATE.canvas.bgColor,
+                selection: true,
+                isDrawingMode: false,
+                preserveObjectStacking: true,
+                stopContextMenu: true, 
+                fireRightClick: true
+            });
+
+            // Listeners to sync Fabric changes back to the canonical state
+            fabricCanvas.on('object:modified', syncFabricToState); 
+            fabricCanvas.on('selection:created', syncSelectionToState);
+            fabricCanvas.on('selection:updated', syncSelectionToState);
+            fabricCanvas.on('selection:cleared', syncSelectionToState);
+            
+            // Panning Handlers
+            fabricCanvas.on('mouse:down', handleMouseDown);
+            fabricCanvas.on('mouse:move', handleMouseMove);
+            fabricCanvas.on('mouse:up', handleMouseUp);
+            
+            // Local Scroll/Flick Event Listener for History/AI Trigger
+            innerScreenContent.addEventListener('wheel', handleLocalScrollTrigger, { passive: false });
+            
+            // Initial sizing
+            fitCanvasToContainer();
+            window.addEventListener('resize', fitCanvasToContainer);
+            
+            storageService.subscribe(handleInitialHistoryLoad);
+        }
+        
+        /** Initializes history and loads the current state. */
+        function handleInitialHistoryLoad(initialHistory) {
+            historyNodes = initialHistory.historyNodes;
+            currentNodeId = initialHistory.currentNodeId;
+            nextNodeId = initialHistory.nextNodeId || 1;
+            
+            // Find max layer ID for new layers
+            const latestNode = historyNodes[currentNodeId];
+            if (latestNode) {
+                const maxId = latestNode.stateData.layers.reduce((max, layer) => Math.max(max, layer.id), 0);
+                nextLayerId = maxId + 1;
+            }
+            
+            loadStateFromHistory(currentNodeId, false); // Load the state without re-saving history
+        }
+
+        /**
+         * Loads a specific node by ID from the history nodes map and updates the UI.
+         * @param {string} nodeId - The ID of the node to load.
+         * @param {boolean} shouldSaveHistory - Whether to persist the new currentNodeId to storage.
+         */
+        function loadStateFromHistory(nodeId, shouldSaveHistory = true) {
+            const node = historyNodes[nodeId];
+            if (!node) return;
+            
+            console.log(`%c[HISTORY] Loading State: ${nodeId}. Parent: ${node.parentID}, Root: ${node.suggestionRootID}`, 'color: green');
+
+            currentNodeId = nodeId;
+            canvasState = JSON.parse(JSON.stringify(node.stateData)); 
+            
+            // Update Fabric and UI
+            renderLayers(); 
+            updateIndicator();
+            
+            if (shouldSaveHistory) {
+                storageService.saveHistory({ historyNodes, currentNodeId, nextNodeId });
+            }
+        }
+        
+        /**
+         * Saves the current working canvasState into the history nodes map. 
+         * @param {string} type - 'user' for manual edits/new layers, 'ai' for AI-generated states, 'internal' for saving active layer state without new history.
+         * @param {string} [rootID] - Required for 'ai' type, the ID of the state the AI based its suggestion on.
+         * @param {number} [suggestionIndex] - Required for 'ai' type, the index in the suggestion sequence.
+         */
+        function saveCurrentStateToHistory(type, rootID = null, suggestionIndex = 0) {
+            if (!canvasState) return;
+
+            const stateToSave = getCanonicalState();
+            
+            if (type === 'internal') {
+                // Overwrite the current node's state data (e.g., changing active layer, panning)
+                historyNodes[currentNodeId].stateData = stateToSave;
+                updateJSONOutput();
+                return;
+            }
+            
+            // For 'user' or 'ai', we create a new node
+            const newNodeId = generateNodeId();
+            const currentNode = historyNodes[currentNodeId];
+
+            const newNode = {
+                id: newNodeId,
+                stateData: stateToSave,
+                parentID: type === 'user' ? currentNodeId : rootID, // AI nodes link back to their root for branching
+                suggestionRootID: rootID,
+                suggestionIndex: suggestionIndex,
+            };
+
+            if (type === 'user') {
+                // When a user makes an edit, it accepts the current view and starts a new linear chain
+                newNode.suggestionRootID = null; 
+                newNode.suggestionIndex = 0;
+            }
+            
+            // Add the new node and update the pointer
+            historyNodes[newNodeId] = newNode;
+            currentNodeId = newNodeId;
+            
+            console.log(`%c[HISTORY] State Saved: ${type.toUpperCase()} node ${newNodeId}. Parent: ${newNode.parentID}, Root: ${newNode.suggestionRootID}`, 'color: blue');
+
+            // Save to persistent storage
+            storageService.saveHistory({ historyNodes, currentNodeId, nextNodeId });
+            updateIndicator();
+            updateJSONOutput();
+        }
+
+        /** Updates the AI/History indicator bar and buttons, and the AI overlay. */
+        function updateIndicator() {
+            const node = historyNodes[currentNodeId];
+            if (!node) return;
+
+            // Determine if a Redo (linear forward link) exists
+            const redoNodeId = findRedoNodeId(currentNodeId);
+            const canRedo = !!redoNodeId;
+            const canUndo = !!node.parentID;
+
+            undoBtn.disabled = !canUndo;
+            redoBtn.disabled = !canRedo;
+            
+            aiIndicator.classList.remove('bg-yellow-100', 'text-yellow-700', 'bg-indigo-100', 'text-indigo-700', 'bg-green-100', 'text-green-700', 'animate-pulse');
+            
+            // --- NEW: Toggle the visual overlay and update the textual indicator for status
+            if (isGenerating) {
+                // Apply visual loading feedback on the canvas
+                aiOverlay.classList.add('shimmer-active');
+                aiOverlay.classList.remove('opacity-0');
+                
+                // Update the history banner for loading status
+                aiIndicator.classList.add('bg-yellow-100', 'text-yellow-700', 'animate-pulse');
+                aiIndicator.textContent = "AI Generating New Design...";
+                return;
+            }
+
+            // If not generating, remove the overlay effect
+            aiOverlay.classList.remove('shimmer-active');
+            aiOverlay.classList.add('opacity-0');
+
+            if (node.suggestionRootID) {
+                // Currently on an AI branch
+                aiIndicator.classList.add('bg-indigo-100', 'text-indigo-700');
+                aiIndicator.textContent = `AI Suggestion ${node.suggestionIndex} (Scroll Up/Down to Navigate)`;
+            } else if (canRedo) {
+                 // Currently on a manual state, but not the latest one (can Redo)
+                aiIndicator.classList.add('bg-indigo-100', 'text-indigo-700');
+                aiIndicator.textContent = `History View (Scroll Down/Redo)`;
+            } else {
+                // Latest manual state (can generate new)
+                aiIndicator.classList.add('bg-green-100', 'text-green-700');
+                aiIndicator.textContent = `Latest Design (Scroll Down to Generate New AI)`;
+            }
+        }
+        
+        /** Handles manual Undo/Redo button clicks (simulating Swipe Left/Right) */
+        function handleLinearHistory(direction) {
+            const currentNode = historyNodes[currentNodeId];
+            if (!currentNode) return;
+
+            if (direction === 'undo') {
+                const undoId = currentNode.parentID;
+                if (undoId) {
+                    loadStateFromHistory(undoId);
+                }
+            } else if (direction === 'redo') {
+                const redoId = findRedoNodeId(currentNodeId);
+                if (redoId) {
+                    loadStateFromHistory(redoId);
+                }
+            }
+        }
+
+
+        /** * Handles local scroll over the phone screen area to manage history/AI trigger. 
+         * FIX: Refined logic and added extensive logging to trace the failure path.
+         */
+        function handleLocalScrollTrigger(e) {
+            e.preventDefault(); 
+            e.stopPropagation();
+
+            if (isGenerating) {
+                console.log("%c[HISTORY] Scroll blocked: AI generation is already in progress.", 'color: red');
+                return;
+            }
+
+            const scrollDirectionDown = e.deltaY > 5;
+            const scrollDirectionUp = e.deltaY < -5;
+            const currentNode = historyNodes[currentNodeId];
+            if (!currentNode) return;
+            
+            // --- SCROLL DOWN (AI NEXT / LINEAR REDO) ---
+            if (scrollDirectionDown) {
+                const redoId = findRedoNodeId(currentNodeId);
+                
+                if (redoId) {
+                    // 1. Redo (Linear History)
+                    console.log(`%c[HISTORY] Scroll Down from Node ${currentNodeId}: Performing Linear Redo to ${redoId}`, 'color: purple');
+                    loadStateFromHistory(redoId);
+                } else {
+                    // 2. Branch Navigation / New AI Generation
+                    const rootId = currentNode.suggestionRootID || currentNodeId;
+                    const suggestions = getAISuggestions(rootId); // Contains A1, A2, etc.
+                    let targetSuggestionId = null;
+                    let nextSuggestionIndex = suggestions.length + 1;
+
+                    if (!currentNode.suggestionRootID) {
+                        // Case A: We are at a Manual Root Node (R1). If suggestions exist, load the first one (A1).
+                        if (suggestions.length > 0) {
+                            console.log(`%c[HISTORY] At Root Node ${currentNodeId}. Existing suggestions found. Loading first suggestion (A1).`, 'color: brown');
+                            // Find the node with suggestion index 1 (A1)
+                            targetSuggestionId = suggestions.find(s => s.suggestionIndex === 1)?.id;
+                        }
+                    } else {
+                        // Case B: We are at an existing AI Suggestion (A1, A2, etc.). Try to find the next one (A2, A3).
+                        const currentIndex = currentNode.suggestionIndex;
+                        console.log(`%c[HISTORY] At AI Suggestion ${currentNodeId} (Index ${currentIndex}). Checking for next suggestion (Index ${currentIndex + 1}).`, 'color: brown');
+                        targetSuggestionId = suggestions.find(s => s.suggestionIndex === currentIndex + 1)?.id;
+                        nextSuggestionIndex = currentIndex + 1; // Update next index in case we generate
+                    }
+
+                    if (targetSuggestionId) {
+                        // Load existing suggestion (A1 from R1, or A2 from A1, etc.)
+                        console.log(`%c[HISTORY] Scroll Down from Node ${currentNodeId}: Loading existing suggestion ${targetSuggestionId}`, 'color: darkgreen');
+                        loadStateFromHistory(targetSuggestionId);
+                    } else {
+                        // Generate new suggestion (Only if no next existing node was found)
+                        console.log(`%c[HISTORY] Scroll Down from Node ${currentNodeId}: No next existing suggestion found. Triggering AI generation for Index ${nextSuggestionIndex} from root ${rootId}`, 'color: red');
+                        triggerAISuggestion(rootId, nextSuggestionIndex);
+                    }
+                }
+            }
+            
+            // --- SCROLL UP (AI BACK / LINEAR UNDO) ---
+            else if (scrollDirectionUp) {
+                if (currentNode.suggestionRootID) {
+                    // 1. AI Back: If on suggestion N, go to N-1, or to Root Node if N=1
+                    const rootId = currentNode.suggestionRootID;
+                    const prevIndex = currentNode.suggestionIndex - 1;
+                    
+                    if (prevIndex >= 1) {
+                         const suggestions = getAISuggestions(rootId);
+                         const prevSuggestion = suggestions.find(s => s.suggestionIndex === prevIndex);
+                         if (prevSuggestion) {
+                            console.log(`%c[HISTORY] Scroll Up from AI: Going to previous AI suggestion ${prevSuggestion.id}`, 'color: darkred');
+                            loadStateFromHistory(prevSuggestion.id);
+                         }
+                    } else {
+                        // Go back to the Root Node (the last manual edit)
+                        console.log(`%c[HISTORY] Scroll Up from AI: Going back to Root Node ${rootId}`, 'color: darkred');
+                        loadStateFromHistory(rootId);
+                    }
+                } else {
+                    // 2. Linear Undo
+                    console.log(`%c[HISTORY] Scroll Up from Manual: Performing Linear Undo`, 'color: darkred');
+                    handleLinearHistory('undo');
+                }
+            }
+        }
+
+
+        /** Updates the JSON display panel. */
+        function updateJSONOutput() {
+            jsonOutput.textContent = JSON.stringify(getCanonicalState(), null, 2);
+        }
+        
+        /** * Generates the canonical JSON state object for saving, excluding transient properties. */
+        function getCanonicalState() {
+            if (!canvasState) return DEFAULT_CANVAS_STATE;
+            const serializableLayers = canvasState.layers.map(layer => {
+                const { active, ...rest } = layer; 
+                return rest;
+            });
+
+            return {
+                canvas: canvasState.canvas,
+                layers: serializableLayers
+            };
+        }
+
+        /** * Applies a new state object to the main application state and Fabric.
+         * This function does NOT manage history stack manipulation, only state application.
+         */
+        function applyState(newState) {
+            if (!newState || !newState.canvas || !newState.layers) return; 
+            
+            // Deep copy and assign to canvasState
+            canvasState = JSON.parse(JSON.stringify(newState));
+            
+            // Ensure nextLayerId is tracked correctly
+            const maxId = canvasState.layers.reduce((max, layer) => Math.max(max, layer.id), 0);
+            nextLayerId = maxId + 1;
+            
+            renderLayers();
+        }
+        
+        // ... (Layer rendering, editor, sync functions remain largely the same, but now call saveCurrentStateToHistory('user') or saveCurrentStateToHistory('internal') ) ...
+
+        function renderLayerList() {
+            layerListContainer.innerHTML = ''; 
+            
+            if (!canvasState || canvasState.layers.length === 0) {
+                 layerListContainer.innerHTML = '<p id="noLayersText" class="text-sm text-gray-500 p-2 text-center">No layers. Click \' + Add Layer\'.</p>';
+                 return;
+            }
+
+            [...canvasState.layers].reverse().forEach(layer => {
+                const item = document.createElement('div');
+                item.classList.add('layer-item', 'p-2', 'text-sm', 'rounded-lg', 'mb-1', 'flex', 'justify-between', 'items-center');
+                item.dataset.layerId = layer.id;
+                
+                if (layer.active) {
+                    item.classList.add('active');
+                }
+                
+                let displayContent = '';
+                if (layer.type === 'text') {
+                    displayContent = layer.content.length > 25 ? layer.content.substring(0, 25) + '...' : layer.content;
+                } else if (layer.type === 'image') {
+                    const urlSnippet = layer.url ? (layer.url.startsWith('data:') ? '[Base64 Image]' : layer.url.substring(0, 30) + '...') : 'Placeholder';
+                    displayContent = `[IMAGE] ${urlSnippet}`;
+                }
+
+                item.innerHTML = `
+                    <span class="truncate pr-2">${displayContent}</span>
+                    <span class="text-xs text-gray-500">#${layer.id}</span>
+                `;
+
+                item.addEventListener('click', () => {
+                    setActiveLayer(layer.id);
+                });
+                
+                layerListContainer.appendChild(item);
+            });
+        }
+
+        function renderLayers() {
+            if (!fabricCanvas || !canvasState) return;
+            
+            canvasBgColorInput.value = canvasState.canvas.bgColor; 
+            layerEditor.classList.toggle('hidden', !activeLayer);
+            deleteLayerBtn.disabled = !activeLayer;
+            
+            fabricCanvas.clear();
+            fabricCanvas.backgroundColor = canvasState.canvas.bgColor;
+            
+            let objectToActivate = null;
+
+            canvasState.layers.forEach(layer => {
+                if (layer.type === 'text') {
+                    const fontSize = FONT_SIZE_MAP[layer.size] || FONT_SIZE_MAP['text-4xl'];
+
+                    const textObject = new fabric.Text(layer.content, {
+                        id: layer.id, 
+                        left: layer.x,
+                        top: layer.y,
+                        fill: layer.color,
+                        fontSize: fontSize,
+                        fontFamily: 'Inter, sans-serif',
+                        selectable: true,
+                        hasControls: true,
+                        lockRotation: true,
+                        originX: 'center',
+                        originY: 'center',
+                    });
+
+                    fabricCanvas.add(textObject);
+                    if (layer.active) { objectToActivate = textObject; }
+
+                } else if (layer.type === 'image') {
+                    const imageUrl = layer.url || 'https://placehold.co/100x100/000000/FFFFFF?text=IMAGE';
+                    
+                    fabric.Image.fromURL(imageUrl, function(img) {
+                        img.set({
+                            id: layer.id, 
+                            left: layer.x,
+                            top: layer.y,
+                            scaleX: layer.scale,
+                            scaleY: layer.scale,
+                            selectable: true,
+                            hasControls: true,
+                            lockRotation: true,
+                            originX: 'center',
+                            originY: 'center',
+                        });
+                        
+                        fabricCanvas.sendToBack(img);
+                        fabricCanvas.add(img);
+                        
+                        if (layer.active) {
+                             fabricCanvas.setActiveObject(img);
+                        }
+                        
+                        fabricCanvas.renderAll(); 
+                    }, { crossOrigin: 'anonymous' }); 
+                }
+            });
+            
+            if (objectToActivate) {
+                fabricCanvas.setActiveObject(objectToActivate);
+            } else {
+                fabricCanvas.discardActiveObject();
+            }
+            
+            fabricCanvas.renderAll();
+            
+            updateLayerEditor();
+            updateJSONOutput();
+            renderLayerList(); 
+        }
+
+        function updateLayerState(layerId, updates) {
+            if (!canvasState) return;
+
+            const layerIndex = canvasState.layers.findIndex(l => l.id === layerId);
+            if (layerIndex > -1) {
+                canvasState.layers[layerIndex] = { ...canvasState.layers[layerIndex], ...updates };
+                if (activeLayer && activeLayer.id === layerId) {
+                    activeLayer = canvasState.layers[layerIndex];
+                }
+                
+                saveCurrentStateToHistory('user'); // Manual edit, push as a new state in linear history
+                renderLayers(); 
+            }
+        }
+        
+        function updateCanvasState(updates) {
+             if (!canvasState) return;
+             canvasState.canvas.bgColor = updates.bgColor || canvasState.canvas.bgColor;
+             saveCurrentStateToHistory('user');
+             renderLayers(); 
+        }
+
+        function setActiveLayer(layerId) {
+            if (!canvasState) return;
+
+            // Deactivate all layers in state
+            canvasState.layers.forEach(l => l.active = false);
+
+            activeLayer = canvasState.layers.find(l => l.id === layerId);
+
+            if (activeLayer) {
+                activeLayer.active = true;
+                
+                const fabricObject = fabricCanvas.getObjects().find(o => o.id === layerId);
+                 if (fabricObject) {
+                    fabricCanvas.setActiveObject(fabricObject);
+                    fabricCanvas.renderAll();
+                } else {
+                    console.warn(`Fabric object with ID ${layerId} not found for activation.`);
+                }
+            } else {
+                fabricCanvas.discardActiveObject();
+            }
+            
+            updateLayerEditor();
+            renderLayerList(); 
+            // Internal change, only overwrite current node
+            saveCurrentStateToHistory('internal'); 
+        }
+        
+        function updateLayerEditor() {
+            if (activeLayer) {
+                layerEditor.classList.remove('hidden');
+                
+                const isText = activeLayer.type === 'text';
+                textControls.classList.toggle('hidden', !isText);
+                imageControls.classList.toggle('hidden', isText);
+
+                activeLayerIdSpan.textContent = activeLayer.id;
+
+                if (isText) {
+                    layerContentInput.value = activeLayer.content;
+                    layerSizeSelect.value = activeLayer.size;
+                    layerColorInput.value = activeLayer.color;
+                } else { // Image
+                    layerImageUrlInput.value = activeLayer.url.length > 100 ? activeLayer.url.substring(0, 100) + '...' : activeLayer.url;
+                    layerScaleInput.value = activeLayer.scale;
+                    
+                    uploadImageBtn.disabled = canvasState.uploading || !imageFileInput.files.length;
+                }
+
+            } else {
+                layerEditor.classList.add('hidden');
+            }
+        }
+
+
+        function syncFabricToState(e) {
+            if (!canvasState) return;
+            const obj = e.target;
+            if (!obj || !obj.id) return;
+            
+            const updates = {
+                x: Math.round(obj.left),
+                y: Math.round(obj.top),
+            };
+
+            if (activeLayer && activeLayer.type === 'image') {
+                 updates.scale = parseFloat(obj.scaleX.toFixed(2)); 
+                 layerScaleInput.value = updates.scale.toFixed(1); 
+            }
+
+            // Object modification is a user action
+            updateLayerState(obj.id, updates);
+        }
+        
+        function syncSelectionToState(e) {
+            if (e.selected && e.selected.length > 0) {
+                setActiveLayer(e.selected[0].id);
+            } else {
+                setActiveLayer(null);
+            }
+        }
+
+        function handleImageUpload() {
+            const file = imageFileInput.files[0];
+
+            if (!activeLayer || activeLayer.type !== 'image' || !file) {
+                console.error("Cannot upload: Missing active image layer or file.");
+                return;
+            }
+
+            canvasState.uploading = true;
+            uploadImageBtn.textContent = 'Converting...';
+            uploadImageBtn.disabled = true;
+
+            const reader = new FileReader();
+
+            reader.onload = (event) => {
+                const base64DataURL = event.target.result;
+                
+                // Upload is a user action
+                updateLayerState(activeLayer.id, {
+                    url: base64DataURL,
+                    x: activeLayer.x, 
+                    y: activeLayer.y,
+                });
+                
+                canvasState.uploading = false;
+                uploadImageBtn.textContent = 'Upload & Embed in State';
+                uploadImageBtn.disabled = !imageFileInput.files.length;
+                updateLayerEditor(); 
+            };
+
+            reader.onerror = (error) => {
+                console.error("Image Read Failed:", error);
+                uploadImageBtn.textContent = 'Read Failed! (Check Console)';
+                canvasState.uploading = false;
+                uploadImageBtn.disabled = !imageFileInput.files.length;
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function exportPNG() {
+            if (fabricCanvas) {
+                // Ensure the selection bounding box is hidden for the export
+                fabricCanvas.discardActiveObject();
+                fabricCanvas.renderAll();
+
+                const dataURL = fabricCanvas.toDataURL({
+                    format: 'png',
+                    multiplier: 2 // Export at 2x resolution for better quality
+                });
+
+                const link = document.createElement('a');
+                link.href = dataURL;
+                link.download = `creative-studio-design-${new Date().getTime()}.png`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+        
+        // --- SCROLL-TO-ITERATE (AI GENERATION) LOGIC ---
+
+        /**
+         * Triggers AI generation for the next suggestion in the branch.
+         * @param {string} rootId - The ID of the manual state the AI is basing its design on.
+         * @param {number} nextIndex - The suggestion index (1, 2, 3...) to assign to the new node.
+         */
+        async function triggerAISuggestion(rootId, nextIndex) {
+            if (isGenerating || !canvasState) return; 
+            isGenerating = true;
+
+            // 1. Setup UI for loading (shows visual overlay)
+            updateIndicator();
+            
+            // 2. The AI is based on the state data of the root node
+            const rootNode = historyNodes[rootId];
+            if (!rootNode) {
+                console.error("AI generation failed: Root node not found.");
+                isGenerating = false;
+                updateIndicator();
+                return;
+            }
+
+            const systemPrompt = "You are an expert Creative Design Agent specializing in minimalist social media post design. Your task is to receive the current design state as a JSON object, and return a NEW JSON object representing a subtle design iteration. You must only change properties related to aesthetics (bgColor, color, size, x/y coordinates, scale). DO NOT change the 'id', 'type', or the 'url' of image layers unless you are INTENTIONALLY ADDING A NEW LAYER, in which case you must assign it a high, unique ID (e.g., 999) to avoid conflicts.";
+            
+            // Send the root state data to the AI
+            const rootState = rootNode.stateData; 
+            const userQuery = `Current design state for iteration: ${JSON.stringify(rootState)}. Generate AI Suggestion #${nextIndex}.`;
+
+            try {
+                // 3. Call the Gemini API for structured generation
+                const newSuggestedStateData = await geminiApiCall(systemPrompt, userQuery, RESPONSE_SCHEMA);
+                
+                // 4. Update the state (AI result becomes the new current state)
+                applyState(newSuggestedStateData); 
+                
+                // 5. Save the new AI state as an 'ai' node, linking it to the root
+                saveCurrentStateToHistory('ai', rootId, nextIndex); 
+
+            } catch (error) {
+                console.error("Failed to fetch new design from AI:", error);
+                
+                // Use custom console log to communicate failure to user
+                console.error('AI Scroll Failed: Could not generate new design. Check API key/console.');
+            } finally {
+                // 6. Restore button state (hides visual overlay)
+                isGenerating = false;
+                updateIndicator();
+            }
+        }
+        
+        // --- UI Control Event Handlers ---
+
+        addTextLayerBtn.addEventListener('click', () => {
+            if (!canvasState) return; 
+            
+            const center = getScreenCenterWorldCoordinates();
+
+            const newLayer = {
+                id: nextLayerId++,
+                type: 'text',
+                content: 'New Headline',
+                x: center.x, 
+                y: center.y,
+                color: '#1e3a8a', 
+                size: 'text-4xl',
+                active: false
+            };
+            canvasState.layers.push(newLayer);
+            
+            setActiveLayer(newLayer.id); 
+            saveCurrentStateToHistory('user');
+        });
+
+        addImageLayerBtn.addEventListener('click', () => {
+            if (!canvasState) return; 
+            
+            const center = getScreenCenterWorldCoordinates();
+
+            const newLayer = {
+                id: nextLayerId++,
+                type: 'image',
+                url: 'https://placehold.co/200x200/93C5FD/1E3A8A?text=Click+Upload', 
+                x: center.x, 
+                y: center.y,
+                scale: 0.5,
+                active: false
+            };
+            canvasState.layers.push(newLayer);
+
+            setActiveLayer(newLayer.id); 
+            saveCurrentStateToHistory('user');
+        });
+
+        deleteLayerBtn.addEventListener('click', () => {
+            if (!canvasState || !activeLayer) return;
+            
+            canvasState.layers = canvasState.layers.filter(l => l.id !== activeLayer.id);
+            activeLayer = null;
+            
+            renderLayers();
+            saveCurrentStateToHistory('user');
+        });
+
+        canvasBgColorInput.addEventListener('input', (e) => {
+            if (!canvasState) return;
+            updateCanvasState({ bgColor: e.target.value });
+        });
+
+        layerContentInput.addEventListener('input', (e) => {
+            if (!activeLayer || activeLayer.type !== 'text') return;
+            updateLayerState(activeLayer.id, { content: e.target.value });
+        });
+
+        layerSizeSelect.addEventListener('change', (e) => {
+            if (!activeLayer || activeLayer.type !== 'text') return;
+            updateLayerState(activeLayer.id, { size: e.target.value });
+        });
+
+        layerColorInput.addEventListener('input', (e) => {
+            if (!activeLayer || activeLayer.type !== 'text') return;
+            updateLayerState(activeLayer.id, { color: e.target.value });
+        });
+        
+        layerScaleInput.addEventListener('input', (e) => {
+             if (!activeLayer || activeLayer.type !== 'image') return;
+             const scaleValue = Math.min(Math.max(parseFloat(e.target.value), 0.1), 2.0);
+             e.target.value = scaleValue.toFixed(1);
+
+             updateLayerState(activeLayer.id, { scale: scaleValue });
+        });
+        
+        imageFileInput.addEventListener('change', (e) => {
+             uploadImageBtn.disabled = canvasState.uploading || !e.target.files.length;
+        });
+
+        uploadImageBtn.addEventListener('click', handleImageUpload);
+        
+        // --- Panning Handlers ---
+        function handleMouseDown(opt) {
+            if (!opt.target) {
+                isDragging = true;
+                fabricCanvas.selection = false;
+                lastPosX = opt.e.clientX;
+                lastPosY = opt.e.clientY;
+                fabricCanvas.setCursor('grab');
+                opt.e.preventDefault(); 
+            }
+        }
+
+        function handleMouseMove(opt) {
+            if (!isDragging) return;
+            const e = opt.e;
+            const vpt = fabricCanvas.viewportTransform;
+            vpt[4] += e.clientX - lastPosX;
+            vpt[5] += e.clientY - lastPosY;
+            fabricCanvas.requestRenderAll();
+            lastPosX = e.clientX;
+            lastPosY = e.clientY;
+            
+            // Panning is an internal change, update the node without pushing a new one
+            saveCurrentStateToHistory('internal'); 
+        }
+
+        function handleMouseUp() {
+            if (isDragging) {
+                isDragging = false;
+                fabricCanvas.selection = true; 
+                fabricCanvas.setCursor('default');
+            }
+        }
+
+
+        // Initialize the app on window load
+        window.onload = initFabric;
+    </script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+/* Canvas styles */
+.canvas-container {
+  position: relative;
+  width: 100%;
+  height: 600px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.history-controls {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0;
+  justify-content: center;
+}
+
+.history-controls button {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.history-controls button:hover {
+  background: #f0f0f0;
+}
+
+.history-controls button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ai-status {
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 8px;
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.gesture-navigation {
+  touch-action: none;
+  user-select: none;
+}
+
+.variation-card {
+  position: absolute;
+  width: 280px;
+  height: 400px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.variation-card.active {
+  transform: scale(1.0);
+  z-index: 10;
+}
+
+.variation-card.inactive {
+  transform: scale(0.8);
+  opacity: 0.6;
+}

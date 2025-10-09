@@ -37,58 +37,74 @@
 - Include exact file paths in descriptions
 
 ## Path Conventions
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+- **Multi-platform VYB-Web**: `web/src/`, `ios/VYB/`, `android/app/src/main/java/com/vyb/`
+- **Shared assets**: `shared/schemas/` for AI contracts, `shared/contracts/` for API definitions
+- **Testing**: Platform-specific test directories with appropriate frameworks
+- Paths shown below assume multi-platform structure per VYB-Web constitution
 
 ## Phase 3.1: Setup
-- [ ] T001 Create project structure per implementation plan
-- [ ] T002 Initialize [language] project with [framework] dependencies
-- [ ] T003 [P] Configure linting and formatting tools
+- [ ] T001 Initialize project structure for web, iOS, and Android platforms
+- [ ] T002 [P] Configure web development environment (React/Vue + Tailwind)
+- [ ] T003 [P] Configure iOS project with SwiftUI and testing frameworks
+- [ ] T004 [P] Configure Android project with Kotlin and Jetpack Compose
+- [ ] T005 Set up shared schemas and contracts directory structure
 
 ## Phase 3.2: Tests First (TDD) ⚠️ MUST COMPLETE BEFORE 3.3
 **CRITICAL: These tests MUST be written and MUST FAIL before ANY implementation**
-- [ ] T004 [P] Contract test POST /api/users in tests/contract/test_users_post.py
-- [ ] T005 [P] Contract test GET /api/users/{id} in tests/contract/test_users_get.py
-- [ ] T006 [P] Integration test user registration in tests/integration/test_registration.py
-- [ ] T007 [P] Integration test auth flow in tests/integration/test_auth.py
+- [ ] T006 [P] Web: Playwright tests for phone simulation UI in web/tests/e2e/
+- [ ] T007 [P] Web: Canvas state serialization tests in web/tests/unit/
+- [ ] T008 [P] iOS: XCUITest for canvas interactions in VYBTests/UI/
+- [ ] T009 [P] Android: Espresso tests for canvas manipulation in app/src/test/
+- [ ] T010 [P] Cross-platform: AI API integration tests with mock responses
+- [ ] T011 [P] Cross-platform: History DAG structure validation tests
+- [ ] T012 [P] Cross-platform: Local storage persistence tests
 
 ## Phase 3.3: Core Implementation (ONLY after tests are failing)
-- [ ] T008 [P] User model in src/models/user.py
-- [ ] T009 [P] UserService CRUD in src/services/user_service.py
-- [ ] T010 [P] CLI --create-user in src/cli/user_commands.py
-- [ ] T011 POST /api/users endpoint
-- [ ] T012 GET /api/users/{id} endpoint
-- [ ] T013 Input validation
-- [ ] T014 Error handling and logging
+- [ ] T013 [P] Web: Phone simulation UI components in web/src/components/phone-simulation/
+- [ ] T014 [P] Web: Canvas object manipulation with HTML5 Canvas API
+- [ ] T015 [P] iOS: Canvas view with Core Graphics for object manipulation
+- [ ] T016 [P] Android: Custom Canvas view with gesture handling
+- [ ] T017 [P] Shared: History state management with branching logic in shared/
+- [ ] T018 [P] Shared: AI API integration with JSON schema validation
+- [ ] T019 [P] Platform-specific: Local storage implementation (localStorage, Core Data, Room)
+- [ ] T020 User interaction handlers (touch, gestures) for each platform
+- [ ] T021 Cross-platform state synchronization abstractions
+- [ ] T022 Error handling and user feedback systems
 
 ## Phase 3.4: Integration
-- [ ] T015 Connect UserService to DB
-- [ ] T016 Auth middleware
-- [ ] T017 Request/response logging
-- [ ] T018 CORS and security headers
+- [ ] T023 Connect AI responses to canvas state updates across platforms
+- [ ] T024 Implement gesture-based history navigation for each platform
+- [ ] T025 Cross-platform offline mode with local AI model fallbacks
+- [ ] T026 [P] Web: Browser compatibility validation and polyfills
+- [ ] T027 [P] iOS: Device compatibility and performance optimization
+- [ ] T028 [P] Android: Device compatibility and performance optimization
 
 ## Phase 3.5: Polish
-- [ ] T019 [P] Unit tests for validation in tests/unit/test_validation.py
-- [ ] T020 Performance tests (<200ms)
-- [ ] T021 [P] Update docs/api.md
-- [ ] T022 Remove duplication
-- [ ] T023 Run manual-testing.md
+- [ ] T029 [P] Performance optimization for 60fps canvas across all platforms
+- [ ] T030 [P] Web: Responsive design validation and phone simulation accuracy
+- [ ] T031 [P] iOS: App Store guidelines compliance and accessibility
+- [ ] T032 [P] Android: Play Store guidelines compliance and accessibility
+- [ ] T033 [P] Cross-platform: Cloud deployment abstraction layer preparation
+- [ ] T034 Comprehensive UI testing validation across platforms
+- [ ] T035 Manual user testing validation on actual devices
 
 ## Dependencies
-- Tests (T004-T007) before implementation (T008-T014)
-- T008 blocks T009, T015
-- T016 blocks T018
-- Implementation before polish (T019-T023)
+- Tests (T006-T012) before implementation (T013-T022)
+- Platform setup (T001-T005) before tests
+- Core implementation (T013-T019) before integration (T023-T028)
+- Integration before polish (T029-T035)
+- Cross-platform shared logic (T017-T018) blocks platform-specific integration
 
 ## Parallel Example
 ```
-# Launch T004-T007 together:
-Task: "Contract test POST /api/users in tests/contract/test_users_post.py"
-Task: "Contract test GET /api/users/{id} in tests/contract/test_users_get.py"
-Task: "Integration test registration in tests/integration/test_registration.py"
-Task: "Integration test auth in tests/integration/test_auth.py"
+# Launch T006-T012 together (platform-specific tests):
+Task: "Playwright tests for phone simulation UI in web/tests/e2e/"
+Task: "Canvas state serialization tests in web/tests/unit/" 
+Task: "XCUITest for canvas interactions in VYBTests/UI/"
+Task: "Espresso tests for canvas manipulation in app/src/test/"
+Task: "AI API integration tests with mock responses"
+Task: "History DAG structure validation tests"
+Task: "Local storage persistence tests"
 ```
 
 ## Notes
@@ -104,24 +120,25 @@ Task: "Integration test auth in tests/integration/test_auth.py"
    - Each contract file → contract test task [P]
    - Each endpoint → implementation task
    
-2. **From Data Model**:
-   - Each entity → model creation task [P]
-   - Relationships → service layer tasks
+2. **From Platform Requirements**:
+   - Each platform → UI testing task [P]
+   - Each shared component → cross-platform validation task
    
-3. **From User Stories**:
-   - Each story → integration test [P]
-   - Quickstart scenarios → validation tasks
+3. **From AI Integration**:
+   - Each AI interaction → platform-specific implementation task [P]
+   - Response handling → state update validation task per platform
 
 4. **Ordering**:
-   - Setup → Tests → Models → Services → Endpoints → Polish
-   - Dependencies block parallel execution
+   - Setup → Platform-specific Tests → Shared Logic → Platform UI → Integration → Polish
+   - Cross-platform dependencies block platform-specific parallel execution
 
 ## Validation Checklist
 *GATE: Checked by main() before returning*
 
-- [ ] All contracts have corresponding tests
-- [ ] All entities have model tasks
-- [ ] All tests come before implementation
-- [ ] Parallel tasks truly independent
-- [ ] Each task specifies exact file path
-- [ ] No task modifies same file as another [P] task
+- [ ] All platforms have corresponding UI testing frameworks configured
+- [ ] All canvas interactions have platform-specific implementation tasks
+- [ ] All shared business logic has cross-platform validation
+- [ ] UI tests come before implementation for complex features
+- [ ] Parallel tasks are truly platform-independent
+- [ ] Each task specifies exact platform and file path
+- [ ] Multi-platform architecture maintained throughout

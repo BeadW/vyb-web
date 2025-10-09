@@ -1,0 +1,379 @@
+openapi: 3.0.3
+info:
+  title: VYB AI Collaboration API
+  description: API contracts for AI integration in visual collaboration canvas
+  version: 1.0.0
+  contact:
+    name: VYB-Web Development Team
+
+servers:
+  - url: https://api.vyb.local/v1
+    description: Local development server
+  - url: https://ai.gemini.googleapis.com/v1
+    description: Gemini AI API endpoint
+
+paths:
+  /canvas/analyze:
+    post:
+      summary: Analyze canvas for AI suggestions
+      description: Submit current canvas state to AI for trend analysis and creative suggestions
+      operationId: analyzeCanvas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CanvasAnalysisRequest'
+      responses:
+        '200':
+          description: Analysis completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CanvasAnalysisResponse'
+        '400':
+          description: Invalid canvas data
+        '429':
+          description: Rate limit exceeded
+        '503':
+          description: AI service unavailable
+
+  /variations/generate:
+    post:
+      summary: Generate design variations
+      description: Create AI-generated variations based on canvas analysis and user preferences
+      operationId: generateVariations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VariationRequest'
+      responses:
+        '200':
+          description: Variations generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VariationResponse'
+        '400':
+          description: Invalid variation request
+        '422':
+          description: Cannot generate variations for provided canvas
+
+  /trends/current:
+    get:
+      summary: Get current design trends
+      description: Retrieve current social media design trends for AI suggestion context
+      operationId: getCurrentTrends
+      parameters:
+        - name: platform
+          in: query
+          schema:
+            type: string
+            enum: [instagram, tiktok, twitter, linkedin, all]
+          description: Target social media platform for trends
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [color, typography, layout, style, all]
+          description: Trend category filter
+      responses:
+        '200':
+          description: Current trends retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrendsResponse'
+
+components:
+  schemas:
+    CanvasAnalysisRequest:
+      type: object
+      required:
+        - canvas
+        - deviceType
+        - analysisType
+      properties:
+        canvas:
+          $ref: '#/components/schemas/DesignCanvas'
+        deviceType:
+          $ref: '#/components/schemas/DeviceType'
+        analysisType:
+          type: array
+          items:
+            type: string
+            enum: [trends, creative, accessibility, performance]
+        userPreferences:
+          $ref: '#/components/schemas/UserPreferences'
+
+    CanvasAnalysisResponse:
+      type: object
+      required:
+        - analysisId
+        - suggestions
+        - confidence
+      properties:
+        analysisId:
+          type: string
+          format: uuid
+        suggestions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AISuggestion'
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        trends:
+          $ref: '#/components/schemas/TrendData'
+        processingTime:
+          type: number
+          description: Analysis time in milliseconds
+
+    VariationRequest:
+      type: object
+      required:
+        - baseCanvas
+        - variationType
+        - count
+      properties:
+        baseCanvas:
+          $ref: '#/components/schemas/DesignCanvas'
+        variationType:
+          type: string
+          enum: [creative, trend-based, accessibility, brand-aligned]
+        count:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Number of variations to generate
+        constraints:
+          $ref: '#/components/schemas/GenerationConstraints'
+
+    VariationResponse:
+      type: object
+      required:
+        - variations
+        - generationId
+      properties:
+        variations:
+          type: array
+          items:
+            $ref: '#/components/schemas/DesignVariation'
+        generationId:
+          type: string
+          format: uuid
+        metadata:
+          $ref: '#/components/schemas/GenerationMetadata'
+
+    DesignCanvas:
+      type: object
+      required:
+        - id
+        - deviceType
+        - dimensions
+        - layers
+      properties:
+        id:
+          type: string
+          format: uuid
+        deviceType:
+          $ref: '#/components/schemas/DeviceType'
+        dimensions:
+          $ref: '#/components/schemas/CanvasDimensions'
+        layers:
+          type: array
+          items:
+            $ref: '#/components/schemas/Layer'
+        metadata:
+          $ref: '#/components/schemas/CanvasMetadata'
+
+    Layer:
+      type: object
+      required:
+        - id
+        - type
+        - content
+        - transform
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [text, image, background, shape, group]
+        content:
+          oneOf:
+            - $ref: '#/components/schemas/TextContent'
+            - $ref: '#/components/schemas/ImageContent'
+            - $ref: '#/components/schemas/ShapeContent'
+        transform:
+          $ref: '#/components/schemas/Transform'
+        style:
+          $ref: '#/components/schemas/LayerStyle'
+
+    DeviceType:
+      type: string
+      enum:
+        - iphone-15-pro
+        - iphone-15
+        - ipad-pro-12.9
+        - pixel-8-pro
+        - galaxy-s24-ultra
+        - generic-mobile
+        - generic-tablet
+
+    CanvasDimensions:
+      type: object
+      required:
+        - width
+        - height
+        - pixelDensity
+      properties:
+        width:
+          type: integer
+          minimum: 100
+        height:
+          type: integer
+          minimum: 100
+        pixelDensity:
+          type: number
+          minimum: 1
+          maximum: 4
+
+    Transform:
+      type: object
+      required:
+        - x
+        - y
+        - scaleX
+        - scaleY
+        - rotation
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        scaleX:
+          type: number
+          minimum: 0.1
+        scaleY:
+          type: number
+          minimum: 0.1
+        rotation:
+          type: number
+          minimum: -360
+          maximum: 360
+
+    TextContent:
+      type: object
+      required:
+        - text
+        - fontSize
+        - fontFamily
+      properties:
+        text:
+          type: string
+          maxLength: 1000
+        fontSize:
+          type: number
+          minimum: 8
+          maximum: 200
+        fontFamily:
+          type: string
+        fontWeight:
+          type: string
+          enum: [normal, bold, lighter, bolder, "100", "200", "300", "400", "500", "600", "700", "800", "900"]
+
+    AISuggestion:
+      type: object
+      required:
+        - type
+        - description
+        - confidence
+      properties:
+        type:
+          type: string
+          enum: [color-adjustment, layout-improvement, typography-enhancement, trend-alignment]
+        description:
+          type: string
+        confidence:
+          type: number
+          minimum: 0
+          maximum: 1
+        changes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LayerChange'
+
+    LayerChange:
+      type: object
+      required:
+        - layerId
+        - changeType
+        - newValue
+      properties:
+        layerId:
+          type: string
+          format: uuid
+        changeType:
+          type: string
+          enum: [style, transform, content, add, remove]
+        newValue:
+          type: object
+          description: New value for the change (structure varies by changeType)
+
+    TrendsResponse:
+      type: object
+      required:
+        - trends
+        - lastUpdated
+      properties:
+        trends:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrendData'
+        lastUpdated:
+          type: string
+          format: date-time
+
+    TrendData:
+      type: object
+      required:
+        - category
+        - influence
+        - description
+      properties:
+        category:
+          type: string
+          enum: [color, typography, layout, style]
+        influence:
+          type: number
+          minimum: 0
+          maximum: 1
+        description:
+          type: string
+        examples:
+          type: array
+          items:
+            type: string
+        platforms:
+          type: array
+          items:
+            type: string
+            enum: [instagram, tiktok, twitter, linkedin]
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []

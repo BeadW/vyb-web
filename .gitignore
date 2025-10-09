@@ -1,191 +1,378 @@
-# =============================================================================# =============================================================================
+# =============================================================================# =============================================================================# =============================================================================
 
-# Multi-Platform Project .gitignore# Multi-Platform Project .gitignore
+# Multi-Platform Project .gitignore
+
+# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources# Multi-Platform Project .gitignore# Multi-Platform Project .gitignore
+
+# =============================================================================
 
 # Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources# Web (React/TypeScript), iOS (Swift), Android (Kotlin), Shared Resources
 
-# =============================================================================# =============================================================================
+# =============================================================================
+
+# GENERAL# =============================================================================# =============================================================================
+
+# =============================================================================
+
+.DS_Store
+
+.DS_Store?
+
+._*# =============================================================================# =============================================================================
+
+.Spotlight-V100
+
+.Trashes# GENERAL# GENERAL
+
+ehthumbs.db
+
+Thumbs.db# =============================================================================# =============================================================================
+
+*.log
+
+*.tmp.DS_Store.DS_Store
+
+*.temp
+
+*~.DS_Store?.DS_Store?
+
+.vscode/
+
+.idea/._*._*
+
+*.swp
+
+*.swo.Spotlight-V100.Spotlight-V100
 
 
 
-# =============================================================================# =============================================================================
+# Screenshots and test artifacts (keep in docs/assets only).Trashes.Trashes
 
-# GENERAL# GENERAL
+*.png
 
-# =============================================================================# =============================================================================
+*.jpgehthumbs.dbehthumbs.db
 
-.DS_Store.DS_Store
+*.jpeg
 
-.DS_Store?.DS_Store?
+*.gifThumbs.dbThumbs.db
 
-._*._*
+*.bmp
 
-.Spotlight-V100.Spotlight-V100
+*-screenshot**.log*.log
 
-.Trashes.Trashes
+*-test-*
 
-ehthumbs.dbehthumbs.db
+test_*.json*.tmp*.tmp
 
-Thumbs.dbThumbs.db
+*_test.json
 
-*.log*.log
+clean_test.**.temp*.temp
 
-*.tmp*.tmp
-
-*.temp*.temp
+simple_test.*
 
 *~*~
 
-.vscode/.vscode/
+# =============================================================================
 
-.idea/.idea/
+# WEB (React/TypeScript/Node.js).vscode/.vscode/
 
-*.swp*.swp
+# =============================================================================
 
-*.swo*.swo
+node_modules/.idea/.idea/
 
+npm-debug.log*
 
+yarn-debug.log**.swp*.swp
 
-# OS generated files# =============================================================================
+yarn-error.log*
 
-Icon?# NODE.JS / WEB DEVELOPMENT
+.npm*.swo*.swo
 
-.DocumentRevisions-V100# =============================================================================
+.eslintcache
 
-.fseventsdnode_modules/
+.stylelintcache
 
-.TemporaryItemsnpm-debug.log*
+.cache/
 
-.VolumeIcon.icnsyarn-debug.log*
+.parcel-cache/# OS generated files# =============================================================================
 
-.com.apple.timemachine.donotpresentyarn-error.log*
+.next
 
-lerna-debug.log*
+.nuxtIcon?# NODE.JS / WEB DEVELOPMENT
 
-# IDE files.pnpm-debug.log*
+dist/
 
-*.sublime-project
+build/.DocumentRevisions-V100# =============================================================================
 
-*.sublime-workspace# Runtime data
+out/
 
-pids
-
-# =============================================================================*.pid
-
-# NODE.JS / WEB DEVELOPMENT*.seed
-
-# =============================================================================*.pid.lock
-
-node_modules/
-
-npm-debug.log*# Coverage directory used by tools like istanbul
-
-yarn-debug.log*coverage/
-
-yarn-error.log**.lcov
-
-lerna-debug.log*
-
-.pnpm-debug.log*# nyc test coverage
-
-.nyc_output
-
-# Runtime data
-
-pids# Dependency directories
-
-*.pidjspm_packages/
-
-*.seed
-
-*.pid.lock# Optional npm cache directory
-
-.npm
-
-# Coverage directory used by tools like istanbul
-
-coverage/# Optional eslint cache
-
-*.lcov.eslintcache
-
-
-
-# nyc test coverage# Microbundle cache
-
-.nyc_output.rpt2_cache/
-
-.rts2_cache_cjs/
-
-# Dependency directories.rts2_cache_es/
-
-jspm_packages/.rts2_cache_umd/
-
-
-
-# Optional npm cache directory# Optional REPL history
-
-.npm.node_repl_history
-
-
-
-# Optional eslint cache# Output of 'npm pack'
-
-.eslintcache*.tgz
-
-
-
-# Optional REPL history# Yarn Integrity file
-
-.node_repl_history.yarn-integrity
-
-
-
-# Output of 'npm pack'# dotenv environment variables file
-
-*.tgz.env
+.env.fseventsdnode_modules/
 
 .env.local
 
-# Yarn Integrity file.env.development.local
-
-.yarn-integrity.env.test.local
-
-.env.production.local
-
-# dotenv environment variables file
-
-.env# parcel-bundler cache (https://parceljs.org/)
-
-.env.local.cache
-
-.env.development.local.parcel-cache
+.env.development.local.TemporaryItemsnpm-debug.log*
 
 .env.test.local
 
-.env.production.local# Next.js build output
+.env.production.local.VolumeIcon.icnsyarn-debug.log*
 
-.next
+*.tsbuildinfo
 
-# parcel-bundler cache (https://parceljs.org/)out
+.com.apple.timemachine.donotpresentyarn-error.log*
 
-.cache
+# =============================================================================
+
+# iOS (Swift/Xcode)lerna-debug.log*
+
+# =============================================================================
+
+# Xcode# IDE files.pnpm-debug.log*
+
+*.xcworkspace/xcuserdata/
+
+*.xcodeproj/xcuserdata/*.sublime-project
+
+*.xcodeproj/project.xcworkspace/xcuserdata/
+
+UserInterfaceState.xcuserstate*.sublime-workspace# Runtime data
+
+*.xcscmblueprint
+
+*.xccheckoutpids
+
+
+
+# Build results# =============================================================================*.pid
+
+DerivedData/
+
+*.hmap# NODE.JS / WEB DEVELOPMENT*.seed
+
+*.ipa
+
+*.dSYM.zip# =============================================================================*.pid.lock
+
+*.dSYM
+
+node_modules/
+
+# CocoaPods
+
+Pods/npm-debug.log*# Coverage directory used by tools like istanbul
+
+*.xcworkspace
+
+!default.xcworkspaceyarn-debug.log*coverage/
+
+
+
+# Carthageyarn-error.log**.lcov
+
+Carthage/Build/
+
+lerna-debug.log*
+
+# Swift Package Manager
+
+.build/.pnpm-debug.log*# nyc test coverage
+
+Package.resolved
+
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/.nyc_output
+
+
+
+# Xcode Patch# Runtime data
+
+*.xcodeproj/*.pbxuser
+
+*.xcodeproj/*.mode1v3pids# Dependency directories
+
+*.xcodeproj/*.mode2v3
+
+*.xcodeproj/*.perspectivev3*.pidjspm_packages/
+
+
+
+# Temporary Xcode files*.seed
+
+build/
+
+icon_temp/*.pid.lock# Optional npm cache directory
+
+*.xcodeproj.bak/
+
+test-screenshots/.npm
+
+VybCanvas/
+
+# Coverage directory used by tools like istanbul
+
+# =============================================================================
+
+# ANDROID (Kotlin/Gradle)coverage/# Optional eslint cache
+
+# =============================================================================
+
+*.apk*.lcov.eslintcache
+
+*.ap_
+
+*.aab
+
+*.dex
+
+*.class# nyc test coverage# Microbundle cache
+
+bin/
+
+gen/.nyc_output.rpt2_cache/
+
+out/
+
+.gradle/.rts2_cache_cjs/
+
+build/
+
+local.properties# Dependency directories.rts2_cache_es/
+
+proguard/
+
+*.projspm_packages/.rts2_cache_umd/
+
+
+
+# Android Studio
+
+.idea/
+
+*.iml# Optional npm cache directory# Optional REPL history
+
+*.ipr
+
+*.iws.npm.node_repl_history
+
+.idea_modules/
+
+atlassian-ide-plugin.xml
+
+
+
+# NDK# Optional eslint cache# Output of 'npm pack'
+
+obj/
+
+.eslintcache*.tgz
+
+# =============================================================================
+
+# TEST ARTIFACTS & SCRIPTS
+
+# =============================================================================
+
+test-artifacts/# Optional REPL history# Yarn Integrity file
+
+*-test-*
+
+test_*.node_repl_history.yarn-integrity
+
+*_test*
+
+automated_*.swift
+
+validate_*.swift
+
+test_*.sh# Output of 'npm pack'# dotenv environment variables file
+
+*.test.js
+
+*.test.ts*.tgz.env
+
+coverage/
+
+.nyc_output.env.local
+
+.coverage
+
+junit.xml# Yarn Integrity file.env.development.local
+
+
+
+# =============================================================================.yarn-integrity.env.test.local
+
+# DOCUMENTATION ASSETS (Allow in docs/assets only)
+
+# =============================================================================.env.production.local
+
+# All images allowed in docs/assets, blocked elsewhere
+
+/*.png# dotenv environment variables file
+
+/*.jpg
+
+/*.jpeg.env# parcel-bundler cache (https://parceljs.org/)
+
+/*.gif
+
+/*.bmp.env.local.cache
+
+ios/*.png
+
+ios/*.jpg.env.development.local.parcel-cache
+
+web/*.png
+
+web/*.jpg.env.test.local
+
+android/*.png
+
+android/*.jpg.env.production.local# Next.js build output
+
+
+
+# But allow in docs/assets.next
+
+!docs/assets/*.png
+
+!docs/assets/*.jpg# parcel-bundler cache (https://parceljs.org/)out
+
+!docs/assets/*.jpeg
+
+!docs/assets/*.gif.cache
+
+!docs/assets/*.bmp
 
 .parcel-cache# Nuxt.js build / generate output
 
-.nuxt
+# =============================================================================
 
-# next.js build outputdist
+# PROJECT SPECIFIC.nuxt
+
+# =============================================================================
+
+# MCP Playwright# next.js build outputdist
+
+.playwright-mcp/
 
 .next
 
-# Storybook build outputs
+# Temporary build outputs
 
-# nuxt.js build output.out
+*.xcarchive# Storybook build outputs
 
-.nuxt.storybook-out
+*.framework
 
-storybook-static
+*.framework.zip# nuxt.js build output.out
 
+
+
+# API keys and secrets.nuxt.storybook-out
+
+secrets/
+
+.env.*storybook-static
+
+!.env.example
 # vuepress build output
 
 .vuepress/dist# Vite
@@ -727,4 +914,17 @@ ios/Logs/
 *.abi.json
 *.strings
 *.stringsdata
-ios/*.xcworkspace/xcuserdata/
+ios/*.xcworkspace/xcuserdata/# iOS Build Artifacts
+ios/DerivedData/
+ios/build/
+ios/.DS_Store
+ios/VYB/.DS_Store
+
+# Xcode
+*.xcuserdata
+*.xcuserdatad
+xcuserdata/
+
+# System Files
+.DS_Store
+*/.DS_Store

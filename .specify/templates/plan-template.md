@@ -47,7 +47,11 @@
 ## Constitution Check
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **Multi-Platform Architecture**: Feature supports web (phone simulation), iOS, and Android with shared business logic
+- [ ] **AI-First Design**: Feature includes AI integration via structured JSON API calls across platforms
+- [ ] **Branching History**: Feature preserves user state in DAG structure with comprehensive UI testing
+- [ ] **Interactive Canvas**: Feature uses platform-appropriate canvas (Canvas API, Core Graphics, Android Canvas)
+- [ ] **Local-First with Cloud Abstractions**: Feature works offline with cloud-ready architecture patterns
 
 ## Project Structure
 
@@ -66,43 +70,60 @@ specs/[###-feature]/
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
   for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
+  real paths (e.g., web/components, ios/Views). The delivered plan must
   not include Option labels.
 -->
 ```
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
-frontend/
+# [REMOVE IF UNUSED] Option 1: Multi-platform VYB-Web (DEFAULT)
+web/
 ├── src/
 │   ├── components/
-│   ├── pages/
-│   └── services/
+│   ├── services/
+│   ├── hooks/
+│   └── utils/
 └── tests/
+    ├── unit/
+    ├── integration/
+    └── e2e/ (Playwright)
 
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
+ios/
+├── VYB/
+│   ├── Models/
+│   ├── Views/
+│   ├── ViewModels/
+│   └── Services/
+└── VYBTests/
+    ├── Unit/
+    └── UI/ (XCUITest)
 
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+android/
+├── app/src/main/
+│   ├── java/com/vyb/
+│   │   ├── models/
+│   │   ├── ui/
+│   │   ├── viewmodels/
+│   │   └── services/
+└── app/src/test/ (Espresso)
+
+shared/
+├── schemas/ (JSON schemas for AI)
+├── contracts/ (API contracts)
+└── docs/
+
+# [REMOVE IF UNUSED] Option 2: Web-only phase (when mobile not yet needed)
+web/
+├── src/
+│   ├── components/
+│   │   ├── phone-simulation/
+│   │   ├── canvas/
+│   │   └── ai-integration/
+│   ├── services/
+│   ├── hooks/
+│   └── utils/
+└── tests/
+    ├── unit/
+    ├── integration/
+    └── e2e/ (Playwright)
 ```
 
 **Structure Decision**: [Document the selected structure and reference the real

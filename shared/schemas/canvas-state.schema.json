@@ -1,0 +1,538 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://vyb.com/schemas/canvas-state.json",
+  "title": "Canvas State",
+  "description": "Complete state of a VYB canvas including elements, history, and metadata",
+  "type": "object",
+  "required": ["version", "id", "createdAt", "updatedAt", "elements", "history"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version (semver)"
+    },
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique canvas identifier"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 creation timestamp"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 last update timestamp"
+    },
+    "title": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "Human-readable canvas title"
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Canvas description or notes"
+    },
+    "dimensions": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 10000
+        },
+        "height": {
+          "type": "number",
+          "minimum": 100,
+          "maximum": 10000
+        }
+      },
+      "description": "Canvas dimensions in pixels"
+    },
+    "elements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/CanvasElement"
+      },
+      "description": "All elements on the canvas"
+    },
+    "history": {
+      "$ref": "#/$defs/HistoryNode",
+      "description": "DAG-based history tree"
+    },
+    "currentBranch": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID of current history branch"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 50
+          },
+          "maxItems": 20
+        },
+        "collaborators": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "exportFormats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["png", "jpg", "svg", "pdf"]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "CanvasElement": {
+      "type": "object",
+      "required": ["id", "type", "position", "createdAt"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["text", "shape", "image", "drawing", "ai-generated"]
+        },
+        "position": {
+          "$ref": "#/$defs/Position"
+        },
+        "dimensions": {
+          "$ref": "#/$defs/Dimensions"
+        },
+        "rotation": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 360
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "visible": {
+          "type": "boolean",
+          "default": true
+        },
+        "locked": {
+          "type": "boolean",
+          "default": false
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "properties": {
+          "oneOf": [
+            { "$ref": "#/$defs/TextProperties" },
+            { "$ref": "#/$defs/ShapeProperties" },
+            { "$ref": "#/$defs/ImageProperties" },
+            { "$ref": "#/$defs/DrawingProperties" },
+            { "$ref": "#/$defs/AIGeneratedProperties" }
+          ]
+        }
+      }
+    },
+    "Position": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "z": { 
+          "type": "integer", 
+          "minimum": 0,
+          "description": "Layer order (z-index)"
+        }
+      }
+    },
+    "Dimensions": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { 
+          "type": "number", 
+          "minimum": 1 
+        },
+        "height": { 
+          "type": "number", 
+          "minimum": 1 
+        }
+      }
+    },
+    "TextProperties": {
+      "type": "object",
+      "required": ["text", "fontSize"],
+      "properties": {
+        "text": {
+          "type": "string",
+          "maxLength": 5000
+        },
+        "fontSize": {
+          "type": "number",
+          "minimum": 8,
+          "maximum": 200
+        },
+        "fontFamily": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "fontWeight": {
+          "type": "string",
+          "enum": ["normal", "bold", "100", "200", "300", "400", "500", "600", "700", "800", "900"]
+        },
+        "fontStyle": {
+          "type": "string",
+          "enum": ["normal", "italic", "oblique"]
+        },
+        "color": {
+          "$ref": "#/$defs/Color"
+        },
+        "backgroundColor": {
+          "$ref": "#/$defs/Color"
+        },
+        "textAlign": {
+          "type": "string",
+          "enum": ["left", "center", "right", "justify"]
+        },
+        "lineHeight": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 3
+        }
+      }
+    },
+    "ShapeProperties": {
+      "type": "object",
+      "required": ["shapeType"],
+      "properties": {
+        "shapeType": {
+          "type": "string",
+          "enum": ["rectangle", "circle", "ellipse", "triangle", "polygon", "line", "arrow"]
+        },
+        "fill": {
+          "$ref": "#/$defs/Color"
+        },
+        "stroke": {
+          "$ref": "#/$defs/Stroke"
+        },
+        "cornerRadius": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "sides": {
+          "type": "integer",
+          "minimum": 3,
+          "maximum": 20,
+          "description": "For polygon shapes"
+        }
+      }
+    },
+    "ImageProperties": {
+      "type": "object",
+      "required": ["src"],
+      "properties": {
+        "src": {
+          "type": "string",
+          "format": "uri",
+          "description": "Image source URL or base64 data URI"
+        },
+        "alt": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "crop": {
+          "$ref": "#/$defs/CropRegion"
+        },
+        "filters": {
+          "$ref": "#/$defs/ImageFilters"
+        }
+      }
+    },
+    "DrawingProperties": {
+      "type": "object",
+      "required": ["paths"],
+      "properties": {
+        "paths": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DrawingPath"
+          }
+        },
+        "brush": {
+          "$ref": "#/$defs/BrushSettings"
+        }
+      }
+    },
+    "AIGeneratedProperties": {
+      "type": "object",
+      "required": ["prompt", "generatedAt"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Original AI generation prompt"
+        },
+        "generatedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "AI model used for generation"
+        },
+        "seed": {
+          "type": "integer",
+          "description": "Random seed for reproducibility"
+        },
+        "parameters": {
+          "type": "object",
+          "description": "AI generation parameters"
+        },
+        "contentType": {
+          "type": "string",
+          "enum": ["image", "text", "shape", "suggestion"]
+        }
+      }
+    },
+    "Color": {
+      "type": "string",
+      "oneOf": [
+        {
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Hex color"
+        },
+        {
+          "pattern": "^#[0-9A-Fa-f]{8}$",
+          "description": "Hex color with alpha"
+        },
+        {
+          "pattern": "^rgba?\\(\\s*\\d+\\s*,\\s*\\d+\\s*,\\s*\\d+\\s*(,\\s*[0-1]?(\\.[0-9]+)?)?\\s*\\)$",
+          "description": "RGB/RGBA color"
+        },
+        {
+          "pattern": "^hsla?\\(\\s*\\d+\\s*,\\s*\\d+%\\s*,\\s*\\d+%\\s*(,\\s*[0-1]?(\\.[0-9]+)?)?\\s*\\)$",
+          "description": "HSL/HSLA color"
+        }
+      ]
+    },
+    "Stroke": {
+      "type": "object",
+      "properties": {
+        "color": {
+          "$ref": "#/$defs/Color"
+        },
+        "width": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 50
+        },
+        "dashArray": {
+          "type": "array",
+          "items": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "lineCap": {
+          "type": "string",
+          "enum": ["butt", "round", "square"]
+        },
+        "lineJoin": {
+          "type": "string",
+          "enum": ["miter", "round", "bevel"]
+        }
+      }
+    },
+    "CropRegion": {
+      "type": "object",
+      "required": ["x", "y", "width", "height"],
+      "properties": {
+        "x": { "type": "number", "minimum": 0 },
+        "y": { "type": "number", "minimum": 0 },
+        "width": { "type": "number", "minimum": 1 },
+        "height": { "type": "number", "minimum": 1 }
+      }
+    },
+    "ImageFilters": {
+      "type": "object",
+      "properties": {
+        "brightness": { "type": "number", "minimum": 0, "maximum": 2 },
+        "contrast": { "type": "number", "minimum": 0, "maximum": 2 },
+        "saturation": { "type": "number", "minimum": 0, "maximum": 2 },
+        "blur": { "type": "number", "minimum": 0, "maximum": 10 },
+        "sepia": { "type": "number", "minimum": 0, "maximum": 1 },
+        "grayscale": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "DrawingPath": {
+      "type": "object",
+      "required": ["points"],
+      "properties": {
+        "points": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PathPoint"
+          },
+          "minItems": 2
+        },
+        "smooth": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "PathPoint": {
+      "type": "object",
+      "required": ["x", "y"],
+      "properties": {
+        "x": { "type": "number" },
+        "y": { "type": "number" },
+        "pressure": { 
+          "type": "number", 
+          "minimum": 0, 
+          "maximum": 1,
+          "description": "Stylus pressure (0-1)"
+        },
+        "timestamp": {
+          "type": "number",
+          "description": "Relative timestamp in milliseconds"
+        }
+      }
+    },
+    "BrushSettings": {
+      "type": "object",
+      "properties": {
+        "size": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "color": {
+          "$ref": "#/$defs/Color"
+        },
+        "pressureSensitive": {
+          "type": "boolean",
+          "default": false
+        },
+        "blendMode": {
+          "type": "string",
+          "enum": ["normal", "multiply", "screen", "overlay", "darken", "lighten"]
+        }
+      }
+    },
+    "HistoryNode": {
+      "type": "object",
+      "required": ["id", "createdAt", "action"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "action": {
+          "$ref": "#/$defs/HistoryAction"
+        },
+        "parentIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Parent node IDs for DAG structure"
+        },
+        "childIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Child node IDs for DAG structure"
+        },
+        "branchName": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Human-readable branch name"
+        },
+        "metadata": {
+          "type": "object",
+          "properties": {
+            "user": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "device": {
+              "type": "string",
+              "maxLength": 100
+            },
+            "snapshot": {
+              "type": "boolean",
+              "description": "Whether this node represents a full snapshot"
+            }
+          }
+        }
+      }
+    },
+    "HistoryAction": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "create", "update", "delete", "move", "rotate", "resize",
+            "style", "group", "ungroup", "duplicate", "ai-generate",
+            "import", "export", "branch", "merge"
+          ]
+        },
+        "elementIds": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "description": "Elements affected by this action"
+        },
+        "changes": {
+          "type": "object",
+          "description": "JSON patch-style changes"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Human-readable action description"
+        }
+      }
+    }
+  }
+}

@@ -3,21 +3,12 @@ import SwiftUI
 // Test view to debug the LayerEditorModalView issue
 struct LayerEditorTest: View {
     @State private var testLayer = SimpleLayer(
-        id: UUID(),
+        id: UUID().uuidString,
         type: "text",
         content: "Test Layer",
         x: 100,
         y: 100,
-        zOrder: 1,
-        fontSize: 18,
-        fontWeight: .medium,
-        textColor: .black,
-        isItalic: false,
-        isUnderlined: false,
-        textAlignment: .center,
-        hasShadow: false,
-        shadowColor: .gray,
-        isSelected: false
+        zOrder: 1
     )
     
     @State private var showModal = false
