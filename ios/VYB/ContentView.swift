@@ -4,6 +4,7 @@ struct ContentView: View {
     @State private var isEditing = false
     @State private var editingText = "What's on your mind?"
     @State private var layers: [SimpleLayer] = {
+        NSLog("🚀 ContentView: Initializing default layers...")
         var layers: [SimpleLayer] = []
         
         // Background layer - will be rendered as gradient by the background layer view
@@ -16,6 +17,7 @@ struct ContentView: View {
             zOrder: 0
         )
         layers.append(backgroundLayer)
+        NSLog("🚀 ContentView: Added background layer: \(backgroundLayer.content)")
         
         // Title layer with emojis - positioned within canvas
         var titleLayer = SimpleLayer(
@@ -84,6 +86,7 @@ struct ContentView: View {
         logoLayer.strokeWidth = 1.0
         layers.append(logoLayer)
         
+        NSLog("🚀 ContentView: Finished initializing \(layers.count) default layers")
         return layers
     }()
     @State private var canvasSize: CGSize = CGSize(width: 400, height: 500)
@@ -129,12 +132,16 @@ struct ContentView: View {
     // Get current layers from history state
     private var currentLayers: [SimpleLayer] {
         if historyStates.isEmpty {
+            NSLog("🔍 currentLayers: historyStates is empty, returning direct layers (\(layers.count) layers)")
             return layers
         }
         guard currentHistoryIndex >= 0 && currentHistoryIndex < historyStates.count else {
+            NSLog("🔍 currentLayers: index \(currentHistoryIndex) out of bounds for \(historyStates.count) states, returning direct layers (\(layers.count) layers)")
             return layers
         }
-        return historyStates[currentHistoryIndex].layers
+        let historyLayers = historyStates[currentHistoryIndex].layers
+        NSLog("🔍 currentLayers: returning history state [\(currentHistoryIndex)] with \(historyLayers.count) layers")
+        return historyLayers
     }
     
     // Check if we're at the current editable state (latest in history)
@@ -393,6 +400,14 @@ struct ContentView: View {
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.red)
                     }
+                    
+                    // Debug AI Test Button
+                    Button("🧠 Test AI") {
+                        NSLog("🔥 DEBUG: Test AI button pressed")
+                        triggerAIAnalysis()
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.blue)
                 }
                 .padding(.horizontal, 16)
                 
@@ -469,13 +484,13 @@ struct ContentView: View {
             if let layer = currentSelectedLayer {
                 LayerEditorModalView(layer: Binding<SimpleLayer>(
                     get: {
-                        // Always get the latest layer data from the array by ID
-                        return layers.first(where: { $0.id == layer.id }) ?? layer
+                        // Get the layer from currentLayers (respects history state)
+                        return currentLayers.first(where: { $0.id == layer.id }) ?? layer
                     },
                     set: { newValue in
-                        if let currentIndex = layers.firstIndex(where: { $0.id == newValue.id }) {
-                            layers[currentIndex] = newValue
-                        }
+                        NSLog("🔄 Modal: Setting layer \(newValue.id) with content: '\(newValue.content)'")
+                        // Use updateLayerInHistory to properly handle the edit
+                        updateLayerInHistory(newValue)
                     }
                 ))
                 .onDisappear {
@@ -675,8 +690,29 @@ struct ContentView: View {
                 // Configure AI service with user's API key
                 await aiService.configure(apiKey: geminiAPIKey)
                 
-                // Get current layers from history state
-                let baseLayers = currentLayers.isEmpty ? createSampleLayers() : currentLayers
+                // Get current layers from history state - NO FALLBACK TO SAMPLE LAYERS
+                let baseLayers = currentLayers
+                
+                if baseLayers.isEmpty {
+                    NSLog("❌ ContentView: Cannot generate AI variations - no layers available")
+                    await MainActor.run {
+                        self.isAnalyzingWithAI = false
+                    }
+                    return
+                }
+                
+                // Debug logging for layer data
+                NSLog("🔍 ContentView: Current layers count: \(currentLayers.count)")
+                NSLog("🔍 ContentView: Base layers count: \(baseLayers.count)")
+                NSLog("🔍 ContentView: History states count: \(historyStates.count)")
+                NSLog("🔍 ContentView: Current history index: \(currentHistoryIndex)")
+                NSLog("🔍 ContentView: Direct layers count: \(layers.count)")
+                
+                // Log each layer
+                for (index, layer) in baseLayers.enumerated() {
+                    NSLog("🔍 ContentView: Layer \(index): \(layer.type) - '\(layer.content)' at (\(layer.x), \(layer.y))")
+                }
+                
                 let variations = try await aiService.generateDesignVariations(for: baseLayers, canvasSize: canvasSize)
                 
                 await MainActor.run {
@@ -712,58 +748,16 @@ struct ContentView: View {
     // MARK: - AI Design Variations
 
     
-    /// Creates sample layers for demo purposes when canvas is empty
-    private func createSampleLayers() -> [SimpleLayer] {
-        return [
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "background",
-                content: "Background",
-                x: 150,
-                y: 100,
-                zOrder: 0
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "text",
-                content: "Hello World",
-                x: 100,
-                y: 80,
-                zOrder: 1
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "image",
-                content: "Photo",
-                x: 200,
-                y: 120,
-                zOrder: 2
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "shape",
-                content: "Circle",
-                x: 120,
-                y: 160,
-                zOrder: 3
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "text",
-                content: "Sample Text",
-                x: 140,
-                y: 200,
-                zOrder: 4
-            )
-        ]
-    }
+
     
     // MARK: - Variation Navigation Functions
     
     /// Apply a design variation to the original layers
     private func applyVariationToLayers(_ variation: DesignVariation, originalLayers: [SimpleLayer]) -> [SimpleLayer] {
+        NSLog("🔄 Applying variation '\(variation.title)' to \(originalLayers.count) layers")
+        
         return originalLayers.map { layer in
-            // Find matching layer in variation
+            // Find matching layer in variation using exact ID matching
             if let variationLayer = variation.layers.first(where: { $0.id == layer.id }) {
                 // Create modified layer with variation data
                 var modifiedLayer = layer
@@ -773,7 +767,11 @@ struct ContentView: View {
                 modifiedLayer.x = variationLayer.x
                 modifiedLayer.y = variationLayer.y
                 
+                NSLog("🔄 Applied variation to layer \(layer.id): '\(variationLayer.content)' at (\(variationLayer.x), \(variationLayer.y))")
                 return modifiedLayer
+            } else {
+                NSLog("⚠️ No matching variation layer found for original layer \(layer.id)")
+                NSLog("⚠️ Available variation layer IDs: \(variation.layers.map { $0.id }.joined(separator: ", "))")
             }
             return layer
         }
@@ -816,28 +814,36 @@ struct ContentView: View {
         NSLog("💾 Saved state to history: '\(newState.title)' at index \(currentHistoryIndex)")
     }
     
-    /// Initialize history with current state
+    /// Initialize history with current state - NO SAMPLE LAYERS FALLBACK
     private func initializeHistory() {
-        if historyStates.isEmpty {
+        if historyStates.isEmpty && !layers.isEmpty {
             let initialState = HistoryState(
-                layers: layers.isEmpty ? createSampleLayers() : layers,
+                layers: layers,
                 source: .initial,
                 title: "Initial Canvas"
             )
             historyStates = [initialState]
             currentHistoryIndex = 0
-            layers = historyStates[0].layers
-            NSLog("🎯 Initialized history with initial state")
+            NSLog("🎯 Initialized history with \(layers.count) actual layers")
         }
     }
     
     /// Update a specific layer and save to history
     private func updateLayerInHistory(_ modifiedLayer: SimpleLayer) {
+        // Ensure we're at the current editable state when editing
+        if !isAtCurrentState {
+            NSLog("🔄 updateLayerInHistory: Moving to current state for editing")
+            currentHistoryIndex = historyStates.count - 1
+        }
+        
         var updatedLayers = currentLayers
         if let index = updatedLayers.firstIndex(where: { $0.id == modifiedLayer.id }) {
+            NSLog("🔄 updateLayerInHistory: Updating layer \(modifiedLayer.id) with content: '\(modifiedLayer.content)'")
             updatedLayers[index] = modifiedLayer
             layers = updatedLayers
             saveCurrentStateToHistory(source: .userEdit, title: "Modified \(modifiedLayer.type.capitalized) Layer")
+        } else {
+            NSLog("⚠️ updateLayerInHistory: Could not find layer with id: \(modifiedLayer.id)")
         }
     }
 
