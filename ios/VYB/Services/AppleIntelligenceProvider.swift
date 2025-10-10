@@ -8,9 +8,21 @@ import FoundationModels
 /// Apple Intelligence provider implementation using REAL Foundation Models API calls
 @available(iOS 26.0, *)
 class AppleIntelligenceProvider: AIProviderProtocol {
+    private var cachedAvailability: Bool?
+    
     init() {}
     var providerName: String { "Apple Intelligence" }
-    var isAvailable: Bool { true }
+    
+    var isAvailable: Bool { 
+        if let cached = cachedAvailability {
+            return cached
+        }
+        
+        let available = testFoundationModelsAvailability()
+        cachedAvailability = available
+        return available
+    }
+    
     func configure(with configuration: AIProviderConfiguration) throws {}
     
     // MARK: - Private Methods
@@ -20,6 +32,42 @@ class AppleIntelligenceProvider: AIProviderProtocol {
         return true
         #else
         NSLog("🚨 AppleIntelligenceProvider: FoundationModels framework not importable")
+        return false
+        #endif
+    }
+    
+    /// Test if Foundation Models is actually available with assets on this device
+    private func testFoundationModelsAvailability() -> Bool {
+        guard isFoundationModelsAvailable() else {
+            NSLog("🚨 AppleIntelligenceProvider: Framework not available")
+            return false
+        }
+        
+        #if canImport(FoundationModels)
+        do {
+            NSLog("🧪 AppleIntelligenceProvider: Testing Foundation Models asset availability...")
+            
+            // Try to create a session to test if models are actually available
+            let session = try LanguageModelSession()
+            
+            // If we can create a session, the models should be available
+            NSLog("✅ AppleIntelligenceProvider: Foundation Models assets are available")
+            return true
+            
+        } catch {
+            NSLog("❌ AppleIntelligenceProvider: Foundation Models assets not available: \(error)")
+            
+            // Check for specific asset errors
+            if let nsError = error as NSError? {
+                if nsError.domain.contains("UnifiedAssetFramework") || 
+                   nsError.localizedDescription.contains("assetsUnavailable") ||
+                   nsError.localizedDescription.contains("Model is unavailable") {
+                    NSLog("🚨 AppleIntelligenceProvider: Device lacks Foundation Models assets")
+                }
+            }
+            return false
+        }
+        #else
         return false
         #endif
     }

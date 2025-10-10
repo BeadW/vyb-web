@@ -15,6 +15,18 @@ class AIService {
         return serviceManager.isConfigured
     }
     
+    public var supportsAppleIntelligence: Bool {
+        return serviceManager.supportsAppleIntelligence
+    }
+    
+    public var isUsingAppleIntelligence: Bool {
+        return serviceManager.isUsingAppleIntelligence
+    }
+    
+    public var providerSelectionInfo: (current: String, available: [String], reason: String) {
+        return serviceManager.providerSelectionInfo
+    }
+    
     public init() {
         // ServiceManager handles provider setup internally
     }
@@ -26,6 +38,10 @@ class AIService {
         } catch {
             NSLog("❌ AIService (Legacy): Configuration failed: \(error)")
         }
+    }
+    
+    public func setProvider(named providerName: String) async throws {
+        try await serviceManager.setProvider(named: providerName)
     }
     
     func generateDesignVariations(

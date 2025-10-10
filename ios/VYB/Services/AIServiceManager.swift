@@ -62,9 +62,31 @@ class AIServiceManager {
         return providerRegistry.getAvailableProviders().map { $0.providerName }
     }
     
+    /// Get provider selection information for UI
+    public var providerSelectionInfo: (current: String, available: [String], reason: String) {
+        return providerRegistry.getProviderSelectionInfo()
+    }
+    
     /// Check if the service is configured
     public var isConfigured: Bool {
         return currentProvider != nil
+    }
+    
+    /// Check if device supports Apple Intelligence
+    public var supportsAppleIntelligence: Bool {
+        if #available(iOS 26.0, *) {
+            #if canImport(FoundationModels)
+            return true
+            #else
+            return false
+            #endif
+        }
+        return false
+    }
+    
+    /// Check if currently using Apple Intelligence
+    public var isUsingAppleIntelligence: Bool {
+        return currentProvider?.providerName == "Apple Intelligence"
     }
     
     // MARK: - Design Generation
