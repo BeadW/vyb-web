@@ -3,8 +3,106 @@ import SwiftUI
 struct ContentView: View {
     @State private var isEditing = false
     @State private var editingText = "What's on your mind?"
-    @State private var layers: [SimpleLayer] = []
-    @State private var canvasSize: CGSize = .zero
+    @State private var layers: [SimpleLayer] = {
+        NSLog("🚀 ContentView: Initializing default layers...")
+        var layers: [SimpleLayer] = []
+        
+        // Background layer - will be rendered as gradient by the background layer view
+        var backgroundLayer = SimpleLayer(
+            id: "background-gradient",
+            type: "background",
+            content: "Salon Background",
+            x: 200,
+            y: 250,
+            zOrder: 0
+        )
+        layers.append(backgroundLayer)
+        NSLog("🚀 ContentView: Added background layer: \(backgroundLayer.content)")
+        
+        // Title layer with emojis - positioned within canvas
+        var titleLayer = SimpleLayer(
+            id: "title-text",
+            type: "text",
+            content: "🚫 Cancellation Policy ⚠️",
+            x: 200,
+            y: 60,
+            zOrder: 1
+        )
+        titleLayer.fontSize = 22
+        titleLayer.fontWeight = .bold
+        titleLayer.textColor = .white
+        titleLayer.textAlignment = .center
+        titleLayer.hasShadow = true
+        titleLayer.shadowColor = .black
+        layers.append(titleLayer)
+        
+        // Main policy text - positioned within visible area
+        var mainTextLayer = SimpleLayer(
+            id: "main-policy-text",
+            type: "text",
+            content: "A 50% fee will apply for no-shows or cancellations made within 3 hours of your appointment.",
+            x: 200,
+            y: 180,
+            zOrder: 2
+        )
+        mainTextLayer.fontSize = 16
+        mainTextLayer.fontWeight = .medium
+        mainTextLayer.textColor = .white
+        mainTextLayer.textAlignment = .center
+        mainTextLayer.hasShadow = true
+        mainTextLayer.shadowColor = .black
+        layers.append(mainTextLayer)
+        
+        // Subtitle layer - positioned within canvas bounds
+        var subtitleLayer = SimpleLayer(
+            id: "subtitle-text",
+            type: "text",
+            content: "Thank you for understanding — this helps us manage our time and continue providing the best service. ❤️",
+            x: 200,
+            y: 320,
+            zOrder: 3
+        )
+        subtitleLayer.fontSize = 12
+        subtitleLayer.fontWeight = .regular
+        subtitleLayer.textColor = .white
+        subtitleLayer.textAlignment = .center
+        layers.append(subtitleLayer)
+        
+        // Logo layer - positioned at bottom within canvas
+        var logoLayer = SimpleLayer(
+            id: "bella-salon-logo",
+            type: "text",
+            content: "✨ Bella Salon ✨",
+            x: 200,
+            y: 420,
+            zOrder: 4
+        )
+        logoLayer.fontSize = 18
+        logoLayer.fontWeight = .bold
+        logoLayer.textColor = .white
+        logoLayer.textAlignment = .center
+        logoLayer.hasStroke = true
+        logoLayer.strokeColor = .yellow
+        logoLayer.strokeWidth = 1.0
+        layers.append(logoLayer)
+        
+        // Test layer positioned OFF-CANVAS (for AI visibility testing)
+        var hiddenLayer = SimpleLayer(
+            id: "hidden-contact-info",
+            type: "text", 
+            content: "📞 Call: (555) 123-4567",
+            x: -100,  // Off canvas to the left
+            y: -50,   // Off canvas above
+            zOrder: 5
+        )
+        hiddenLayer.fontSize = 14
+        hiddenLayer.textColor = .white
+        layers.append(hiddenLayer)
+        
+        NSLog("🚀 ContentView: Finished initializing \(layers.count) default layers")
+        return layers
+    }()
+    @State private var canvasSize: CGSize = CGSize(width: 400, height: 500)
     @State private var isEditingLayer: String? = nil
     @State private var showTextStylePanel = false
     @State private var showTextStyleModal = false
@@ -47,12 +145,16 @@ struct ContentView: View {
     // Get current layers from history state
     private var currentLayers: [SimpleLayer] {
         if historyStates.isEmpty {
+            NSLog("🔍 currentLayers: historyStates is empty, returning direct layers (\(layers.count) layers)")
             return layers
         }
         guard currentHistoryIndex >= 0 && currentHistoryIndex < historyStates.count else {
+            NSLog("🔍 currentLayers: index \(currentHistoryIndex) out of bounds for \(historyStates.count) states, returning direct layers (\(layers.count) layers)")
             return layers
         }
-        return historyStates[currentHistoryIndex].layers
+        let historyLayers = historyStates[currentHistoryIndex].layers
+        NSLog("🔍 currentLayers: returning history state [\(currentHistoryIndex)] with \(historyLayers.count) layers")
+        return historyLayers
     }
     
     // Check if we're at the current editable state (latest in history)
@@ -300,22 +402,39 @@ struct ContentView: View {
                     
                     Spacer()
                     
-                    Text("Layers: \(layers.count)")
+                    Text("Layers: \(currentLayers.count)")
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    if !layers.isEmpty {
+                    if !currentLayers.isEmpty {
                         Button("Clear All") {
-                            layers.removeAll()
+                            // Create new empty state in history
+                            let newHistoryState = HistoryState(
+                                layers: [],
+                                source: .userEdit,
+                                title: "Clear All Layers"
+                            )
+                            historyStates.append(newHistoryState)
+                            currentHistoryIndex = historyStates.count - 1
+                            selectedLayerForEditing = nil
                         }
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.red)
                     }
+                    
+
+                    
+                    Button("🧠 Test AI") {
+                        NSLog("🔥 DEBUG: Test AI button pressed")
+                        triggerAIAnalysis()
+                    }
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.blue)
                 }
                 .padding(.horizontal, 16)
                 
                 // Quick layer overview (compact horizontal scroll)
-                if !layers.isEmpty {
+                if !currentLayers.isEmpty {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Quick Layer Access")
                             .font(.system(size: 14, weight: .medium))
@@ -324,7 +443,7 @@ struct ContentView: View {
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
-                                ForEach(layers.sorted(by: { $0.zOrder > $1.zOrder }), id: \.id) { layer in
+                                ForEach(currentLayers.sorted(by: { $0.zOrder > $1.zOrder }), id: \.id) { layer in
                                     Button(action: {
                                         // Toggle selection using single source of truth
                                         if selectedLayerForEditing == layer.id {
@@ -368,17 +487,47 @@ struct ContentView: View {
 
         .sheet(isPresented: $showLayerManagerModal) {
             LayerManagerModalView(
-                layers: $layers,
+                currentLayers: currentLayers,
                 selectedLayerForEditing: $selectedLayerForEditing,
                 onEditLayer: { layer in
                     DispatchQueue.main.async {
-                        // Re-fetch the latest layer data to ensure it exists
-                        if let currentLayer = layers.first(where: { $0.id == layer.id }) {
+                        // Use currentLayers to ensure we're working with what's on canvas
+                        if let currentLayer = currentLayers.first(where: { $0.id == layer.id }) {
                             selectedLayerForEditing = currentLayer.id
                             showLayerEditorModal = true
                         } else {
-                            NSLog("Layer not found in manager: \(layer.id)")
+                            NSLog("Layer not found in current layers: \(layer.id)")
                         }
+                    }
+                },
+                onDeleteLayer: { layerId in
+                    // Create new state without the deleted layer
+                    let updatedLayers = currentLayers.filter { $0.id != layerId }
+                    let newHistoryState = HistoryState(
+                        layers: updatedLayers,
+                        source: .userEdit,
+                        title: "Delete Layer"
+                    )
+                    historyStates.append(newHistoryState)
+                    currentHistoryIndex = historyStates.count - 1
+                    
+                    // Clear selection if deleted layer was selected
+                    if selectedLayerForEditing == layerId {
+                        selectedLayerForEditing = nil
+                    }
+                },
+                onUpdateLayer: { updatedLayer in
+                    // Create new state with updated layer
+                    var updatedLayers = currentLayers
+                    if let index = updatedLayers.firstIndex(where: { $0.id == updatedLayer.id }) {
+                        updatedLayers[index] = updatedLayer
+                        let newHistoryState = HistoryState(
+                            layers: updatedLayers,
+                            source: .userEdit,
+                            title: "Update Layer"
+                        )
+                        historyStates.append(newHistoryState)
+                        currentHistoryIndex = historyStates.count - 1
                     }
                 }
             )
@@ -387,13 +536,13 @@ struct ContentView: View {
             if let layer = currentSelectedLayer {
                 LayerEditorModalView(layer: Binding<SimpleLayer>(
                     get: {
-                        // Always get the latest layer data from the array by ID
-                        return layers.first(where: { $0.id == layer.id }) ?? layer
+                        // Get the layer from currentLayers (respects history state)
+                        return currentLayers.first(where: { $0.id == layer.id }) ?? layer
                     },
                     set: { newValue in
-                        if let currentIndex = layers.firstIndex(where: { $0.id == newValue.id }) {
-                            layers[currentIndex] = newValue
-                        }
+                        NSLog("🔄 Modal: Setting layer \(newValue.id) with content: '\(newValue.content)'")
+                        // Use updateLayerInHistory to properly handle the edit
+                        updateLayerInHistory(newValue)
                     }
                 ))
                 .onDisappear {
@@ -408,7 +557,7 @@ struct ContentView: View {
                             .foregroundColor(.red)
                             .font(.headline)
                         
-                        Text("Available layers: \(layers.count)")
+                        Text("Available layers: \(currentLayers.count)")
                             .font(.caption)
                             .foregroundColor(.gray)
                     }
@@ -593,9 +742,30 @@ struct ContentView: View {
                 // Configure AI service with user's API key
                 await aiService.configure(apiKey: geminiAPIKey)
                 
-                // Get current layers from history state
-                let baseLayers = currentLayers.isEmpty ? createSampleLayers() : currentLayers
-                let variations = try await aiService.generateDesignVariations(for: baseLayers)
+                // Get current layers from history state - NO FALLBACK TO SAMPLE LAYERS
+                let baseLayers = currentLayers
+                
+                if baseLayers.isEmpty {
+                    NSLog("❌ ContentView: Cannot generate AI variations - no layers available")
+                    await MainActor.run {
+                        self.isAnalyzingWithAI = false
+                    }
+                    return
+                }
+                
+                // Debug logging for layer data
+                NSLog("🔍 ContentView: Current layers count: \(currentLayers.count)")
+                NSLog("🔍 ContentView: Base layers count: \(baseLayers.count)")
+                NSLog("🔍 ContentView: History states count: \(historyStates.count)")
+                NSLog("🔍 ContentView: Current history index: \(currentHistoryIndex)")
+                NSLog("🔍 ContentView: Direct layers count: \(layers.count)")
+                
+                // Log each layer
+                for (index, layer) in baseLayers.enumerated() {
+                    NSLog("🔍 ContentView: Layer \(index): \(layer.type) - '\(layer.content)' at (\(layer.x), \(layer.y))")
+                }
+                
+                let variations = try await aiService.generateDesignVariations(for: baseLayers, canvasSize: canvasSize)
                 
                 await MainActor.run {
                     // Add each AI variation as a new history state
@@ -630,71 +800,57 @@ struct ContentView: View {
     // MARK: - AI Design Variations
 
     
-    /// Creates sample layers for demo purposes when canvas is empty
-    private func createSampleLayers() -> [SimpleLayer] {
-        return [
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "background",
-                content: "Background",
-                x: 150,
-                y: 100,
-                zOrder: 0
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "text",
-                content: "Hello World",
-                x: 100,
-                y: 80,
-                zOrder: 1
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "image",
-                content: "Photo",
-                x: 200,
-                y: 120,
-                zOrder: 2
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "shape",
-                content: "Circle",
-                x: 120,
-                y: 160,
-                zOrder: 3
-            ),
-            SimpleLayer(
-                id: UUID().uuidString,
-                type: "text",
-                content: "Sample Text",
-                x: 140,
-                y: 200,
-                zOrder: 4
-            )
-        ]
-    }
+
     
     // MARK: - Variation Navigation Functions
     
     /// Apply a design variation to the original layers
     private func applyVariationToLayers(_ variation: DesignVariation, originalLayers: [SimpleLayer]) -> [SimpleLayer] {
-        return originalLayers.map { layer in
-            // Find matching layer in variation
-            if let variationLayer = variation.layers.first(where: { $0.id == layer.id }) {
-                // Create modified layer with variation data
-                var modifiedLayer = layer
+        NSLog("🔄 Applying variation '\(variation.title)' - AI provided \(variation.layers.count) layers, original had \(originalLayers.count) layers")
+        
+        // Create new layer array based ONLY on what the AI provided
+        var resultLayers: [SimpleLayer] = []
+        
+        for variationLayer in variation.layers {
+            // Find matching original layer to preserve properties like zOrder, visibility, etc.
+            if let originalLayer = originalLayers.first(where: { $0.id == variationLayer.id }) {
+                // Update existing layer with AI changes
+                var updatedLayer = originalLayer
+                updatedLayer.content = variationLayer.content
+                updatedLayer.x = variationLayer.x
+                updatedLayer.y = variationLayer.y
+                // Preserve original properties like zOrder, visible, etc.
                 
-                // Apply changes from variation layer
-                modifiedLayer.content = variationLayer.content
-                modifiedLayer.x = variationLayer.x
-                modifiedLayer.y = variationLayer.y
+                NSLog("🔄 Updated existing layer \(variationLayer.id): '\(variationLayer.content)' at (\(variationLayer.x), \(variationLayer.y))")
+                resultLayers.append(updatedLayer)
+            } else {
+                // Create new layer from AI specification
+                let newLayer = SimpleLayer(
+                    id: variationLayer.id,
+                    type: variationLayer.type,
+                    content: variationLayer.content,
+                    x: variationLayer.x,
+                    y: variationLayer.y,
+                    zOrder: resultLayers.count // Assign next available z-order
+                )
                 
-                return modifiedLayer
+                NSLog("🆕 Created new layer \(variationLayer.id): '\(variationLayer.content)' at (\(variationLayer.x), \(variationLayer.y))")
+                resultLayers.append(newLayer)
             }
-            return layer
         }
+        
+        // Log dropped layers (layers that were in original but not in AI variation)
+        let droppedLayers = originalLayers.compactMap { originalLayer in
+            variation.layers.contains { $0.id == originalLayer.id } ? nil : originalLayer.id
+        }
+        
+        if !droppedLayers.isEmpty {
+            NSLog("🗑️ AI dropped \(droppedLayers.count) layers: \(droppedLayers.joined(separator: ", "))")
+        }
+        
+        NSLog("✅ Final result: \(resultLayers.count) layers (kept/updated: \(variation.layers.count - (resultLayers.count - originalLayers.filter { layer in variation.layers.contains { $0.id == layer.id } }.count)), new: \(resultLayers.count - originalLayers.filter { layer in variation.layers.contains { $0.id == layer.id } }.count), dropped: \(droppedLayers.count))")
+        
+        return resultLayers
     }
     
     /// Navigate to previous state in history
@@ -734,28 +890,36 @@ struct ContentView: View {
         NSLog("💾 Saved state to history: '\(newState.title)' at index \(currentHistoryIndex)")
     }
     
-    /// Initialize history with current state
+    /// Initialize history with current state - NO SAMPLE LAYERS FALLBACK
     private func initializeHistory() {
-        if historyStates.isEmpty {
+        if historyStates.isEmpty && !layers.isEmpty {
             let initialState = HistoryState(
-                layers: layers.isEmpty ? createSampleLayers() : layers,
+                layers: layers,
                 source: .initial,
                 title: "Initial Canvas"
             )
             historyStates = [initialState]
             currentHistoryIndex = 0
-            layers = historyStates[0].layers
-            NSLog("🎯 Initialized history with initial state")
+            NSLog("🎯 Initialized history with \(layers.count) actual layers")
         }
     }
     
     /// Update a specific layer and save to history
     private func updateLayerInHistory(_ modifiedLayer: SimpleLayer) {
+        // Ensure we're at the current editable state when editing
+        if !isAtCurrentState {
+            NSLog("🔄 updateLayerInHistory: Moving to current state for editing")
+            currentHistoryIndex = historyStates.count - 1
+        }
+        
         var updatedLayers = currentLayers
         if let index = updatedLayers.firstIndex(where: { $0.id == modifiedLayer.id }) {
+            NSLog("🔄 updateLayerInHistory: Updating layer \(modifiedLayer.id) with content: '\(modifiedLayer.content)'")
             updatedLayers[index] = modifiedLayer
             layers = updatedLayers
             saveCurrentStateToHistory(source: .userEdit, title: "Modified \(modifiedLayer.type.capitalized) Layer")
+        } else {
+            NSLog("⚠️ updateLayerInHistory: Could not find layer with id: \(modifiedLayer.id)")
         }
     }
 
@@ -899,6 +1063,219 @@ struct HistoryIndicator: View {
     }
 }
 
+// MARK: - Enhanced Content Parsing
+extension HistoryLayerView {
+    /// Parse AI-generated background content for dynamic gradients and colors
+    func parseBackgroundContent(_ content: String) -> some View {
+        if content.hasPrefix("gradient:") {
+            let colorSpec = String(content.dropFirst(9)) // Remove "gradient:"
+            let colors = colorSpec.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+            
+            if colors.count >= 2 {
+                return AnyView(
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    parseColor(colors[0]),
+                                    parseColor(colors[1])
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: canvasWidth, height: canvasHeight)
+                        .cornerRadius(8)
+                        .overlay(
+                            Rectangle()
+                                .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                                .cornerRadius(8)
+                        )
+                )
+            }
+        } else if content.hasPrefix("solid:") {
+            let colorSpec = String(content.dropFirst(6)) // Remove "solid:"
+            return AnyView(
+                Rectangle()
+                    .fill(parseColor(colorSpec))
+                    .frame(width: canvasWidth, height: canvasHeight)
+                    .cornerRadius(8)
+                    .overlay(
+                        Rectangle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                            .cornerRadius(8)
+                    )
+            )
+        }
+        
+        // Fallback to default gradient
+        return AnyView(defaultBackgroundView)
+    }
+    
+    /// Parse color names and hex codes to SwiftUI Colors
+    func parseColor(_ colorString: String) -> Color {
+        let trimmed = colorString.trimmingCharacters(in: .whitespaces).lowercased()
+        
+        // Handle hex colors
+        if trimmed.hasPrefix("#") {
+            return Color(hex: trimmed) ?? .gray
+        }
+        
+        // Handle named colors
+        switch trimmed {
+        case "red": return .red
+        case "blue": return .blue
+        case "green": return .green
+        case "yellow": return .yellow
+        case "orange": return .orange
+        case "purple": return .purple
+        case "pink": return .pink
+        case "black": return .black
+        case "white": return .white
+        case "gray", "grey": return .gray
+        case "brown": return .brown
+        case "cyan": return .cyan
+        case "mint": return .mint
+        case "teal": return .teal
+        case "indigo": return .indigo
+        default: return .gray
+        }
+    }
+    
+    /// Default background view (current pink/purple gradient)
+    var defaultBackgroundView: some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.pink.opacity(0.15),
+                        Color.purple.opacity(0.1)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: canvasWidth, height: canvasHeight)
+            .cornerRadius(8)
+            .overlay(
+                Rectangle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    .cornerRadius(8)
+            )
+    }
+    
+    /// Parse AI-generated shape content for dynamic shapes and colors
+    func parseShapeContent(_ content: String) -> some View {
+        // Parse format: "shape:color" or "shape:color:size"
+        let components = content.split(separator: ":").map { String($0).trimmingCharacters(in: .whitespaces) }
+        
+        let shapeType = components.first?.lowercased() ?? "circle"
+        let colorName = components.count > 1 ? components[1] : "red"
+        let sizeStr = components.count > 2 ? components[2] : "50"
+        let size = Double(sizeStr) ?? 50.0
+        
+        let color = parseColor(colorName)
+        
+        switch shapeType {
+        case "rectangle", "rect", "square":
+            return AnyView(
+                Rectangle()
+                    .fill(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Rectangle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        case "circle", "round":
+            return AnyView(
+                Circle()
+                    .fill(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        case "star":
+            return AnyView(
+                Image(systemName: "star.fill")
+                    .font(.system(size: size * 0.8))
+                    .foregroundColor(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        case "heart":
+            return AnyView(
+                Image(systemName: "heart.fill")
+                    .font(.system(size: size * 0.8))
+                    .foregroundColor(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        default:
+            // Fallback to circle
+            return AnyView(defaultShapeView)
+        }
+    }
+    
+    /// Default shape view (current red circle)
+    var defaultShapeView: some View {
+        Circle()
+            .fill(Color.red)
+            .frame(width: 50, height: 50)
+            .overlay(
+                Circle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+            )
+    }
+    
+    /// Parse AI-generated image content for dynamic icons and placeholders
+    func parseImageContent(_ content: String) -> some View {
+        // Parse format: "icon:name" or "icon:name:color" or "icon:name:color:size"
+        let components = content.split(separator: ":").map { String($0).trimmingCharacters(in: .whitespaces) }
+        
+        if components.first?.lowercased() == "icon" && components.count > 1 {
+            let iconName = components[1]
+            let colorName = components.count > 2 ? components[2] : "blue"
+            let sizeStr = components.count > 3 ? components[3] : "40"
+            let size = Double(sizeStr) ?? 40.0
+            
+            let color = parseColor(colorName)
+            
+            return AnyView(
+                Image(systemName: iconName)
+                    .font(.system(size: size))
+                    .foregroundColor(color)
+                    .padding(8)
+                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+                    .cornerRadius(4)
+            )
+        }
+        
+        // Fallback to default image
+        return AnyView(defaultImageView)
+    }
+    
+    /// Default image view (current photo icon)
+    var defaultImageView: some View {
+        Image(systemName: "photo")
+            .font(.system(size: 40))
+            .foregroundColor(.blue)
+            .padding(8)
+            .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+            .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+            .cornerRadius(4)
+    }
+}
+
 // MARK: - History-aware Layer View
 struct HistoryLayerView: View {
     let layer: SimpleLayer
@@ -989,15 +1366,7 @@ struct HistoryLayerView: View {
     }
     
     private var backgroundLayerView: some View {
-        Rectangle()
-            .fill(Color.yellow.opacity(0.3))
-            .frame(width: 100, height: 60)
-            .cornerRadius(4)
-            .overlay(
-                Rectangle()
-                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
-                    .cornerRadius(4)
-            )
+        parseBackgroundContent(layer.content)
     }
     
     private var dragGesture: some Gesture {
@@ -1022,10 +1391,13 @@ struct HistoryLayerView: View {
     
     var body: some View {
         layerContent
-            .position(x: editableLayer.x + dragOffset.width, y: editableLayer.y + dragOffset.height)
+            .position(
+                x: layer.type == "background" ? canvasWidth / 2 : editableLayer.x + dragOffset.width,
+                y: layer.type == "background" ? canvasHeight / 2 : editableLayer.y + dragOffset.height
+            )
             .scaleEffect(isDragging && isEditable ? 1.1 : 1.0)
             .opacity(isDragging ? 0.8 : 1.0)
-            .gesture(dragGesture)
+            .gesture(layer.type == "background" ? nil : dragGesture)
             .onTapGesture {
                 onToggleSelection()
             }
@@ -1348,6 +1720,219 @@ struct LayerManagementRow: View {
     }
 }
 
+// MARK: - LayerView Enhanced Content Parsing
+extension LayerView {
+    /// Parse AI-generated background content for dynamic gradients and colors
+    func parseBackgroundContent(_ content: String) -> some View {
+        if content.hasPrefix("gradient:") {
+            let colorSpec = String(content.dropFirst(9)) // Remove "gradient:"
+            let colors = colorSpec.split(separator: ",").map { String($0).trimmingCharacters(in: .whitespaces) }
+            
+            if colors.count >= 2 {
+                return AnyView(
+                    Rectangle()
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    parseColor(colors[0]),
+                                    parseColor(colors[1])
+                                ]),
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .frame(width: canvasWidth, height: canvasHeight)
+                        .cornerRadius(8)
+                        .overlay(
+                            Rectangle()
+                                .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                                .cornerRadius(8)
+                        )
+                )
+            }
+        } else if content.hasPrefix("solid:") {
+            let colorSpec = String(content.dropFirst(6)) // Remove "solid:"
+            return AnyView(
+                Rectangle()
+                    .fill(parseColor(colorSpec))
+                    .frame(width: canvasWidth, height: canvasHeight)
+                    .cornerRadius(8)
+                    .overlay(
+                        Rectangle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                            .cornerRadius(8)
+                    )
+            )
+        }
+        
+        // Fallback to default gradient
+        return AnyView(defaultBackgroundView)
+    }
+    
+    /// Parse color names and hex codes to SwiftUI Colors
+    func parseColor(_ colorString: String) -> Color {
+        let trimmed = colorString.trimmingCharacters(in: .whitespaces).lowercased()
+        
+        // Handle hex colors
+        if trimmed.hasPrefix("#") {
+            return Color(hex: trimmed) ?? .gray
+        }
+        
+        // Handle named colors
+        switch trimmed {
+        case "red": return .red
+        case "blue": return .blue
+        case "green": return .green
+        case "yellow": return .yellow
+        case "orange": return .orange
+        case "purple": return .purple
+        case "pink": return .pink
+        case "black": return .black
+        case "white": return .white
+        case "gray", "grey": return .gray
+        case "brown": return .brown
+        case "cyan": return .cyan
+        case "mint": return .mint
+        case "teal": return .teal
+        case "indigo": return .indigo
+        default: return .gray
+        }
+    }
+    
+    /// Default background view (current pink/purple gradient)
+    var defaultBackgroundView: some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color.pink.opacity(0.15),
+                        Color.purple.opacity(0.1)
+                    ]),
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .frame(width: canvasWidth, height: canvasHeight)
+            .cornerRadius(8)
+            .overlay(
+                Rectangle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    .cornerRadius(8)
+            )
+    }
+    
+    /// Parse AI-generated shape content for dynamic shapes and colors
+    func parseShapeContent(_ content: String) -> some View {
+        // Parse format: "shape:color" or "shape:color:size"
+        let components = content.split(separator: ":").map { String($0).trimmingCharacters(in: .whitespaces) }
+        
+        let shapeType = components.first?.lowercased() ?? "circle"
+        let colorName = components.count > 1 ? components[1] : "red"
+        let sizeStr = components.count > 2 ? components[2] : "50"
+        let size = Double(sizeStr) ?? 50.0
+        
+        let color = parseColor(colorName)
+        
+        switch shapeType {
+        case "rectangle", "rect", "square":
+            return AnyView(
+                Rectangle()
+                    .fill(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Rectangle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        case "circle", "round":
+            return AnyView(
+                Circle()
+                    .fill(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        case "star":
+            return AnyView(
+                Image(systemName: "star.fill")
+                    .font(.system(size: size * 0.8))
+                    .foregroundColor(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        case "heart":
+            return AnyView(
+                Image(systemName: "heart.fill")
+                    .font(.system(size: size * 0.8))
+                    .foregroundColor(color)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Circle()
+                            .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+                    )
+            )
+        default:
+            // Fallback to circle
+            return AnyView(defaultShapeView)
+        }
+    }
+    
+    /// Default shape view (current red circle)
+    var defaultShapeView: some View {
+        Circle()
+            .fill(Color.red)
+            .frame(width: 50, height: 50)
+            .overlay(
+                Circle()
+                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
+            )
+    }
+    
+    /// Parse AI-generated image content for dynamic icons and placeholders
+    func parseImageContent(_ content: String) -> some View {
+        // Parse format: "icon:name" or "icon:name:color" or "icon:name:color:size"
+        let components = content.split(separator: ":").map { String($0).trimmingCharacters(in: .whitespaces) }
+        
+        if components.first?.lowercased() == "icon" && components.count > 1 {
+            let iconName = components[1]
+            let colorName = components.count > 2 ? components[2] : "blue"
+            let sizeStr = components.count > 3 ? components[3] : "40"
+            let size = Double(sizeStr) ?? 40.0
+            
+            let color = parseColor(colorName)
+            
+            return AnyView(
+                Image(systemName: iconName)
+                    .font(.system(size: size))
+                    .foregroundColor(color)
+                    .padding(8)
+                    .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+                    .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+                    .cornerRadius(4)
+            )
+        }
+        
+        // Fallback to default image
+        return AnyView(defaultImageView)
+    }
+    
+    /// Default image view (current photo icon)
+    var defaultImageView: some View {
+        Image(systemName: "photo")
+            .font(.system(size: 40))
+            .foregroundColor(.blue)
+            .padding(8)
+            .background(selectedLayerForEditing == layer.id ? Color.blue.opacity(0.2) : Color.clear)
+            .border(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, width: 2)
+            .cornerRadius(4)
+    }
+}
+
 // Helper view to extract sheet content and avoid compiler complexity
 struct LayerView: View {
     @Binding var layer: SimpleLayer
@@ -1423,15 +2008,7 @@ struct LayerView: View {
     }
     
     private var backgroundLayerView: some View {
-        Rectangle()
-            .fill(Color.yellow.opacity(0.3))
-            .frame(width: 100, height: 60)
-            .cornerRadius(4)
-            .overlay(
-                Rectangle()
-                    .stroke(selectedLayerForEditing == layer.id ? Color.blue : Color.clear, lineWidth: 2)
-                    .cornerRadius(4)
-            )
+        parseBackgroundContent(layer.content)
     }
     
     private var dragGesture: some Gesture {
@@ -1458,10 +2035,13 @@ struct LayerView: View {
     
     var body: some View {
         layerContent
-            .position(x: layer.x + dragOffset.width, y: layer.y + dragOffset.height)
+            .position(
+                x: layer.type == "background" ? canvasWidth / 2 : layer.x + dragOffset.width,
+                y: layer.type == "background" ? canvasHeight / 2 : layer.y + dragOffset.height
+            )
             .scaleEffect(isDragging ? 1.1 : 1.0)
             .opacity(isDragging ? 0.8 : 1.0)
-            .gesture(dragGesture)
+            .gesture(layer.type == "background" ? nil : dragGesture)
             .onTapGesture {
                 onToggleSelection()
             }
@@ -1673,15 +2253,17 @@ struct TextStyleModalView: View {
 }
 
 struct LayerManagerModalView: View {
-    @Binding var layers: [SimpleLayer]
+    let currentLayers: [SimpleLayer]
     @Binding var selectedLayerForEditing: String?
     let onEditLayer: (SimpleLayer) -> Void
+    let onDeleteLayer: (String) -> Void
+    let onUpdateLayer: (SimpleLayer) -> Void
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
             VStack(alignment: .leading, spacing: 16) {
-                if layers.isEmpty {
+                if currentLayers.isEmpty {
                     VStack(spacing: 20) {
                         Image(systemName: "square.stack")
                             .font(.system(size: 60))
@@ -1713,44 +2295,41 @@ struct LayerManagerModalView: View {
                         
                         ScrollView {
                             LazyVStack(spacing: 8) {
-                                ForEach(layers.sorted(by: { $0.zOrder > $1.zOrder }), id: \.id) { layer in
-                                    if let index = layers.firstIndex(where: { $0.id == layer.id }) {
-                                        LayerManagementRow(
-                                            layer: Binding(
-                                                get: { layers[index] },
-                                                set: { layers[index] = $0 }
-                                            ),
-                                            selectedLayerForEditing: selectedLayerForEditing,
-                                            onDelete: {
-                                                layers.remove(at: index)
-                                                if selectedLayerForEditing == layer.id {
-                                                    selectedLayerForEditing = nil
-                                                }
-                                            },
-                                            onEdit: {
-                                                onEditLayer(layer)
-                                            },
-                                            onMoveToFront: {
-                                                moveLayerToFront(layer.id)
-                                            },
-                                            onMoveToBack: {
-                                                moveLayerToBack(layer.id)
-                                            },
-                                            onMoveUp: {
-                                                moveLayerUp(layer.id)
-                                            },
-                                            onMoveDown: {
-                                                moveLayerDown(layer.id)
-                                            },
-                                            onToggleSelection: {
-                                                if selectedLayerForEditing == layer.id {
-                                                    selectedLayerForEditing = nil
-                                                } else {
-                                                    selectedLayerForEditing = layer.id
-                                                }
+                                ForEach(currentLayers.sorted(by: { $0.zOrder > $1.zOrder }), id: \.id) { layer in
+                                    LayerManagementRow(
+                                        layer: Binding(
+                                            get: { layer },
+                                            set: { updatedLayer in 
+                                                onUpdateLayer(updatedLayer)
                                             }
-                                        )
-                                    }
+                                        ),
+                                        selectedLayerForEditing: selectedLayerForEditing,
+                                        onDelete: {
+                                            onDeleteLayer(layer.id)
+                                        },
+                                        onEdit: {
+                                            onEditLayer(layer)
+                                        },
+                                        onMoveToFront: {
+                                            moveLayerToFront(layer)
+                                        },
+                                        onMoveToBack: {
+                                            moveLayerToBack(layer)
+                                        },
+                                        onMoveUp: {
+                                            moveLayerUp(layer)
+                                        },
+                                        onMoveDown: {
+                                            moveLayerDown(layer)
+                                        },
+                                        onToggleSelection: {
+                                            if selectedLayerForEditing == layer.id {
+                                                selectedLayerForEditing = nil
+                                            } else {
+                                                selectedLayerForEditing = layer.id
+                                            }
+                                        }
+                                    )
                                 }
                             }
                         }
@@ -1770,40 +2349,44 @@ struct LayerManagerModalView: View {
         }
     }
     
-    private func moveLayerToFront(_ layerId: String) {
-        guard let index = layers.firstIndex(where: { $0.id == layerId }) else { return }
-        let maxZ = layers.map { $0.zOrder }.max() ?? 0
-        layers[index].zOrder = maxZ + 1
+    private func moveLayerToFront(_ layer: SimpleLayer) {
+        let maxZ = currentLayers.map { $0.zOrder }.max() ?? 0
+        var updatedLayer = layer
+        updatedLayer.zOrder = maxZ + 1
+        onUpdateLayer(updatedLayer)
     }
     
-    private func moveLayerToBack(_ layerId: String) {
-        guard let index = layers.firstIndex(where: { $0.id == layerId }) else { return }
-        let minZ = layers.map { $0.zOrder }.min() ?? 0
-        layers[index].zOrder = minZ - 1
+    private func moveLayerToBack(_ layer: SimpleLayer) {
+        let minZ = currentLayers.map { $0.zOrder }.min() ?? 0
+        var updatedLayer = layer
+        updatedLayer.zOrder = minZ - 1
+        onUpdateLayer(updatedLayer)
     }
     
-    private func moveLayerUp(_ layerId: String) {
-        guard let index = layers.firstIndex(where: { $0.id == layerId }) else { return }
-        let currentZ = layers[index].zOrder
-        let nextHigherZ = layers.filter { $0.zOrder > currentZ }.map { $0.zOrder }.min()
+    private func moveLayerUp(_ layer: SimpleLayer) {
+        let currentZ = layer.zOrder
+        let nextHigherZ = currentLayers.filter { $0.zOrder > currentZ }.map { $0.zOrder }.min()
         
+        var updatedLayer = layer
         if let nextZ = nextHigherZ {
-            layers[index].zOrder = nextZ + 1
+            updatedLayer.zOrder = nextZ + 1
         } else {
-            layers[index].zOrder = currentZ + 1
+            updatedLayer.zOrder = currentZ + 1
         }
+        onUpdateLayer(updatedLayer)
     }
     
-    private func moveLayerDown(_ layerId: String) {
-        guard let index = layers.firstIndex(where: { $0.id == layerId }) else { return }
-        let currentZ = layers[index].zOrder
-        let nextLowerZ = layers.filter { $0.zOrder < currentZ }.map { $0.zOrder }.max()
+    private func moveLayerDown(_ layer: SimpleLayer) {
+        let currentZ = layer.zOrder
+        let nextLowerZ = currentLayers.filter { $0.zOrder < currentZ }.map { $0.zOrder }.max()
         
+        var updatedLayer = layer
         if let nextZ = nextLowerZ {
-            layers[index].zOrder = nextZ - 1
+            updatedLayer.zOrder = nextZ - 1
         } else {
-            layers[index].zOrder = currentZ - 1
+            updatedLayer.zOrder = currentZ - 1
         }
+        onUpdateLayer(updatedLayer)
     }
 }
 
@@ -2182,6 +2765,7 @@ struct BackgroundLayerSettings: View {
         .background(Color.gray.opacity(0.1))
         .cornerRadius(12)
     }
+
 }
 
 // MARK: - AI Variation Models

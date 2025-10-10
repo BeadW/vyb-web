@@ -22,6 +22,9 @@ TypeScript 5.x (web), Swift 5.9+ (iOS), Kotlin 1.9+ (Android): Follow standard c
 - 002-visual-ai-collaboration: Added TypeScript 5.x (web), Swift 5.9+ (iOS), Kotlin 1.9+ (Android) + React/Vue + Tailwind (web), Fabric.js (canvas), SwiftUI + UIKit (iOS), Jetpack Compose (Android), Gemini AI API
 
 <!-- MANUAL ADDITIONS START -->
+
+You must NEVER ask the user to create, open, or manage Xcode workspaces or project files. You must always use the correct project file automatically (prefer .xcworkspace if present, otherwise .xcodeproj). If a workspace is missing, you must create it yourself. All build, install, and launch operations must be performed by you, not the user.
+
 When validating web changes you must use Playwright and take screen shots of the outcomes. YOU MUST BE HONEST IN YOUR EVALUATION OF THE RESULTS.
 
 when validating iOS changes you must use XCUITest and take screen shots of the outcomes. YOU MUST BE HONEST IN YOUR EVALUATION OF THE RESULTS.

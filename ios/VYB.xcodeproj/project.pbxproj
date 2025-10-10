@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -50,6 +50,11 @@
 		EDD0DD1B1576126BFC1B1675 /* CanvasManipulation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8620ACBB046627FED5C63296 /* CanvasManipulation.swift */; };
 		F1BC147630E5320DDFC58E81 /* AIServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C37F52DFD4EFF5CC7048A385 /* AIServiceTests.swift */; };
 		FFE676CAE468DDB7C3D9FCC6 /* DesignCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60502AA33A703BDBC6BFEF62 /* DesignCanvas.swift */; };
+		9C71F673A15E48698846047A /* AIDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45018CBDB6FB4D1C81C69767 /* AIDataModels.swift */; };
+		1C4C6DD996EF4A25BF7E21A3 /* AIProviderProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25F50957024E4F64B7CC8942 /* AIProviderProtocol.swift */; };
+		27F9200578D74666BB1441AA /* GeminiAIProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD8F3A890F3248828BFF6D17 /* GeminiAIProvider.swift */; };
+		3120199152764A3FB0A1F09D /* AppleIntelligenceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DCEFB007B74ED2856D3E2D /* AppleIntelligenceProvider.swift */; };
+		3D3A265C5E87407BA2FAA0D6 /* AIServiceManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FA1D6FE9E054C00A7323B81 /* AIServiceManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -71,8 +76,13 @@
 
 /* Begin PBXFileReference section */
 		091F75B73785D575BEBAD833 /* LayerUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerUIComponents.swift; sourceTree = "<group>"; };
-		0E81D8BEE6BC186334247D64 /* VYB.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = VYB.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		0E81D8BEE6BC186334247D64 /* VYB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = VYB.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0FC54D039CBFD51B60BBA027 /* AIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIService.swift; sourceTree = "<group>"; };
+		45018CBDB6FB4D1C81C69767 /* AIDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIDataModels.swift; sourceTree = "<group>"; };
+		25F50957024E4F64B7CC8942 /* AIProviderProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIProviderProtocol.swift; sourceTree = "<group>"; };
+		CD8F3A890F3248828BFF6D17 /* GeminiAIProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeminiAIProvider.swift; sourceTree = "<group>"; };
+		06DCEFB007B74ED2856D3E2D /* AppleIntelligenceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleIntelligenceProvider.swift; sourceTree = "<group>"; };
+		0FA1D6FE9E054C00A7323B81 /* AIServiceManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIServiceManager.swift; sourceTree = "<group>"; };
 		11D5646B3F37D231510D2C9B /* Layer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Layer.swift; sourceTree = "<group>"; };
 		144369BBDB1F6F76EFA62CEE /* FacebookPostView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FacebookPostView.swift; sourceTree = "<group>"; };
 		183D58CC0B4E88D9BF7905F4 /* LayerToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayerToolbar.swift; sourceTree = "<group>"; };
@@ -211,6 +221,11 @@
 			isa = PBXGroup;
 			children = (
 				0FC54D039CBFD51B60BBA027 /* AIService.swift */,
+				45018CBDB6FB4D1C81C69767 /* AIDataModels.swift */,
+				25F50957024E4F64B7CC8942 /* AIProviderProtocol.swift */,
+				CD8F3A890F3248828BFF6D17 /* GeminiAIProvider.swift */,
+				06DCEFB007B74ED2856D3E2D /* AppleIntelligenceProvider.swift */,
+				0FA1D6FE9E054C00A7323B81 /* AIServiceManager.swift */,
 				8620ACBB046627FED5C63296 /* CanvasManipulation.swift */,
 				8A1795FB16B822D8AB29464B /* LayerManager.swift */,
 				D53641BDDB396636BF3F716E /* SimpleLayerManager.swift */,
@@ -345,7 +360,6 @@
 			);
 			mainGroup = FF56D16199620130A94B3CCC;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -373,6 +387,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				E1F566E6B21A643C59A7E651 /* AIService.swift in Sources */,
+				9C71F673A15E48698846047A /* AIDataModels.swift in Sources */,
+				1C4C6DD996EF4A25BF7E21A3 /* AIProviderProtocol.swift in Sources */,
+				27F9200578D74666BB1441AA /* GeminiAIProvider.swift in Sources */,
+				3120199152764A3FB0A1F09D /* AppleIntelligenceProvider.swift in Sources */,
+				3D3A265C5E87407BA2FAA0D6 /* AIServiceManager.swift in Sources */,
 				7E2C8656614C16FCBA53D4D4 /* AppIconView.swift in Sources */,
 				EDD0DD1B1576126BFC1B1675 /* CanvasManipulation.swift in Sources */,
 				5B84B26899D16DFD2BF2A674 /* CanvasView.swift in Sources */,
@@ -471,6 +490,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -615,6 +635,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = FPK2ZPTLKF;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
