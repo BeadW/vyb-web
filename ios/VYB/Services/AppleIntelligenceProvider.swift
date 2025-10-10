@@ -26,11 +26,22 @@ class AppleIntelligenceProvider: AIProviderProtocol {
 
     func createDesignAnalysisPrompt(request: DesignVariationRequest) -> String {
         let maxVariations = request.constraints?.maxVariations ?? 3
-        let layerInfo = request.layers.map { layer in
+        
+        // Separate visible and non-visible layers for clearer AI understanding
+        let visibleLayers = request.layers.filter { $0.isVisible(within: request.canvasBounds) }
+        let hiddenLayers = request.layers.filter { !$0.isVisible(within: request.canvasBounds) }
+        
+        let visibleLayerInfo = visibleLayers.map { layer in
             let x = round(layer.x * 100) / 100 // Round to 2 decimal places
             let y = round(layer.y * 100) / 100
-            let visibility = request.canvasBounds.contains(x: layer.x, y: layer.y) ? "visible" : "out of bounds"
-            return "Layer \(layer.id): \(layer.type) '\(layer.content)' at (\(x), \(y)) - \(visibility)"
+            return "  • \(layer.id): \(layer.type) '\(layer.content)' at (\(x), \(y))"
+        }.joined(separator: "\n")
+        
+        let hiddenLayerInfo = hiddenLayers.map { layer in
+            let x = round(layer.x * 100) / 100
+            let y = round(layer.y * 100) / 100
+            let visibilityDesc = layer.visibilityDescription(within: request.canvasBounds)
+            return "  • \(layer.id): \(layer.type) '\(layer.content)' at (\(x), \(y)) - \(visibilityDesc)"
         }.joined(separator: "\n")
         
         // Create the exact layer IDs that must be used in the response
@@ -42,8 +53,15 @@ class AppleIntelligenceProvider: AIProviderProtocol {
         Create \(maxVariations) COMPLETELY DIFFERENT design variations for this salon cancellation policy:
 
         Canvas bounds: \(request.canvasBounds.width)x\(request.canvasBounds.height)
-        Current layers (you can modify, remove, or add to these):
-        \(layerInfo)
+        
+        VISIBLE LAYERS (currently on canvas):
+        \(visibleLayerInfo.isEmpty ? "  • No layers currently visible" : visibleLayerInfo)
+        
+        \(hiddenLayers.isEmpty ? "" : """
+        HIDDEN LAYERS (outside canvas view - consider moving these into view or replacing):
+        \(hiddenLayerInfo)
+        
+        """)
         
         EXAMPLE THEME INSPIRATIONS (create your own unique content inspired by these styles):
         - Professional/Corporate: Formal language, business emojis (📋, 📞, ⏰), neutral positioning
@@ -51,15 +69,77 @@ class AppleIntelligenceProvider: AIProviderProtocol {
         - Luxury/Premium: Sophisticated language, elegant emojis (💎, 👑, 🏆), refined positioning
         
         LAYER MANAGEMENT OPTIONS:
-        - MODIFY existing layers: Change content, position, or type of current layers
-        - ADD new layers: Create additional text, background, or other elements with new IDs
+        - MODIFY existing layers: Change content and position, but KEEP the same layer type
+        - ADD new layers: Create additional elements with new IDs and appropriate types
         - REMOVE layers: Simply don't include layers you don't want in a variation
-        - Layer types available: "text", "background", "image", "shape"
+        - REPLACE layers: Remove old layer + Add new layer with same ID but different type
+        
+        VALIDATION RULES:
+        ✅ VALID: {"type": "text", "content": "Welcome to Bella Salon"}
+        ❌ INVALID: {"type": "text", "content": "gradient:blue,white"}
+        ❌ INVALID: {"type": "text", "content": "icon:star"}
+        
+        ✅ VALID: {"type": "background", "content": "gradient:blue,white"}
+        ✅ VALID: {"type": "background", "content": "solid:purple"}
+        ❌ INVALID: {"type": "background", "content": "Welcome to Bella Salon"}
+        
+        ✅ VALID: {"type": "image", "content": "icon:star"}
+        ❌ INVALID: {"type": "image", "content": "gradient:blue,white"}
+        
+        ✅ VALID: {"type": "shape", "content": "circle:red:50"}
+        ❌ INVALID: {"type": "shape", "content": "Welcome to Bella Salon"}
+        
+        LAYER TYPE DEFINITIONS AND VALID CONTENT:
+        
+        1. TEXT LAYER (type: "text"):
+           - Content: Plain text only
+           - Examples: "Welcome to Bella Salon", "Call (555) 123-4567", "⚠️ Cancellation Policy"
+           - Invalid: gradient:blue,white, icon:star, shape:circle:red
+        
+        2. BACKGROUND LAYER (type: "background"):
+           - Content Format: "gradient:color1,color2" OR "solid:color"
+           - Valid Colors: red, blue, green, yellow, orange, purple, pink, white, black, gray, brown, cyan, mint, teal, indigo, #FF0000
+           - Examples: "gradient:blue,white", "gradient:#FF0000,#00FF00", "solid:purple"
+           - Invalid: Plain text, icon:star, shape:circle:red
+        
+        3. IMAGE LAYER (type: "image"):
+           - Content Format: "icon:systemIconName"
+           - Valid Icons: star, star.fill, person.circle, phone.fill, photo, heart, crown, diamond, sparkles
+           - Examples: "icon:star", "icon:person.circle", "icon:phone.fill"
+           - Invalid: Plain text, gradient:blue,white, shape:circle:red
+        
+        4. SHAPE LAYER (type: "shape"):
+           - Content Format: "shape:type:color" OR "type:color:size"
+           - Valid Shapes: circle, rectangle, rect, square, star
+           - Valid Colors: Same as background colors
+           - Examples: "shape:circle:blue", "circle:red:50", "star:gold:30"
+           - Invalid: Plain text, gradient:blue,white, icon:star
+        
+        LAYER TYPE CHANGES:
+        If you want to change a text layer to a shape, REMOVE the original text layer and ADD a new shape layer with a different ID.
+        
+        CONTENT FORMAT SPECIFICATIONS:
+        For BACKGROUND layers, use these content formats:
+        - Gradient: "gradient:color1,color2" (e.g., "gradient:blue,green", "gradient:#FF0000,#00FF00")
+        - Solid color: "solid:color" (e.g., "solid:red", "solid:#3498db")
+        
+        For SHAPE layers, use these content formats:
+        - Circle: "circle:color:size" (e.g., "circle:blue:50", "circle:#FF5733:80")
+        - Rectangle: "rectangle:color:size" (e.g., "rectangle:green:60", "rectangle:#2ECC71:100")
+        - Star: "star:color:size" (e.g., "star:yellow:40", "star:#F1C40F:70")
+        - Heart: "heart:color:size" (e.g., "heart:red:45", "heart:#E74C3C:65")
+        
+        For IMAGE layers, use these content formats:
+        - System icon: "icon:name:color:size" (e.g., "icon:star:yellow:40", "icon:heart:red:50", "icon:phone:blue:35")
+        - Available icons: star, heart, phone, envelope, house, person, camera, calendar, clock, car, airplane, globe, etc.
+        
+        For TEXT layers, use regular text content as usual.
         
         ID NAMING GUIDELINES:
-        - Keep existing IDs if modifying those layers
-        - For new layers, use descriptive IDs like: "contact-info", "decorative-border", "accent-text", "phone-number", etc.
-        - Use kebab-case (words-separated-by-hyphens)
+        - MUST use these EXACT layer IDs for modifications: [\(layerIdList)]
+        - You can omit layers you don't want in a variation (layer removal)
+        - You can add new layers with descriptive IDs like: "contact-info", "decorative-border", "accent-text", "phone-number", etc.
+        - Use kebab-case (words-separated-by-hyphens) for new layers only
         
         POSITION GUIDELINES:
         - Keep x values between 0 and \(request.canvasBounds.width)
@@ -67,12 +147,40 @@ class AppleIntelligenceProvider: AIProviderProtocol {
         - Vary positions dramatically between variations
         - Consider visual hierarchy and readability
         
+        VISIBILITY AWARENESS:
+        - ONLY use coordinates that place content WITHIN the canvas bounds
+        - Any layers currently off-canvas (hidden) should be repositioned to be visible OR replaced with appropriate content
+        - Ensure critical information (policy text, contact info) is always positioned to be fully visible
+        - Use the full canvas space effectively - don't cluster everything in one corner
+        
         Requirements:
         1. Each variation must be DRAMATICALLY different in content, layout, and number of elements
         2. Create unique layer compositions - don't just copy the current structure
         3. Make each variation feel like a completely different designer created it
         4. Ensure all coordinates are within canvas bounds
         5. Each variation can have different numbers of layers (add/remove as needed)
+        6. MATCH content type to layer type - text content for text layers, shape content for shape layers
+        
+        COMPLETE EXAMPLE:
+        {
+          "variations": [
+            {
+              "title": "Professional Design",
+              "description": "Clean corporate style with proper type matching",
+              "layers": [
+                {"id": "background-gradient", "type": "background", "content": "gradient:blue,white", "x": 185, "y": 115},
+                {"id": "title-text", "type": "text", "content": "Bella Salon", "x": 200, "y": 50},
+                {"id": "main-policy-text", "type": "text", "content": "Cancellation policy applies", "x": 200, "y": 150},
+                {"id": "phone-icon", "type": "image", "content": "icon:phone.fill", "x": 50, "y": 200},
+                {"id": "decorative-star", "type": "shape", "content": "star:gold:25", "x": 300, "y": 180}
+              ]
+            }
+          ]
+        }
+        
+        WRONG EXAMPLE (DO NOT DO THIS):
+        {"id": "title-text", "type": "text", "content": "gradient:blue,white"}  ❌ Type mismatch!
+        {"id": "background-gradient", "type": "background", "content": "Welcome Text"}  ❌ Type mismatch!
 
         RESPOND WITH VALID JSON ONLY (no markdown, no explanations):
         {
