@@ -1,6 +1,57 @@
 import Foundation
 import CoreGraphics
 
+// MARK: - Response Validation Utilities
+
+/// Validates if an API response appears to be complete and well-formed
+private func isValidAPIResponse(_ response: String) -> Bool {
+    // Check if response appears to be valid JSON structure
+    guard !response.isEmpty else { return false }
+    
+    // Look for expected Gemini API response structure
+    let hasExpectedStructure = response.contains("\"candidates\"") && 
+                              response.contains("\"content\"") && 
+                              response.contains("\"parts\"")
+    
+    // Check if response ends properly (not truncated)
+    let trimmed = response.trimmingCharacters(in: .whitespacesAndNewlines)
+    let endsWithValidJSON = trimmed.hasSuffix("}") || trimmed.hasSuffix("]")
+    
+    return hasExpectedStructure && endsWithValidJSON
+}
+
+/// Validates if JSON content appears complete for design variations
+private func isCompleteJSONResponse(_ content: String) -> Bool {
+    let trimmed = content.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // Remove any markdown formatting
+    let cleanedContent = trimmed
+        .replacingOccurrences(of: "```json", with: "")
+        .replacingOccurrences(of: "```", with: "")
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    // Check for expected structure
+    let hasVariationsArray = cleanedContent.contains("\"variations\"") && 
+                            cleanedContent.contains("[")
+    
+    // Check if JSON appears complete - must end with } or ]
+    let endsWithValidJSON = cleanedContent.hasSuffix("}") || cleanedContent.hasSuffix("]")
+    
+    // Basic bracket/brace matching check - allow some tolerance
+    let openBraces = cleanedContent.filter { $0 == "{" }.count
+    let closeBraces = cleanedContent.filter { $0 == "}" }.count
+    let openBrackets = cleanedContent.filter { $0 == "[" }.count
+    let closeBrackets = cleanedContent.filter { $0 == "]" }.count
+    
+    // More lenient check - if brackets are close to balanced and has expected structure
+    let bracesDiff = abs(openBraces - closeBraces)
+    let bracketsDiff = abs(openBrackets - closeBrackets)
+    let reasonablyBalanced = bracesDiff <= 1 && bracketsDiff <= 1
+    
+    // Be more lenient - just check for basic structure and reasonable balance
+    return hasVariationsArray && endsWithValidJSON && reasonablyBalanced
+}
+
 /// Gemini AI provider implementation
 class GeminiAIProvider: AIProviderProtocol {
     
@@ -26,10 +77,50 @@ class GeminiAIProvider: AIProviderProtocol {
     }
     
     func generateVariations(request: DesignVariationRequest) async throws -> DesignVariationResponse {
+        // Retry logic for handling truncated responses
+        let maxRetries = 3
+        var lastError: Error?
+        
+        for attempt in 1...maxRetries {
+            do {
+                let result = try await performGenerationRequest(request: request, attempt: attempt)
+                if attempt > 1 {
+                    NSLog("✅ GeminiAIProvider: Request succeeded on attempt \(attempt)/\(maxRetries)")
+                }
+                return result
+            } catch let error as NSError where error.domain == "GeminiAIProvider" && (error.code == -2 || error.code == -3 || error.code == -4) {
+                NSLog("⚠️ GeminiAIProvider: Attempt \(attempt)/\(maxRetries) failed: \(error.localizedDescription)")
+                lastError = error
+                
+                // Only retry for truncation errors (-2, -3), not parsing errors (-4)
+                if (error.code == -2 || error.code == -3) && attempt < maxRetries {
+                    // Wait briefly before retrying
+                    try await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                    NSLog("🔄 GeminiAIProvider: Retrying request (attempt \(attempt + 1)/\(maxRetries))")
+                    continue
+                } else {
+                    if error.code == -4 {
+                        NSLog("❌ GeminiAIProvider: JSON parsing error - not retrying")
+                    } else {
+                        NSLog("❌ GeminiAIProvider: All \(maxRetries) attempts failed due to truncated responses")
+                    }
+                    throw error
+                }
+            } catch {
+                // For non-truncation errors, don't retry
+                throw error
+            }
+        }
+        
+        // This should never be reached, but just in case
+        throw lastError ?? NSError(domain: "GeminiAIProvider", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unexpected error in retry logic"])
+    }
+    
+    private func performGenerationRequest(request: DesignVariationRequest, attempt: Int) async throws -> DesignVariationResponse {
         let startTime = Date()
         
-        guard let apiKey = apiKey else {
-            throw AIServiceError.notConfigured
+        guard let apiKey = self.apiKey else {
+            throw NSError(domain: "GeminiAIProvider", code: -1, userInfo: [NSLocalizedDescriptionKey: "API key not configured"])
         }
         
         NSLog("🤖 GeminiAIProvider: Generating variations for \(request.layers.count) layers")
@@ -79,6 +170,16 @@ class GeminiAIProvider: AIProviderProtocol {
                 throw AIServiceError.apiError("HTTP \(httpResponse.statusCode): \(errorMessage)")
             }
             
+            // Log the raw response for debugging
+            let rawResponse = String(data: data, encoding: .utf8) ?? "Unable to decode response"
+            NSLog("📡 GeminiAIProvider: Raw API Response: \(rawResponse)")
+            
+            // Check if API response appears truncated
+            if !isValidAPIResponse(rawResponse) {
+                NSLog("⚠️ GeminiAIProvider: API response appears truncated or malformed")
+                throw NSError(domain: "GeminiAIProvider", code: -2, userInfo: [NSLocalizedDescriptionKey: "API response appears truncated"])
+            }
+            
             // Parse the response
             let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
             
@@ -86,7 +187,15 @@ class GeminiAIProvider: AIProviderProtocol {
                 throw AIServiceError.parseError("No content in Gemini response")
             }
             
-            NSLog("📄 GeminiAIProvider: Received response: \(content.prefix(200))...")
+            NSLog("📄 GeminiAIProvider: Received response length: \(content.count) characters")
+            NSLog("📄 GeminiAIProvider: Full response content: \(content)")
+            
+            // Validate JSON completeness before parsing - but let's be more lenient and see the actual error
+            if !isCompleteJSONResponse(content) {
+                NSLog("⚠️ GeminiAIProvider: JSON validation failed - attempting to parse anyway to see real error")
+                NSLog("🔍 GeminiAIProvider: Last 200 characters: \(String(content.suffix(200)))")
+                // Don't throw here - let the JSON parser give us the real error
+            }
             
             // Parse the JSON content to extract variations
             let variations = try parseVariationsFromJSON(content)
@@ -323,9 +432,15 @@ class GeminiAIProvider: AIProviderProtocol {
             return variations
             
         } catch {
-            NSLog("❌ GeminiAIProvider: JSON parsing failed: \(error)")
-            NSLog("📄 GeminiAIProvider: Raw JSON: \(cleanedJSON)")
-            throw AIServiceError.parseError("JSON parsing failed: \(error.localizedDescription)")
+            NSLog("❌ GeminiAIProvider: JSON parsing failed with error: \(error)")
+            NSLog("📄 GeminiAIProvider: Error type: \(type(of: error))")
+            if let decodingError = error as? DecodingError {
+                NSLog("🔍 GeminiAIProvider: Decoding error details: \(decodingError)")
+            }
+            NSLog("📄 GeminiAIProvider: Cleaned JSON length: \(cleanedJSON.count)")
+            NSLog("📄 GeminiAIProvider: First 500 chars: \(String(cleanedJSON.prefix(500)))")
+            NSLog("📄 GeminiAIProvider: Last 500 chars: \(String(cleanedJSON.suffix(500)))")
+            throw NSError(domain: "GeminiAIProvider", code: -4, userInfo: [NSLocalizedDescriptionKey: "JSON parsing failed: \(error.localizedDescription)"])
         }
     }
 }
