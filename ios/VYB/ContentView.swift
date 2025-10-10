@@ -422,57 +422,7 @@ struct ContentView: View {
                         .foregroundColor(.red)
                     }
                     
-                    // AI Provider Selection and Test Button
-                    Menu {
-                        VStack(alignment: .leading) {
-                            if aiService.supportsAppleIntelligence {
-                                Button(action: {
-                                    setAIProvider(named: "Apple Intelligence")
-                                }) {
-                                    HStack {
-                                        Text("🧠 Apple Intelligence")
-                                        if aiService.isUsingAppleIntelligence {
-                                            Spacer()
-                                            Image(systemName: "checkmark")
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            Button(action: {
-                                setAIProvider(named: "Gemini")
-                            }) {
-                                HStack {
-                                    Text("🤖 Gemini API")
-                                    if !aiService.isUsingAppleIntelligence {
-                                        Spacer()
-                                        Image(systemName: "checkmark")
-                                    }
-                                }
-                            }
-                            
-                            Divider()
-                            
-                            Text(aiService.providerSelectionInfo.reason)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .padding(.top, 4)
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Text(aiService.isUsingAppleIntelligence ? "🧠" : "🤖")
-                                .font(.system(size: 14, weight: .medium))
-                            Text("AI")
-                                .font(.system(size: 14, weight: .medium))
-                            Image(systemName: "chevron.down")
-                                .font(.system(size: 12))
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
-                        .background(Color.green)
-                        .foregroundColor(.white)
-                        .cornerRadius(20)
-                    }
+
                     
                     Button("🧠 Test AI") {
                         NSLog("🔥 DEBUG: Test AI button pressed")
@@ -768,21 +718,6 @@ struct ContentView: View {
 
     
     // MARK: - AI Integration Functions
-    
-    private func setAIProvider(named providerName: String) {
-        Task {
-            do {
-                try await aiService.setProvider(named: providerName)
-                await MainActor.run {
-                    NSLog("✅ Switched to AI provider: \(providerName)")
-                }
-            } catch {
-                await MainActor.run {
-                    NSLog("❌ Failed to switch to \(providerName): \(error.localizedDescription)")
-                }
-            }
-        }
-    }
     
     private func triggerAIAnalysis() {
         NSLog("🚀 triggerAIAnalysis() called")
