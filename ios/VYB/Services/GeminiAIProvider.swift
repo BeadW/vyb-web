@@ -251,7 +251,7 @@ class GeminiAIProvider: AIProviderProtocol {
         let layerIdList = exactLayerIds.map { "\"\($0)\"" }.joined(separator: ", ")
         
         return """
-        You are an expert graphic designer helping a client with a social media post. Your job is to take their current post and use your amazing skills to change it into something engaging and following the latest and best trends for social media posts. The Canvas is the image portion of the post so you are creating an image to be viewed based on the existing context. The variations you propose should be meanifully significantly different from the original and show different styles which the user might look to adopt.
+        You are an expert graphic designer helping a client with a social media post. Your job is to take their current post and use your amazing skills to change it into something engaging and following the latest and best trends for social media posts. The Canvas is the image portion of the post so you are creating an image to be viewed based on the existing context. The variations you propose should be meaningfully significantly different from the original and show different styles which the user might look to adopt.
         Create \(maxVariations) COMPLETELY DIFFERENT design variations for this salon cancellation policy:
 
         Canvas bounds: \(canvasBounds.width)x\(canvasBounds.height)
